@@ -1,0 +1,31 @@
+{
+  "slurm_job_id": 240240,
+  "inference_processes": 2,
+  "videos_per_process": 5,
+  "source_sha256": {
+    "scripts/prepare_rvs_ego_continuous.py": "9387a292b957910cb69ebe1105ceafa9f0e8783e37df06664fa1e931ea8f2894",
+    "scripts/run_rvs_ego_continuous.sh": "bbd8f220959aed52a6a75a64cca8c32b6d3f4d2ffc84ac7c845fdb87438dc475",
+    "scripts/judge_rvs_ego.py": "d1a6ce818446dbe759cc674e5da939ed171de058a0d3535b6479adca1865f8a5",
+    "video_qa/hermes_vqa.py": "b4b7e758f1e19325857dcf52a4f8e343404632f27d7cd4b1c8be2773d344a052",
+    "video_qa/base.py": "795cf98e8d1125ea934dc2c9744ba1bbd3b29701f17aae2d935f382c7343b2d5",
+    "inference/llavaov_hermes.py": "45fee483fbc37fe65433c84146eba42fc18dae40f6878c7a2f50fd8e55a387f0",
+    "inference/abstract_hermes.py": "cbf62ad9f6dada32db598d7c37c27f995bbb37375e12a282a88cf4426f495dc0",
+    "inference/reindex_1d.py": "22ca0dee63cd7a4d00161f1fc0485143a57145862b081555598b904bbc95e0b0",
+    "models/llava-onevision-qwen2-0.5b-ov-hf/config.json": "839a4fba0bd6949f0db22d4f840935cb0318f6ac28b29c9ce1a5b15735a4a740",
+    "scripts/compare_rvs_ego_continuous.py": "5e2eb0c88cc0781e6754cec36904908345d27ca0c0d46a00be9d64bc0ba04a7a"
+  },
+  "earlier_attempts": [
+    {
+      "job_id": 240213,
+      "status": "cancelled after one worker failed GPU initialization on gpu-05"
+    },
+    {
+      "job_id": 240216,
+      "status": "scheduler failure signal 53 on gpu-54 before script execution"
+    },
+    {
+      "job_id": 240230,
+      "status": "cancelled while pending to include automatic comparison in batch script"
+    }
+  ]
+}

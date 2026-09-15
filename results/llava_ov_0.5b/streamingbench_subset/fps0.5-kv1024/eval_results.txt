@@ -1,0 +1,17 @@
+============================================================
+EVALUATION RESULTS (StreamingBench)
+============================================================
+#Samples: 6
+Average qa_acc: 100.00
+save_dir: /l/users/chieu.nguyen/HERMES/results/llava_ov_0.5b/streamingbench_subset/fps0.5-kv1024
+
+============================================================
+TASK-SPECIFIC ACCURACY (StreamingBench)
+============================================================
+Action Recognition: 100.00% (n=1)
+Attribute Recognition: 100.00% (n=3)
+Text-Rich Understanding: 100.00% (n=1)
+Clips Summarize: 100.00% (n=1)
+============================================================
+
+%Errors: 0.00

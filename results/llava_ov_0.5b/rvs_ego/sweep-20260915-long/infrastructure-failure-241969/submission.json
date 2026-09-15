@@ -1,0 +1,12 @@
+{
+  "job_id": 241969,
+  "partition": "long",
+  "qos": "gpu-debug-qos",
+  "account": "cscc-users",
+  "gpus": 2,
+  "time_limit": "03:00:00",
+  "continuations": "automatic after two hours at trial boundaries",
+  "max_trials": 24,
+  "target_accuracy_percent": 53.0,
+  "target_score": 3.8
+}

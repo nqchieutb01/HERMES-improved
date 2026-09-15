@@ -1,0 +1,194 @@
+{
+  "created_at": "2026-09-15T00:01:20+0400",
+  "model": "llava_ov_0.5b",
+  "target_accuracy": 53.0,
+  "target_score": 3.8,
+  "max_trials": 24,
+  "partition": "long",
+  "source_sha256": {
+    "inference/qwenvl_hermes.py": "7e7c77d262c5122f471ffe8647a0794e4d8022934ee3b4812a707a7a48bba0e0",
+    "inference/llavaov_hermes.py": "78cd5a61a0f38b1f6945f1717c25e6edadd38fd666e32855ac46aaea52b2f60d",
+    "inference/reindex_3d.py": "0f0ce790a91581f0ad529bd7e477b02862c98b4025b5933a1e8fcfb2326be73f",
+    "inference/abstract_hermes.py": "cbf62ad9f6dada32db598d7c37c27f995bbb37375e12a282a88cf4426f495dc0",
+    "inference/reindex_1d.py": "22ca0dee63cd7a4d00161f1fc0485143a57145862b081555598b904bbc95e0b0",
+    "video_qa/base.py": "8ed83b36d42448e3a75b47821d63a0e7c96d99ed80f76262e277e6b4af92cd52",
+    "video_qa/run_infer.py": "77653278a3e365b6ab27661f3a7629523d4b05b6c44ef8223bdfb7e93cfc675d",
+    "video_qa/hermes_vqa.py": "c776516badcf78fdaa819a74b2de6a023e177f21027b59a67f6447d6149f5385",
+    "scripts/prepare_rvs_ego.py": "a8f4daef8897f73d0234ab0125e1146fa0a44b7010de328312300f53d06bebec",
+    "scripts/download_streamingbench_subset.py": "7b7026e4cd82bb58d26fb1088a4e8df8159ad0fa680292f594a69897c9ebf9d8",
+    "scripts/eval_rvs_ego_yes_no.py": "a04731a8f1557ec411eee9202d87fd486709f9c7009b122c1fc2310e5b8f14dc",
+    "scripts/run_streamingbench_smoke.sh": "7daeaa7a227934d3c3a6c4ad9936b6008a2b40cbea74e4163bb74e8b31f9d365",
+    "scripts/judge_rvs_ego.py": "c4efaf7b22fdb54527393c6526e5e980d86485841a86fbaaf6e17ebcb8e687c3",
+    "scripts/run_rvs_ego_continuous.sh": "bbd8f220959aed52a6a75a64cca8c32b6d3f4d2ffc84ac7c845fdb87438dc475",
+    "scripts/run_infer.sh": "b326d73a8cb953c70fcc2de964cf2258aa33ba6cbcf79c1718cc90d800922714",
+    "scripts/prepare_rvs_ego_continuous.py": "9387a292b957910cb69ebe1105ceafa9f0e8783e37df06664fa1e931ea8f2894",
+    "scripts/run_rvs_ego_judge.sh": "b1f36b580c85c525ebcce5c9f2465162f7dc7a54f3ec7eb9f0b674035df25f61",
+    "scripts/sweep_rvs_ego.py": "46510adabfd16fd0a5fa2b4e0b9b0bccab3d5ed889d9b52d222710543d0fe159",
+    "scripts/compare_rvs_ego_continuous.py": "5e2eb0c88cc0781e6754cec36904908345d27ca0c0d46a00be9d64bc0ba04a7a",
+    "scripts/test_llava_attention.py": "69288a54cb106b02e3c6e56f5c1d7faa2de3f1dd8133d8138861ffac156e55f0",
+    "scripts/run_rvs_ego_sweep.sh": "166f34e2b8c4103d6705468ac0bea95bdcf0dc2371b193d6a385ac8feaf1afdc",
+    "scripts/run_rvs_ego_evaluation.sh": "01bbd5b581e349fc23b6c8f24bb5107b16313cc934930d43801b4a3f4dd1b7a2",
+    "scripts/test_rvs_ego_results.py": "9fae0806b2fcfc4ec4742535f2213ca0c921858d975984d670324c5da413d4de"
+  },
+  "annotation_sha256": "a07bc8cb5cab3044fb7316bcff160020c3a413cb352d4df5ba193056005f65ab",
+  "fixed_judge": {
+    "model": "Qwen/Qwen3.8-27B-FP8",
+    "revision": "017b9c7af6b5689d5dd426a76e0bc077eb5ca20a",
+    "prompt_version": "hermes_original_rubric_v1",
+    "system_prompt": "You are an intelligent chatbot designed for evaluating the correctness of generative outputs for question-answer pairs. Your task is to compare the predicted answer with the correct answer and determine if they match meaningfully. Here's how you can accomplish the task:------##INSTRUCTIONS: - Focus on the meaningful match between the predicted answer and the correct answer.\n- Consider synonyms or paraphrases as valid matches.\n- Evaluate the correctness of the prediction compared to the answer.",
+    "user_prompt_template": "Please evaluate the following video-based question-answer pair:\n\nQuestion: {question}\nCorrect Answer: {answer}\nPredicted Answer: {pred}\n\nProvide your evaluation only as a yes/no and score where the score is an integer value between 0 and 5, with 5 indicating the highest meaningful match. Please generate the response in the form of a JSON object with keys 'correct' and 'score', where value of 'correct' is a string of 'yes' or 'no' and value of 'score' is in INTEGER, not STRING. DO NOT PROVIDE ANY OTHER OUTPUT TEXT OR EXPLANATION. Only provide the JSON object. For example, your response should look like this: {{\"correct\": \"yes\", \"score\": 5}}.",
+    "schema": {
+      "type": "object",
+      "properties": {
+        "correct": {
+          "type": "string",
+          "enum": [
+            "yes",
+            "no"
+          ]
+        },
+        "score": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 5
+        }
+      },
+      "required": [
+        "correct",
+        "score"
+      ],
+      "additionalProperties": false
+    },
+    "temperature": 0,
+    "seed": 2024,
+    "enable_thinking": false,
+    "max_tokens": 128
+  },
+  "base": {
+    "sample_fps": 0.5,
+    "kv_size": 6000,
+    "encode_chunk_size": 16,
+    "max_new_tokens": 256,
+    "repetition_penalty": 1.1,
+    "recency_weight_start": 0.75,
+    "recency_weight_decay": 0.6,
+    "reindex_margin": 1024,
+    "use_history": true
+  },
+  "initial": [
+    {
+      "name": "corrected_baseline",
+      "parameters": {
+        "sample_fps": 0.5,
+        "kv_size": 6000,
+        "encode_chunk_size": 16,
+        "max_new_tokens": 256,
+        "repetition_penalty": 1.1,
+        "recency_weight_start": 0.75,
+        "recency_weight_decay": 0.6,
+        "reindex_margin": 1024,
+        "use_history": true
+      }
+    },
+    {
+      "name": "earlier_reindex",
+      "parameters": {
+        "sample_fps": 0.5,
+        "kv_size": 6000,
+        "encode_chunk_size": 16,
+        "max_new_tokens": 256,
+        "repetition_penalty": 1.1,
+        "recency_weight_start": 0.75,
+        "recency_weight_decay": 0.6,
+        "reindex_margin": 4096,
+        "use_history": true
+      }
+    },
+    {
+      "name": "kv4000",
+      "parameters": {
+        "sample_fps": 0.5,
+        "kv_size": 4000,
+        "encode_chunk_size": 16,
+        "max_new_tokens": 256,
+        "repetition_penalty": 1.1,
+        "recency_weight_start": 0.75,
+        "recency_weight_decay": 0.6,
+        "reindex_margin": 1024,
+        "use_history": true
+      }
+    },
+    {
+      "name": "chunk8",
+      "parameters": {
+        "sample_fps": 0.5,
+        "kv_size": 6000,
+        "encode_chunk_size": 8,
+        "max_new_tokens": 256,
+        "repetition_penalty": 1.1,
+        "recency_weight_start": 0.75,
+        "recency_weight_decay": 0.6,
+        "reindex_margin": 1024,
+        "use_history": true
+      }
+    },
+    {
+      "name": "fps1",
+      "parameters": {
+        "sample_fps": 1.0,
+        "kv_size": 6000,
+        "encode_chunk_size": 16,
+        "max_new_tokens": 256,
+        "repetition_penalty": 1.1,
+        "recency_weight_start": 0.75,
+        "recency_weight_decay": 0.6,
+        "reindex_margin": 1024,
+        "use_history": true
+      }
+    },
+    {
+      "name": "no_repetition_penalty",
+      "parameters": {
+        "sample_fps": 0.5,
+        "kv_size": 6000,
+        "encode_chunk_size": 16,
+        "max_new_tokens": 256,
+        "repetition_penalty": 1.0,
+        "recency_weight_start": 0.75,
+        "recency_weight_decay": 0.6,
+        "reindex_margin": 1024,
+        "use_history": true
+      }
+    },
+    {
+      "name": "generic_guidance",
+      "parameters": {
+        "sample_fps": 0.5,
+        "kv_size": 6000,
+        "encode_chunk_size": 16,
+        "max_new_tokens": 256,
+        "repetition_penalty": 1.1,
+        "recency_weight_start": 0.75,
+        "recency_weight_decay": 0.6,
+        "reindex_margin": 1024,
+        "use_history": false
+      }
+    },
+    {
+      "name": "previous_recency",
+      "parameters": {
+        "sample_fps": 0.5,
+        "kv_size": 6000,
+        "encode_chunk_size": 16,
+        "max_new_tokens": 256,
+        "repetition_penalty": 1.1,
+        "recency_weight_start": 1.0,
+        "recency_weight_decay": 0.9,
+        "reindex_margin": 1024,
+        "use_history": true
+      }
+    }
+  ],
+  "interpretation": "Exploratory tuning on RVS-Ego with a fixed Qwen judge, not an independent paper reproduction",
+  "qos": "gpu-debug-qos"
+}

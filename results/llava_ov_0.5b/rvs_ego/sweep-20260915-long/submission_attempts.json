@@ -1,0 +1,4 @@
+{
+  "gpu-12": "Slurm rejected: Invalid qos specification",
+  "gpu-debug-qos": "sbatch --test-only accepted on long with account cscc-users and three-hour limit"
+}

@@ -1,0 +1,15 @@
+{
+  "node": "gpu-52",
+  "slurm_job_id": 238303,
+  "allocated_gpu": 0,
+  "model": "llava_ov_0.5b",
+  "sample_fps": 0.5,
+  "kv_size": 1024,
+  "videos": 3,
+  "questions": 6,
+  "correct": 6,
+  "accuracy_percent": 100.0,
+  "compression_events": 7,
+  "reported_peak_allocated_gpu_gib": 4.6401777267456055,
+  "inference_and_evaluation_exit_code": 0
+}

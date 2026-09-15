@@ -1,0 +1,40 @@
+{
+  "model": "Qwen/Qwen3.8-27B-FP8",
+  "revision": "017b9c7af6b5689d5dd426a76e0bc077eb5ca20a",
+  "questions": 1465,
+  "correct": 610,
+  "accuracy_percent": 41.6382252559727,
+  "score": 2.3754266211604094,
+  "by_task": {
+    "Action Caption": {
+      "questions": 166,
+      "correct": 47,
+      "accuracy_percent": 28.313253012048193,
+      "score": 2.072289156626506
+    },
+    "Order Judging(Y/N)": {
+      "questions": 409,
+      "correct": 226,
+      "accuracy_percent": 55.256723716381416,
+      "score": 2.7970660146699267
+    },
+    "Scene Summary": {
+      "questions": 300,
+      "correct": 110,
+      "accuracy_percent": 36.666666666666664,
+      "score": 2.47
+    },
+    "What event order": {
+      "questions": 257,
+      "correct": 18,
+      "accuracy_percent": 7.003891050583658,
+      "score": 0.7821011673151751
+    },
+    "Whether Something Happened(Y/N)": {
+      "questions": 333,
+      "correct": 209,
+      "accuracy_percent": 62.76276276276276,
+      "score": 3.1531531531531534
+    }
+  }
+}

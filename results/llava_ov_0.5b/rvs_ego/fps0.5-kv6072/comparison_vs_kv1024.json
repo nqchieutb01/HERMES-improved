@@ -1,0 +1,21 @@
+{
+  "1024": {
+    "judge_accuracy_percent": 42.525597269624576,
+    "judge_score": 2.4225255972696247,
+    "yes_no_accuracy_percent": 65.9025787965616,
+    "judge_questions": 1465,
+    "yes_no_questions": 698
+  },
+  "6072": {
+    "judge_accuracy_percent": 41.6382252559727,
+    "judge_score": 2.3754266211604094,
+    "yes_no_accuracy_percent": 63.18051575931232,
+    "judge_questions": 1465,
+    "yes_no_questions": 698
+  },
+  "change_6072_minus_1024": {
+    "judge_accuracy_percent": -0.887372013651877,
+    "judge_score": -0.04709897610921532,
+    "yes_no_accuracy_percent": -2.722063037249278
+  }
+}

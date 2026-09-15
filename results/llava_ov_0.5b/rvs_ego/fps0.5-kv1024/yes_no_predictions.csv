@@ -1,0 +1,699 @@
+source_record,video_id,question,task,answer,pred_answer,normalized_answer,normalized_prediction,correct
+5,000000,Does the video show someone chopping vegetables?,Whether Something Happened(Y/N),Yes.,Yes,yes,yes,1
+6,000000,Did the individual successfully open a kitchen cabinet?,Whether Something Happened(Y/N),Yes.,"Yes, the individual successfully opened a kitchen cabinet to retrieve an ingredient.",yes,yes,1
+7,000000,Is the flatbread being seasoned with sauce?,Whether Something Happened(Y/N),Yes.,Yes.,yes,yes,1
+8,000000,Is there an occurrence of food being wrapped?,Whether Something Happened(Y/N),Yes.,Yes.,yes,yes,1
+9,000000,Is the person using a knife for cooking tasks?,Whether Something Happened(Y/N),Yes.,Yes.,yes,yes,1
+18,000001,Did the person successfully cut the vegetables?,Whether Something Happened(Y/N),Yes.,Yes.,yes,yes,1
+21,000001,Is the cabinet opened before wrapping the sauce in flat bread?,Order Judging(Y/N),No,Yes.,no,yes,0
+22,000001,Do I cut vegetables before operating the heat regulator on the cooker?,Order Judging(Y/N),Yes,"Yes, you must cut vegetables before operating the heat regulator on the cooker.",yes,yes,1
+23,000001,Is the drawer opened before the vegetables are chopped?,Order Judging(Y/N),No,Yes.,no,yes,0
+24,000001,Does wrapping sauce in flat bread happen after cutting vegetables?,Order Judging(Y/N),Yes,"Yes, after cutting vegetables, the person wraps sauce in a flatbread.",yes,yes,1
+25,000001,Do I open the cabinet before chopping the vegetables?,Order Judging(Y/N),No,"No, you should open the cabinet before chopping the vegetables.",no,no,1
+34,000002,Is someone chopping vegetables in the video?,Whether Something Happened(Y/N),Yes.,Yes.,yes,yes,1
+37,000002,Does the frame capture the act of grilling or frying?,Whether Something Happened(Y/N),No.,"Yes, the frame captures both grilling and frying stages of the food preparation.",no,yes,0
+38,000002,"In the video, are vegetables cut before the heat regulator is operated?",Order Judging(Y/N),Yes,Yes.,yes,yes,1
+39,000002,Does rolling sauce in flatbreads occur after cutting tomatoes?,Order Judging(Y/N),Yes,"Yes, after cutting tomatoes, the sauce is poured into a pan on the stove.",yes,yes,1
+40,000002,Does the opening of the drawers happen before using the mobile phone?,Order Judging(Y/N),No,"Yes, the opening of the drawers happens before using the mobile phone.",no,yes,0
+41,000002,Is the heat regulator operated before rolling sauce in flatbreads?,Order Judging(Y/N),No,Yes.,no,yes,0
+46,000002,Is the cabinet opened before the vegetables are chopped?,Order Judging(Y/N),No,Yes.,no,yes,0
+47,000002,Does operating the heat regulator happen after chopping vegetables?,Order Judging(Y/N),Yes,"Yes, after chopping vegetables, the heat regulator is turned on to cook the food.",yes,yes,1
+48,000002,Is wrapping sauce in flat bread before cutting vegetables?,Order Judging(Y/N),No,Yes.,no,yes,0
+49,000002,Do I use the mobile phone before opening drawers?,Order Judging(Y/N),Yes,"Yes, the mobile phone is used to open drawers.",yes,yes,1
+63,000003,Is there more than one dish being cooked simultaneously?,Whether Something Happened(Y/N),Yes.,Yes.,yes,yes,1
+64,000003,Is the cook wearing any protective gloves in the video?,Whether Something Happened(Y/N),No.,Yes.,no,yes,0
+65,000003,Does the video capture the addition of toppings to the shawarma?,Whether Something Happened(Y/N),No.,"Yes, the video captures the addition of toppings to the shawarma as it is being cooked.",no,yes,0
+66,000003,Is the mobile phone operated before rolling sauce in flat breads?,Order Judging(Y/N),No,No.,no,no,1
+67,000003,Do I cut the tomatoes before preparing the shawarma?,Order Judging(Y/N),Yes,"Yes, the person cuts the tomatoes before preparing the shawarma.",yes,yes,1
+68,000003,Is the shawarma prepared before cutting tomatoes?,Order Judging(Y/N),No,Yes.,no,yes,0
+69,000003,Do I roll sauce in flat breads after cutting tomatoes?,Order Judging(Y/N),Yes,"Yes, you roll sauce in flat breads after cutting tomatoes.",yes,yes,1
+70,000003,Is the mobile phone operated after preparing the shawarma?,Order Judging(Y/N),Yes,Yes.,yes,yes,1
+74,000003,"In the video, did I open the kitchen drawers before cutting vegetables?",Order Judging(Y/N),No,"Yes, the kitchen drawers were opened before cutting vegetables.",no,yes,0
+75,000003,Does the cooking of shawarma happen before regulating the cooker's heat?,Order Judging(Y/N),Yes,"Yes, the cooking of shawarma happens before regulating the cooker's heat.",yes,yes,1
+76,000003,"In the video, is the mobile phone operated after the sauce is rolled in flatbreads?",Order Judging(Y/N),Yes,Yes.,yes,yes,1
+77,000003,Is heat regulation done before cutting tomatoes with a knife?,Order Judging(Y/N),No,Yes.,no,yes,0
+81,000004,Is the person in the video making a meal?,Whether Something Happened(Y/N),Yes.,Yes.,yes,yes,1
+82,000004,Is the kitchen the main location in these frames?,Whether Something Happened(Y/N),Yes.,Yes.,yes,yes,1
+83,000004,Does the video capture the moment of grilling meat for the shawarma?,Whether Something Happened(Y/N),No.,"Yes, the video captures the moment of grilling meat for the shawarma.",no,yes,0
+84,000004,Are spices being added to the food in this clip?,Whether Something Happened(Y/N),No.,Yes.,no,yes,0
+85,000004,"In the video, is the shawarma filling added to the bread before wrapping it?",Order Judging(Y/N),Yes,Yes,yes,yes,1
+86,000004,Does the chopping of vegetables occur before heating the pan?,Order Judging(Y/N),No,"Yes, the chopping of vegetables occurs before heating the pan.",no,yes,0
+87,000004,Is the stove turned off before removing the pan from heat?,Order Judging(Y/N),Yes,Yes.,yes,yes,1
+88,000004,"In the video, is the bread placed on the pan before adding fillings?",Order Judging(Y/N),Yes,Yes.,yes,yes,1
+89,000004,Is the shawarma served before adding sauce?,Order Judging(Y/N),No,Yes.,no,yes,0
+93,000004,"In the video, is the sauce added to the flat bread before cutting the tomatoes?",Order Judging(Y/N),No,Yes,no,yes,0
+94,000004,Does the person operate the mobile phone after rolling the sauce in the flat breads?,Order Judging(Y/N),Yes,"Yes, the person operates the mobile phone after rolling the sauce in the flat breads.",yes,yes,1
+95,000004,Is the shawarma prepared before the tomatoes are cut with a knife?,Order Judging(Y/N),Yes,Yes.,yes,yes,1
+96,000004,"In the video, does rolling the sauce happen before the shawarma preparation?",Order Judging(Y/N),No,"No, the sauce is added to the shawarma before rolling it.",no,no,1
+97,000004,Is the flat bread used before operating the mobile phone?,Order Judging(Y/N),Yes,Yes.,yes,yes,1
+100,000005,Is the shawarma preparation process completed in the clip?,Whether Something Happened(Y/N),No.,Yes.,no,yes,0
+101,000005,Is there more than one person visible in the kitchen?,Whether Something Happened(Y/N),No.,Yes.,no,yes,0
+102,000005,Does the clip show any cooking appliances being used?,Whether Something Happened(Y/N),No.,No.,no,no,1
+103,000005,Is there any sign of food already cooked in the scene?,Whether Something Happened(Y/N),No.,"Yes, there is a pot of food on the stove in the background.",no,yes,0
+104,000005,Is the person in the frame wearing gloves?,Whether Something Happened(Y/N),No.,No.,no,no,1
+105,000005,"In the video, is the meat added to the shawarma wrap before chopping the herbs?",Order Judging(Y/N),No,"No, the meat is not added to the shawarma wrap before chopping the herbs.",no,no,1
+106,000005,"In the video, is the shawarma wrap prepared before the vegetables are chopped?",Order Judging(Y/N),Yes,Yes.,yes,yes,1
+107,000005,Does chopping herbs happen after the vegetables are mixed in the bowl?,Order Judging(Y/N),No,"Yes, the chopped herbs are added to the bowl after the vegetables are mixed in.",no,yes,0
+108,000005,Is the shawarma meat cooked before the vegetables are cut?,Order Judging(Y/N),Yes,Yes.,yes,yes,1
+111,000005,"In the video, is the meat placed on the bread before adding vegetables?",Order Judging(Y/N),No,"No, the meat is not placed on the bread before adding vegetables.",no,no,1
+112,000005,Is the bread toasted before spreading the meat on it?,Order Judging(Y/N),No,Yes.,no,yes,0
+113,000005,"In the clip, is the chopping of vegetables shown before the frying of meat?",Order Judging(Y/N),Yes,Yes.,yes,yes,1
+114,000005,Does the video show adding condiments after the meat is placed on the bread?,Order Judging(Y/N),Yes,"No, the video does not show adding condiments after the meat is placed on the bread.",yes,no,0
+126,000006,Is there more than one person in this scene?,Whether Something Happened(Y/N),No.,"Yes, there is one person visible in the scene.",no,yes,0
+127,000006,Has the meal been completed in this frame?,Whether Something Happened(Y/N),No.,"Yes, the meal has been completed in this frame. The person is now holding a tortilla filled with meat and sauce, ready to be served.",no,yes,0
+128,000006,Is the person in the video cleaning?,Whether Something Happened(Y/N),No.,No.,no,no,1
+129,000006,Does this clip show the finished shawarma dish?,Whether Something Happened(Y/N),No.,"Yes, the clip shows the finished shawarma dish with a bowl of sauce and additional ingredients on the countertop.",no,yes,0
+130,000006,Are there any children present in this video?,Whether Something Happened(Y/N),No.,"No, there are no children present in the video.",no,no,1
+131,000006,"In the video, is the shawarma prepared after I washed the vegetables?",Order Judging(Y/N),No,Yes.,no,yes,0
+132,000006,"In the video, do I chop the parsley before assembling the shawarma?",Order Judging(Y/N),Yes,"Yes, you chop the parsley before assembling the shawarma.",yes,yes,1
+133,000006,Does cutting tomatoes occur before the marinating of meat?,Order Judging(Y/N),Yes,"Yes, the video shows a close-up of hands cutting tomatoes before marinating meat.",yes,yes,1
+134,000006,"In the clip, is the garlic crushed before the tzatziki sauce is mixed?",Order Judging(Y/N),Yes,Yes,yes,yes,1
+135,000006,Is the lettuce shredded after the hummus is spread on the bread?,Order Judging(Y/N),Yes,Yes.,yes,yes,1
+141,000006,"In the kitchen, is shawarma added to the pita before chopping the herbs?",Order Judging(Y/N),No,Yes,no,yes,0
+142,000006,Are the herbs chopped before the shawarma is cooked?,Order Judging(Y/N),Yes,"Yes, the herbs are chopped before the shawarma is cooked.",yes,yes,1
+143,000006,Is the pita prepared before any cooking starts?,Order Judging(Y/N),No,Yes.,no,yes,0
+144,000006,Is the pan on the stove before chopping the herbs?,Order Judging(Y/N),Yes,Yes.,yes,yes,1
+156,000007,Is there a person visible in the video clip?,Whether Something Happened(Y/N),No.,Yes.,no,yes,0
+157,000007,Does the clip include any festive decorations?,Whether Something Happened(Y/N),Yes.,Yes.,yes,yes,1
+158,000007,Can you see any finished dish in the clip?,Whether Something Happened(Y/N),No.,"Yes, the finished dish is a bowl of chili with beans and rice.",no,yes,0
+159,000007,Does the clip show someone doing the dishes?,Whether Something Happened(Y/N),No.,Yes,no,yes,0
+160,000007,Is there any visible flame or food being cooked directly?,Whether Something Happened(Y/N),No.,"No, there is no visible flame or food being cooked directly in the video.",no,no,1
+163,000008,Does the person open the refrigerator in the video?,Whether Something Happened(Y/N),Yes.,Yes.,yes,yes,1
+164,000008,"In the video, is the refrigerator opened before the cheese is retrieved?",Order Judging(Y/N),Yes,"No, the refrigerator is closed before the cheese is retrieved.",yes,no,0
+165,000008,Is the kitchen light turned on after I enter the room?,Order Judging(Y/N),No,Yes.,no,yes,0
+166,000008,Do I start preparing shawarma before setting the ingredients on the counter?,Order Judging(Y/N),No,"Yes, you start preparing shawarma before setting the ingredients on the counter.",no,yes,0
+167,000008,"In the video, is the tree decorated before I begin cooking?",Order Judging(Y/N),Yes,"Yes, the tree is decorated with lights and ornaments before I begin cooking.",yes,yes,1
+178,000009,Is there an egg crate visible in the scene?,Whether Something Happened(Y/N),Yes.,Yes.,yes,yes,1
+179,000009,Did the person crack eggs from both a slab and the fridge?,Whether Something Happened(Y/N),Yes.,"Yes, the person cracked eggs from both a slab and the fridge.",yes,yes,1
+180,000009,Were the flour and whipping cream poured into separate containers?,Whether Something Happened(Y/N),Yes.,"Yes, the flour and whipping cream were poured into separate containers.",yes,yes,1
+181,000009,Is the heavy whipping cream poured before cracking the eggs?,Order Judging(Y/N),Yes,Yes.,yes,yes,1
+182,000009,Is the flour added to the bowl before the eggs are cracked?,Order Judging(Y/N),Yes,Yes.,yes,yes,1
+187,000009,"In the video, is the egg cracked into the bowl before the cream is poured?",Order Judging(Y/N),No,Yes.,no,yes,0
+188,000009,Does the egg crate go back into the fridge after the eggs are cracked?,Order Judging(Y/N),Yes,"Yes, the egg crate is left in the refrigerator after the eggs are cracked.",yes,yes,1
+189,000009,"In the video, is the flour poured into the bowl after the egg is cracked?",Order Judging(Y/N),Yes,Yes,yes,yes,1
+190,000009,Does the preparation of shawarma occur before the cream is poured into the cup?,Order Judging(Y/N),Yes,"Yes, the preparation of shawarma occurs before the cream is poured into the cup.",yes,yes,1
+202,000010,Does the person whip cream into the mixture?,Whether Something Happened(Y/N),Yes.,Yes.,yes,yes,1
+203,000010,Does the person transfer the mixture to another container?,Whether Something Happened(Y/N),No.,Yes.,no,yes,0
+204,000010,Is the dough placed in an oven?,Whether Something Happened(Y/N),No.,No.,no,no,1
+205,000010,Does the person knead the dough in the clip?,Whether Something Happened(Y/N),No.,Yes.,no,yes,0
+207,000010,Was the cream poured into a cup before the eggs were cracked?,Order Judging(Y/N),Yes,"No, the cream was poured into a bowl before the eggs were cracked.",yes,no,0
+208,000010,Was the mixture stirred before the dough was brought out?,Order Judging(Y/N),Yes,"Yes, the mixture was stirred before the dough was brought out.",yes,yes,1
+209,000010,Did the whipping of eggs happen after the flour was poured?,Order Judging(Y/N),Yes,"Yes, the whipped eggs happened after the flour was poured.",yes,yes,1
+210,000010,Is sugar added to the mixture after the egg is whipped?,Order Judging(Y/N),Yes,"No, the mixture is not sugar after the egg is whipped.",yes,no,0
+215,000010,"In the video, does the cheese get grated before the eggs are cracked?",Order Judging(Y/N),No,Yes.,no,yes,0
+216,000010,Is the heavy whipping cream poured into a cup after the flour?,Order Judging(Y/N),Yes,No.,yes,no,0
+217,000010,Does the dough come out of the fridge before the eggs are whipped?,Order Judging(Y/N),No,Yes.,no,yes,0
+218,000010,"In the video, is the sugar added to the mixture before the vegetables?",Order Judging(Y/N),Yes,"No, the sugar is not added to the mixture before the vegetables.",yes,no,0
+219,000010,Does the mixture get stirred before the eggs are cracked?,Order Judging(Y/N),No,"Yes, the mixture is stirred before the eggs are cracked.",no,yes,0
+231,000011,Is the dough being prepared for baking?,Whether Something Happened(Y/N),Yes.,Yes.,yes,yes,1
+233,000011,Did the same person handle all tasks shown in the summary?,Whether Something Happened(Y/N),Yes.,"Yes, the same person handled all tasks shown in the summary.",yes,yes,1
+235,000011,Is the dough placed on the board before the mixture is stirred?,Order Judging(Y/N),No,Yes.,no,yes,0
+236,000011,Is the doe taken out of the fridge before the rolling pin is used?,Order Judging(Y/N),Yes,No.,yes,no,0
+238,000011,Did I pour heavy whipping cream before cracking eggs?,Order Judging(Y/N),Yes,"Yes, the person cracked eggs into a bowl before pouring heavy whipping cream.",yes,yes,1
+239,000011,Is the dough rolled before stirring mixtures in bowls?,Order Judging(Y/N),Yes,Yes.,yes,yes,1
+240,000011,Do I place the dough on the board after pouring flour?,Order Judging(Y/N),Yes,"Yes, the dough is placed on the board after pouring flour.",yes,yes,1
+248,000012,Did the person use a knife in the video?,Whether Something Happened(Y/N),Yes.,Yes.,yes,yes,1
+249,000012,Is there any folding action happening?,Whether Something Happened(Y/N),Yes.,Yes.,yes,yes,1
+250,000012,Did the person complete the trimming action?,Whether Something Happened(Y/N),Yes.,"Yes, the person completed the trimming action by smoothing out the edges of the dough.",yes,yes,1
+251,000012,Is the dough folded before trimming the rough edges?,Order Judging(Y/N),No,Yes.,no,yes,0
+252,000012,Does stirring in the steel bowls happen after folding the dough?,Order Judging(Y/N),No,"Yes, stirring in the steel bowls happens after folding the dough.",no,yes,0
+255,000012,Does rolling the dough with a rolling pin happen before trimming its edges?,Order Judging(Y/N),Yes,"Yes, rolling the dough with a rolling pin happens before trimming its edges.",yes,yes,1
+256,000012,Is the trimmed dough folded before stirring the mixture?,Order Judging(Y/N),No,Yes.,no,yes,0
+257,000012,Do I take out the dough from the fridge before preparing mixtures?,Order Judging(Y/N),Yes,"Yes, you take out the dough from the fridge before preparing mixtures.",yes,yes,1
+268,000013,Is there more than one participant in the card activity?,Whether Something Happened(Y/N),Yes.,Yes.,yes,yes,1
+277,000014,Did someone shuffle cards in this video?,Whether Something Happened(Y/N),Yes.,"Yes, someone in the video is seen shuffling cards.",yes,yes,1
+278,000014,Is the room set up for a large gathering?,Whether Something Happened(Y/N),No.,Yes.,no,yes,0
+279,000014,Are the individuals standing in this video?,Whether Something Happened(Y/N),No.,No.,no,no,1
+280,000014,Was the deck reshuffled before playing the cards?,Order Judging(Y/N),Yes.,"Yes, the deck was reshuffled before playing the cards.",yes,yes,1
+288,000015,Did the individuals reshuffle the cards in the video?,Whether Something Happened(Y/N),Yes.,"Yes, the individuals reshuffled the cards in front of them.",yes,yes,1
+289,000015,Was a phone used during the gameplay?,Whether Something Happened(Y/N),Yes.,Yes.,yes,yes,1
+290,000015,Was a new game started in the video clip?,Whether Something Happened(Y/N),Yes.,Yes.,yes,yes,1
+291,000015,Did the scene capture any form of disagreement?,Whether Something Happened(Y/N),No.,"No, the scene captured no form of disagreement.",no,no,1
+292,000015,"In the video, is the poker game started before the cards are reshuffled?",Order Judging(Y/N),No.,"No, the poker game is not started before the cards are reshuffled.",no,no,1
+293,000015,Is the deck spread out on the floor after picking a card?,Order Judging(Y/N),Yes.,Yes.,yes,yes,1
+294,000015,Does the card shuffling happen before sitting on the floor?,Order Judging(Y/N),No.,"Yes, the card shuffling happens before sitting on the floor.",no,yes,0
+295,000015,"In the video, is the card game initiated before sitting with the lady?",Order Judging(Y/N),No.,Yes.,no,yes,0
+299,000015,"In the video, did I play cards before shuffling them?",Order Judging(Y/N),No.,"Yes, you played cards before shuffling them.",no,yes,0
+300,000015,"In the video, did I shuffle the cards before picking them?",Order Judging(Y/N),Yes.,"Yes, the person picks up a card from the deck and starts to shuffle it.",yes,yes,1
+307,000016,Did the person shuffle the cards more than once?,Whether Something Happened(Y/N),Yes.,"Yes, the person shuffled the cards multiple times.",yes,yes,1
+308,000016,Is there another activity besides poker being portrayed?,Whether Something Happened(Y/N),No.,"Yes, there is another activity portrayed in the video where a person is seen holding and examining a white cup.",no,yes,0
+310,000016,"In the video, is the card reshuffling performed before picking the cards?",Order Judging(Y/N),No,Yes.,no,yes,0
+311,000016,Is the lady X present in the room before I reshuffle the cards?,Order Judging(Y/N),Yes,Yes.,yes,yes,1
+312,000016,Do I play the cards before lady X picks her phone?,Order Judging(Y/N),No,"Yes, you play the cards before lady X picks her phone.",no,yes,0
+313,000016,Are the cards picked before they are played?,Order Judging(Y/N),Yes,"Yes, the cards are picked before they are played.",yes,yes,1
+318,000016,Did the card reshuffling happen before picking the cards?,Order Judging(Y/N),No,"Yes, the card reshuffling happened before picking the cards.",no,yes,0
+319,000016,Was playing cards done after picking the cards?,Order Judging(Y/N),Yes,Yes.,yes,yes,1
+326,000017,Is there a competitive game being played in this scene?,Whether Something Happened(Y/N),Yes.,Yes.,yes,yes,1
+327,000017,Has any card been placed face-up on the carpet?,Whether Something Happened(Y/N),Yes.,Yes.,yes,yes,1
+328,000017,Are there drinks present on the floor beside the players?,Whether Something Happened(Y/N),Yes.,Yes.,yes,yes,1
+329,000017,Is there a document visible on the floor?,Whether Something Happened(Y/N),Yes.,Yes.,yes,yes,1
+330,000017,Are both participants actively selecting cards?,Whether Something Happened(Y/N),Yes.,"Yes, both participants are actively selecting cards.",yes,yes,1
+331,000017,Is the poker game played before reshuffling the cards?,Order Judging(Y/N),No,"No, the game is played after reshuffling the cards.",no,no,1
+333,000017,Was the poker card played after the cards were picked?,Order Judging(Y/N),Yes.,"Yes, the cards were played after the poker card was picked.",yes,yes,1
+340,000018,Did I carry out a reshuffle of the poker cards?,Whether Something Happened(Y/N),Yes.,"Yes, the person in the pink shirt reshuffled the poker cards.",yes,yes,1
+341,000018,Was a complete poker game played in this clip?,Whether Something Happened(Y/N),Yes.,"Yes, a complete poker game was played in this clip.",yes,yes,1
+342,000018,Did the game involve more than two players?,Whether Something Happened(Y/N),No.,"Yes, the game involved more than two players.",no,yes,0
+343,000018,Did I participate in dealing the cards?,Whether Something Happened(Y/N),Yes.,"Yes, you participated in dealing the cards.",yes,yes,1
+344,000018,"In the video, did the card shuffling happen before playing the game?",Order Judging(Y/N),Yes.,"Yes, the card shuffling happened before playing the game.",yes,yes,1
+345,000018,Did the playing of poker cards occur before reshuffling the cards?,Order Judging(Y/N),No.,"Yes, the playing of poker cards occurred before reshuffling.",no,yes,0
+346,000018,Did picking the cards happen after playing the card game?,Order Judging(Y/N),No.,"Yes, the person picked up a card from the table and began to shuffle it.",no,yes,0
+349,000018,"In the video, was the poker card played before they were reshuffled?",Order Judging(Y/N),No,"Yes, the poker card was played before they were reshuffled.",no,yes,0
+350,000018,"In the clip, was the poker card reshuffled after card separation?",Order Judging(Y/N),Yes,"Yes, the card was reshuffled after card separation.",yes,yes,1
+356,000019,Did the scene show a game in progress?,Whether Something Happened(Y/N),Yes.,"Yes, the scene showed a game in progress as indicated by the cards being dealt and the player's focused demeanor.",yes,yes,1
+357,000019,Was there a card shuffle taking place?,Whether Something Happened(Y/N),Yes.,"Yes, there was a card shuffle taking place.",yes,yes,1
+358,000019,Did they play the cards on a traditional table?,Whether Something Happened(Y/N),No.,"No, they played the cards on a floor.",no,no,1
+359,000019,Was the person alone in this activity?,Whether Something Happened(Y/N),No.,"Yes, the person was alone in this activity.",no,yes,0
+360,000019,Did the video capture an outdoor event?,Whether Something Happened(Y/N),No.,No.,no,no,1
+362,000019,Is the card game played before reshuffling the cards?,Order Judging(Y/N),No,"Yes, the card game is played before reshuffling the cards.",no,yes,0
+363,000019,Is picking the cards shown before separating them?,Order Judging(Y/N),Yes,"Yes, the video shows a close-up of one hand holding a card and another hand picking up cards from the table.",yes,yes,1
+364,000019,Does separating cards happen before reshuffling?,Order Judging(Y/N),Yes,"Yes, before reshuffling, the cards are separated and placed on a table.",yes,yes,1
+365,000019,Is reshuffling the cards shown before playing poker?,Order Judging(Y/N),Yes,"Yes, the cards are reshuffled before playing poker.",yes,yes,1
+366,000019,Does picking cards occur before playing the card game?,Order Judging(Y/N),Yes,"Yes, picking cards occurs before playing the card game.",yes,yes,1
+371,000020,Does the scene show a poker game in action?,Whether Something Happened(Y/N),Yes.,Yes.,yes,yes,1
+372,000020,Does the video include a moment of card shuffling?,Whether Something Happened(Y/N),Yes.,Yes.,yes,yes,1
+373,000020,Is a card game being organized on a carpet?,Whether Something Happened(Y/N),Yes.,Yes.,yes,yes,1
+374,000020,Does the clip show someone dealing cards?,Whether Something Happened(Y/N),Yes.,Yes.,yes,yes,1
+375,000020,Is the lady sitting on the floor while playing cards?,Whether Something Happened(Y/N),Yes.,Yes.,yes,yes,1
+376,000020,Did the card shuffling happen before playing cards?,Order Judging(Y/N),Yes,"Yes, the card shuffling happened before playing cards.",yes,yes,1
+377,000020,Was the room entered before the cards were reshuffled?,Order Judging(Y/N),Yes,"Yes, the room was entered before the cards were reshuffled.",yes,yes,1
+378,000020,Did card shuffling occur before the cards were picked?,Order Judging(Y/N),No,"Yes, card shuffling occurred before the cards were picked.",no,yes,0
+383,000020,"In the video, is the poker game started before reshuffling the cards?",Order Judging(Y/N),No,"No, the poker game is not started before reshuffling the cards.",no,no,1
+384,000020,"In the video, is the poker game initiated before the cards are spread out on the floor?",Order Judging(Y/N),Yes,"No, the poker game is not initiated before the cards are spread out on the floor.",yes,no,0
+391,000021,Does playing poker occur after picking cards?,Order Judging(Y/N),Yes,"Yes, after picking cards, the players continue to play poker.",yes,yes,1
+392,000021,Are cards picked before reshuffling?,Order Judging(Y/N),Yes,"Yes, cards are picked before reshuffling.",yes,yes,1
+393,000021,Is the poker card played after reshuffling?,Order Judging(Y/N),Yes,Yes.,yes,yes,1
+395,000021,"In the video, is a card picked up before reshuffling the deck?",Order Judging(Y/N),No,Yes.,no,yes,0
+396,000021,"In the video, does playing cards occur before picking any card from the deck?",Order Judging(Y/N),No,"Yes, before picking any card from the deck, a hand is seen holding cards and preparing to shuffle them.",no,yes,0
+402,000022,Is there a card game being played in this video?,Whether Something Happened(Y/N),Yes.,Yes.,yes,yes,1
+403,000022,Does this video show a person dealing cards?,Whether Something Happened(Y/N),Yes.,Yes.,yes,yes,1
+404,000022,Are the poker cards being reshuffled in this scene?,Whether Something Happened(Y/N),Yes.,Yes.,yes,yes,1
+405,000022,Did the card reshuffling occur before playing poker?,Order Judging(Y/N),Yes.,"Yes, the card reshuffling occurred before playing poker.",yes,yes,1
+406,000022,Do I wear blue sleeves before the lady reads a card?,Order Judging(Y/N),Yes.,"Yes, she wears blue sleeves before reading a card.",yes,yes,1
+407,000022,Are poker cards spread on the carpet before organizing them into rows?,Order Judging(Y/N),Yes.,Yes.,yes,yes,1
+408,000022,Is the picking of cards done before reshuffling?,Order Judging(Y/N),No,Yes.,no,yes,0
+409,000022,Is playing poker done after reshuffling cards?,Order Judging(Y/N),Yes,Yes.,yes,yes,1
+410,000022,Does the reshuffling occur before arranging cards on the floor?,Order Judging(Y/N),Yes,"Yes, the reshuffling occurs before arranging cards on the floor.",yes,yes,1
+420,000023,Did reshuffling the cards happen before playing the poker cards?,Order Judging(Y/N),Yes.,"Yes, the cards were reshuffled before playing the poker cards.",yes,yes,1
+421,000023,Did laying out the cards on the floor occur after sitting down?,Order Judging(Y/N),Yes.,"Yes, the cards were laid out on the floor after sitting down.",yes,yes,1
+422,000023,Did the game of cards start after the cards were laid out?,Order Judging(Y/N),Yes.,"Yes, the game of cards started after the cards were laid out.",yes,yes,1
+423,000023,Did I play cards before reshuffling them?,Order Judging(Y/N),No,"Yes, you played cards before reshuffling them.",no,yes,0
+424,000023,Was the rug visible before I dealt the cards?,Order Judging(Y/N),Yes,"Yes, the rug was visible before I dealt the cards.",yes,yes,1
+425,000023,Did I spread cards on the floor before sitting down?,Order Judging(Y/N),Yes,"Yes, the person sitting down spread cards on the floor before sitting down.",yes,yes,1
+426,000023,Were cards in my hand before reshuffling?,Order Judging(Y/N),No,"Yes, before reshuffling, there were cards in your hand.",no,yes,0
+427,000023,Was I seated before the cards were displayed face-up?,Order Judging(Y/N),Yes,"Yes, I was seated before the cards were displayed face-up.",yes,yes,1
+439,000024,Is there a competitive activity occurring in the video?,Whether Something Happened(Y/N),Yes.,Yes.,yes,yes,1
+440,000024,Is there a visible winner in the card game?,Whether Something Happened(Y/N),No.,"No, there is no visible winner in the card game.",no,no,1
+441,000024,Did I pick up a card before shuffling the deck?,Order Judging(Y/N),No,"Yes, you picked up a card before shuffling the deck.",no,yes,0
+442,000024,Was the woman seen holding cards before I laid mine on the floor?,Order Judging(Y/N),Yes,"Yes, she was seen holding cards before I laid mine on the floor.",yes,yes,1
+443,000024,Did I deal cards to the woman before sitting down?,Order Judging(Y/N),No,"Yes, the woman dealt cards to you before sitting down.",no,yes,0
+444,000024,Did the woman adjust her glasses before smiling at me?,Order Judging(Y/N),Yes,"Yes, she adjusted her glasses before smiling at me.",yes,yes,1
+445,000024,Was the woman's sock visible before she crossed her legs?,Order Judging(Y/N),Yes,"Yes, the woman's sock was visible before she crossed her legs.",yes,yes,1
+449,000024,"In the video, is the poker game started before reshuffling the cards?",Order Judging(Y/N),No,"No, the poker game is not started before reshuffling the cards.",no,no,1
+450,000024,"In the sequence, does the lady pick up her cards before the cards are laid out on the floor?",Order Judging(Y/N),Yes,"Yes, the lady picks up her cards before the cards are laid out on the floor.",yes,yes,1
+451,000024,"In the clip, do the cards get scattered on the table before being picked up?",Order Judging(Y/N),Yes,"Yes, the cards get scattered on the table before being picked up.",yes,yes,1
+452,000024,Does the video show the lady with cards in hand before the cards are shuffled?,Order Judging(Y/N),No,"Yes, the video shows the lady with cards in hand before the cards are shuffled.",no,yes,0
+461,000025,Did the individuals rearrange the furniture for playing?,Whether Something Happened(Y/N),No.,"Yes, the individuals rearranged the furniture to create a more comfortable playing environment.",no,yes,0
+462,000025,Did someone draw a card in the clip?,Whether Something Happened(Y/N),Yes.,"Yes, someone drew a card from the deck of cards.",yes,yes,1
+463,000025,Did the scene involve any form of digital technology?,Whether Something Happened(Y/N),No.,No.,no,no,1
+464,000025,Did the people appear to be outdoors?,Whether Something Happened(Y/N),No.,"Yes, the people were seen in an indoor setting with a couch and a plant visible in the background.",no,yes,0
+465,000025,"In the video, did the shoe appear before the card deck on the carpet?",Order Judging(Y/N),Yes,"Yes, the shoe appears before the card deck on the carpet.",yes,yes,1
+466,000025,Was the hand holding cards before the bottle was seen?,Order Judging(Y/N),Yes,"Yes, the hand holding cards was seen before the bottle was seen.",yes,yes,1
+467,000025,"In the clip, did the playing of cards happen before the plant was visible?",Order Judging(Y/N),No,"Yes, the playing of cards happened before the plant was visible.",no,yes,0
+470,000025,Was the rug straightened before I sat down to play?,Order Judging(Y/N),No.,"Yes, the rug was straightened before I sat down to play.",no,yes,0
+471,000025,Did I touch my foot before picking more cards from the pile?,Order Judging(Y/N),No.,"Yes, you touched your foot before picking more cards from the pile.",no,yes,0
+472,000025,Were the cards spread out on the rug before the game started?,Order Judging(Y/N),No.,"Yes, the cards were spread out on the rug before the game started.",no,yes,0
+473,000025,Did I pick a card from my hand before the woman looked at hers?,Order Judging(Y/N),Yes.,"Yes, the woman picked a card from her hand before looking at hers.",yes,yes,1
+484,000026,Is there a card game occurring?,Whether Something Happened(Y/N),Yes.,Yes.,yes,yes,1
+485,000026,Is there more than one participant in the game?,Whether Something Happened(Y/N),Yes.,Yes.,yes,yes,1
+486,000026,Have any cards been laid out on the floor?,Whether Something Happened(Y/N),Yes.,"Yes, a few cards have been laid out on the floor.",yes,yes,1
+487,000026,Is the activity taking place indoors?,Whether Something Happened(Y/N),Yes.,Yes.,yes,yes,1
+488,000026,Does it appear to be a formal card-playing setting?,Whether Something Happened(Y/N),No.,Yes.,no,yes,0
+489,000026,Was the rug visible before I started playing cards?,Order Judging(Y/N),Yes.,"Yes, the rug was visible before I started playing cards.",yes,yes,1
+490,000026,Did the plant appear in the frame before the game began?,Order Judging(Y/N),Yes.,"Yes, the plant appeared in the frame before the game began.",yes,yes,1
+492,000026,"In the video, does the arrangement of cards on the floor change before a new card is drawn?",Order Judging(Y/N),No,"Yes, the arrangement of cards on the floor changes before a new card is drawn.",no,yes,0
+493,000026,"In the video, is the heart card shown before a player picks more cards?",Order Judging(Y/N),Yes,Yes.,yes,yes,1
+494,000026,Does the woman put down a card before all cards are laid out?,Order Judging(Y/N),Yes,Yes.,yes,yes,1
+500,000027,Was the person depicted cooking in the kitchen?,Whether Something Happened(Y/N),No.,"No, the person was not cooking in the kitchen; they were engaged in studying.",no,no,1
+501,000027,Did any outdoor activity occur in this video?,Whether Something Happened(Y/N),No.,"No, there were no outdoor activities observed in this video.",no,no,1
+502,000027,Was the individual standing while performing the task?,Whether Something Happened(Y/N),No.,"Yes, the individual was standing while performing the task.",no,yes,0
+503,000027,Is there any verbal communication happening in this scene?,Whether Something Happened(Y/N),No.,"No, there is no verbal communication happening in this scene.",no,no,1
+504,000027,Does the video show someone reading a book?,Whether Something Happened(Y/N),No.,Yes.,no,yes,0
+512,000028,Has the pen made contact with the paper?,Whether Something Happened(Y/N),Yes.,Yes.,yes,yes,1
+513,000028,Is there a book on the table?,Whether Something Happened(Y/N),Yes.,Yes.,yes,yes,1
+514,000028,"In the video, do I flip the book page before writing on it?",Order Judging(Y/N),No,"Yes, I flip the book page before writing on it.",no,yes,0
+515,000028,"In the video, do I write with a pen after sitting at the table?",Order Judging(Y/N),Yes,"Yes, you write with a pen after sitting at the table.",yes,yes,1
+516,000028,Does the writing occur before closing the notebook?,Order Judging(Y/N),Yes,"No, the writing continues as the person continues to write in the notebook.",yes,no,0
+517,000028,Do I start writing before opening the book?,Order Judging(Y/N),No,"No, you start writing after opening the book.",no,no,1
+525,000029,Does the individual write with her right hand?,Whether Something Happened(Y/N),Yes.,Yes.,yes,yes,1
+526,000029,Is there another person besides the one writing?,Whether Something Happened(Y/N),Yes.,"Yes, another person is partially visible in the background.",yes,yes,1
+527,000029,Is the setting a public place?,Whether Something Happened(Y/N),No.,No.,no,no,1
+528,000029,Do we see any electronic devices being used?,Whether Something Happened(Y/N),No.,"No, we do not see any electronic devices being used.",no,no,1
+530,000029,"In the video, does the interaction with woman A happen before writing in the notebook?",Order Judging(Y/N),No,"No, the interaction with woman A does not happen before writing in the notebook. The video shows a person interacting with another individual and then starts to write in a notebook.",no,no,1
+531,000029,Is the book opened before picking up the pen?,Order Judging(Y/N),Yes,Yes.,yes,yes,1
+535,000030,Does the video show someone studying?,Whether Something Happened(Y/N),Yes.,Yes,yes,yes,1
+536,000030,Is the person in the video writing with their left hand?,Whether Something Happened(Y/N),No.,Yes.,no,yes,0
+537,000030,Does the video show a person writing on multiple pages?,Whether Something Happened(Y/N),Yes.,"Yes, the video shows a person writing on multiple pages.",yes,yes,1
+538,000030,Is pen picked up before writing on the book as shown in the clip?,Order Judging(Y/N),Yes,Yes.,yes,yes,1
+539,000030,Does writing in the book happen after entering the apartment?,Order Judging(Y/N),Yes,"Yes, writing in the book happens after entering the apartment.",yes,yes,1
+540,000030,Is the person at the table before writing in the notebook?,Order Judging(Y/N),Yes,Yes.,yes,yes,1
+541,000030,Does the person use a pen after sitting at the table?,Order Judging(Y/N),Yes,Yes.,yes,yes,1
+542,000030,Is the person in the apartment before using the pen?,Order Judging(Y/N),Yes,No.,yes,no,0
+548,000031,Is there a pen being used for writing in the video?,Whether Something Happened(Y/N),Yes.,Yes.,yes,yes,1
+549,000031,Does the clip show a person wearing a watch?,Whether Something Happened(Y/N),Yes.,Yes.,yes,yes,1
+551,000031,"In the video, does opening the book happen before writing with a pen?",Order Judging(Y/N),Yes,"Yes, opening the book happens before writing with a pen.",yes,yes,1
+552,000031,Is the pen picked up after turning the page as shown in the clip?,Order Judging(Y/N),No,Yes,no,yes,0
+554,000031,Is the writing in the book shown after being indoor in the clip?,Order Judging(Y/N),Yes,Yes.,yes,yes,1
+559,000032,Is the person sitting at a desk in the video?,Whether Something Happened(Y/N),Yes.,Yes.,yes,yes,1
+560,000032,Does the person sit down after opening the book?,Order Judging(Y/N),Yes,Yes,yes,yes,1
+561,000032,Is the book closed before the person starts writing?,Order Judging(Y/N),No,Yes.,no,yes,0
+563,000032,Is the pen placed in the book before writing?,Order Judging(Y/N),No,Yes.,no,yes,0
+564,000032,Does the book close before the pen is picked up?,Order Judging(Y/N),No,"Yes, the book closes before the pen is picked up.",no,yes,0
+565,000032,Is the cap of the pen removed after starting to write?,Order Judging(Y/N),No,Yes.,no,yes,0
+566,000032,Does the hand turn the page before picking up the pen?,Order Judging(Y/N),No,Yes,no,yes,0
+567,000032,Is the pen visible in the scene before writing begins?,Order Judging(Y/N),Yes,"Yes, the pen is visible in the scene before writing begins.",yes,yes,1
+574,000033,Does the video capture the person stopping their writing at any point?,Whether Something Happened(Y/N),No.,"Yes, the video captures the person stopping their writing at one point.",no,yes,0
+577,000033,"In the video, do I write in the book before holding the pen?",Order Judging(Y/N),No,"Yes, you write in the book before holding the pen.",no,yes,0
+578,000033,Is the pen in my right hand before I start writing in the book?,Order Judging(Y/N),Yes,Yes.,yes,yes,1
+579,000033,"In the sequence, do I open the book before writing on it?",Order Judging(Y/N),Yes,"Yes, the book is opened before writing on it.",yes,yes,1
+580,000033,"In the clip, do I wear a green shirt before writing in the book?",Order Judging(Y/N),Yes,"Yes, you wear a green shirt before writing in the book.",yes,yes,1
+582,000033,Is the book opened before the pen is held in the right hand?,Order Judging(Y/N),Yes,Yes.,yes,yes,1
+583,000033,Is the hand placed on the book after the pen is picked up?,Order Judging(Y/N),Yes,Yes.,yes,yes,1
+595,000034,Is the person sitting on a cushion?,Whether Something Happened(Y/N),Yes.,Yes.,yes,yes,1
+596,000034,Does the video show page-turning?,Whether Something Happened(Y/N),No.,"Yes, the video shows page-turning as the person continues to write on the notebook.",no,yes,0
+597,000034,Is the person wearing any wrist accessories?,Whether Something Happened(Y/N),Yes.,Yes.,yes,yes,1
+598,000034,Did the writing happen in a different location than the apartment?,Order Judging(Y/N),No,"No, the writing happened in a different location than the apartment.",no,no,1
+599,000034,Did the use of right hand occur before writing in the book?,Order Judging(Y/N),No,"Yes, the use of right hand occurred before writing in the book.",no,yes,0
+600,000034,Was there a pen used after the book was opened?,Order Judging(Y/N),Yes,"Yes, a blue pen was used after the book was opened.",yes,yes,1
+601,000034,Did any writing in the book occur without the use of a pen?,Order Judging(Y/N),No,"Yes, the writing in the book occurred without the use of a pen.",no,yes,0
+602,000034,Was the book closed before writing commenced?,Order Judging(Y/N),Yes,"Yes, the book was closed before writing commenced.",yes,yes,1
+604,000034,Does the writing in the book occur before changing the page?,Order Judging(Y/N),Yes,"Yes, the writing in the book occurs before changing the page.",yes,yes,1
+605,000034,Does the page turn happen before writing with the pen?,Order Judging(Y/N),No,"No, the page turns before writing with the pen.",no,no,1
+611,000035,Does the video show the person closing the book?,Whether Something Happened(Y/N),No.,"No, the video does not show the person closing the book; it only shows them actively engaging with the book.",no,no,1
+612,000035,Is the person using a pencil to write?,Whether Something Happened(Y/N),No.,Yes.,no,yes,0
+613,000035,Does the video capture the person turning off the light?,Whether Something Happened(Y/N),No.,"Yes, the video captures the person turning off the light.",no,yes,0
+614,000035,Does the video show the person taking notes from another text?,Whether Something Happened(Y/N),No.,"Yes, the video shows the person taking notes from another text.",no,yes,0
+615,000035,"In the video, is the book closed before writing begins?",Order Judging(Y/N),Yes,"No, the book is open before writing begins.",yes,no,0
+616,000035,Does turning the page happen after writing with the pen?,Order Judging(Y/N),Yes,"Yes, turning the page happens after writing with the pen.",yes,yes,1
+617,000035,"In the video, is the pen picked up before the book is opened?",Order Judging(Y/N),No,Yes.,no,yes,0
+618,000035,Does the writing occur before sitting down in the chair?,Order Judging(Y/N),No,"No, the writing occurs after sitting down in the chair.",no,no,1
+621,000035,"In the video, is the book closed after the writing is done?",Order Judging(Y/N),Yes,Yes.,yes,yes,1
+622,000035,"In the video, is there writing on the book's cover before the person writes inside?",Order Judging(Y/N),Yes,"Yes, there is writing on the book's cover before the person writes inside.",yes,yes,1
+629,000036,Is the person writing with their left hand?,Whether Something Happened(Y/N),No.,Yes.,no,yes,0
+632,000036,"In the video, does turning the page happen before writing begins?",Order Judging(Y/N),No,"No, turning the page happens after writing begins.",no,no,1
+633,000036,Is the book opened after the pen is held in the hand?,Order Judging(Y/N),Yes,Yes.,yes,yes,1
+634,000036,"In the video, does writing in the book happen before closing the book?",Order Judging(Y/N),Yes,"Yes, writing in the book happens before closing the book.",yes,yes,1
+638,000036,Did I write in the book before turning the page?,Order Judging(Y/N),Yes,"Yes, the person wrote in the book before turning the page.",yes,yes,1
+639,000036,Is the book already opened before I start writing?,Order Judging(Y/N),Yes,Yes.,yes,yes,1
+640,000036,Did I place my left hand on the page before writing with the pen?,Order Judging(Y/N),Yes,"Yes, the left hand was placed on the page before writing with the pen.",yes,yes,1
+645,000037,Is the person writing with their right hand?,Whether Something Happened(Y/N),Yes.,Yes.,yes,yes,1
+646,000037,Is the notebook placed on the person's lap?,Whether Something Happened(Y/N),No.,Yes.,no,yes,0
+647,000037,Does this video show any electronic devices being used?,Whether Something Happened(Y/N),No.,"No, the video does not show any electronic devices being used.",no,no,1
+648,000037,Is the person seated while writing in the book?,Whether Something Happened(Y/N),Yes.,Yes.,yes,yes,1
+649,000037,Do I sit down before beginning to write?,Order Judging(Y/N),Yes,"Yes, you sit down before beginning to write.",yes,yes,1
+651,000037,Did I close the book before starting to write?,Order Judging(Y/N),No,"No, the book was opened before I started writing.",no,no,1
+652,000037,Was I seated while writing in the book?,Order Judging(Y/N),Yes,"Yes, the person was seated while writing in the book.",yes,yes,1
+653,000037,Did I turn the page after finishing writing?,Order Judging(Y/N),No,"Yes, after finishing writing, the page was turned over.",no,yes,0
+654,000037,Was the pen put down before closing the book?,Order Judging(Y/N),No,"Yes, the pen was put down before closing the book.",no,yes,0
+655,000037,Did I write on the left page before the right one?,Order Judging(Y/N),No,"Yes, I wrote on the left page before the right one.",no,yes,0
+660,000038,Does the person stop writing at any point in the video?,Whether Something Happened(Y/N),No.,"No, the person does not stop writing at any point in the video.",no,no,1
+661,000038,Is there any use of electronic devices in these frames?,Whether Something Happened(Y/N),No.,"No, there are no electronic devices visible in these frames.",no,no,1
+664,000038,"In the video, does using the pen happen after sitting at the desk?",Order Judging(Y/N),Yes,"Yes, the pen is used to write on a notebook after sitting at the desk.",yes,yes,1
+670,000039,Did the interaction occur in an outdoor location?,Whether Something Happened(Y/N),No.,No.,no,no,1
+671,000039,Is the person predominantly engaged in a physical activity?,Whether Something Happened(Y/N),No.,No.,no,no,1
+672,000039,"In the video, does writing in the notebook occur before conversing with a woman?",Order Judging(Y/N),Yes.,"Yes, writing in the notebook occurs before conversing with a woman.",yes,yes,1
+673,000039,"In the video, does the conversation with a woman happen before being in an apartment?",Order Judging(Y/N),No.,"No, the conversation with a woman does not happen before being in an apartment; it is already taking place.",no,no,1
+674,000039,Is the pen used before entering the apartment as shown in the clip?,Order Judging(Y/N),No.,Yes.,no,yes,0
+684,000040,Does the video show a person using a ladder?,Whether Something Happened(Y/N),Yes.,Yes.,yes,yes,1
+685,000040,Is the wall being scraped in the video?,Whether Something Happened(Y/N),Yes.,Yes.,yes,yes,1
+686,000040,Does the scene involve stretching a ladder before scrapping?,Whether Something Happened(Y/N),Yes.,Yes.,yes,yes,1
+687,000040,Does the individual scrap the wall without any tools?,Whether Something Happened(Y/N),No.,"No, the individual scrapes the wall with a hammer.",no,no,1
+692,000041,Is the object completely removed from the wall in the video?,Whether Something Happened(Y/N),Yes,"No, the object is partially removed from the wall.",yes,no,0
+693,000041,Does the video clip show a wall being painted?,Whether Something Happened(Y/N),No,Yes.,no,yes,0
+694,000041,"In the video, is the wall outdoors?",Whether Something Happened(Y/N),Yes,No.,yes,no,0
+695,000041,"In the video, is the ladder stretched before scraping the wall?",Order Judging(Y/N),Yes,Yes.,yes,yes,1
+701,000042,Does the video show painting work being done?,Whether Something Happened(Y/N),No.,Yes.,no,yes,0
+702,000042,Is there any smoothing of surfaces portrayed?,Whether Something Happened(Y/N),Yes.,Yes.,yes,yes,1
+703,000042,Does the scene capture window installation?,Whether Something Happened(Y/N),No.,Yes.,no,yes,0
+704,000042,Does the clip depict interior renovation?,Whether Something Happened(Y/N),No.,Yes.,no,yes,0
+705,000042,Does smoothing the surface occur before scraping the wall?,Order Judging(Y/N),No,"Yes, the person uses a red and yellow tool to smooth out the surface before scraping the wall.",no,yes,0
+706,000042,Is the removal of plaster seen before the scraping action?,Order Judging(Y/N),Yes,Yes.,yes,yes,1
+707,000042,Does the planer touch the surface after the wall is scrapped?,Order Judging(Y/N),Yes,"Yes, the planer touches the surface after the wall is scrapped.",yes,yes,1
+708,000042,"In the video, is the ladder stretched before scraping the wall?",Order Judging(Y/N),Yes,Yes,yes,yes,1
+709,000042,Does the smoothing of the surface occur after scraping the wall?,Order Judging(Y/N),Yes,"Yes, the person continues to smooth the surface after scraping the wall.",yes,yes,1
+710,000042,Is something removed from the wall before stretching the ladder?,Order Judging(Y/N),No,Yes.,no,yes,0
+711,000042,"In the clip, is the ladder stretched after smoothing the surface?",Order Judging(Y/N),No,Yes,no,yes,0
+721,000043,Does the person use a planer on the surface?,Whether Something Happened(Y/N),Yes.,Yes.,yes,yes,1
+722,000043,Is there an action of scraping visible in the new frames?,Whether Something Happened(Y/N),Yes.,Yes.,yes,yes,1
+723,000043,Does the clip show the complete smoothing of the surface?,Whether Something Happened(Y/N),No.,"No, the clip shows only a close-up of the surface being smoothed.",no,no,1
+724,000043,"In the video, is the surface scrapped before it is smoothened with a planer?",Order Judging(Y/N),No,Yes,no,yes,0
+725,000043,"In the sequence, is the planer used before the scraper?",Order Judging(Y/N),Yes,Yes.,yes,yes,1
+727,000043,Did I remove something from the wall before scraping the wall?,Order Judging(Y/N),Yes,"Yes, the wall was scraped off in the video.",yes,yes,1
+728,000043,Is the surface smoothened with a planer before scraping with a scraper?,Order Judging(Y/N),Yes,Yes.,yes,yes,1
+729,000043,Do I smoothen the surface with a planer before removing something from the wall?,Order Judging(Y/N),No,"Yes, you can use a planer to smooth out the surface with the tool.",no,yes,0
+730,000043,Is the wall scraped with a scraper before using a planer in one sequence?,Order Judging(Y/N),No,Yes.,no,yes,0
+735,000044,Does the video show a paint removal process?,Whether Something Happened(Y/N),Yes.,Yes.,yes,yes,1
+736,000044,Is the person successfully removing paint from a window frame?,Whether Something Happened(Y/N),Yes.,Yes.,yes,yes,1
+737,000044,Does the scene take place indoors?,Whether Something Happened(Y/N),No.,No.,no,no,1
+738,000044,Is the surface smoothed with a planer before scraping with a scraper?,Order Judging(Y/N),Yes,Yes.,yes,yes,1
+739,000044,Does the removal of paint on the window frame happen after smoothing a surface?,Order Judging(Y/N),Yes,"Yes, the removal of paint on the window frame happens after smoothing a surface.",yes,yes,1
+740,000044,Is the paint scraper used before the planer on any surface?,Order Judging(Y/N),No,"Yes, the paint scraper is used before the planer on any surface.",no,yes,0
+741,000044,Is the surface smoothed after removing paint from the window frame?,Order Judging(Y/N),No,Yes.,no,yes,0
+746,000044,Did I scrape the wall before smoothing the surface with a planer?,Order Judging(Y/N),Yes.,"Yes, the wall was scraped before smoothing with a planer.",yes,yes,1
+747,000044,Did I smooth the surface with a planer before removing paint from the window frame?,Order Judging(Y/N),Yes.,"Yes, the person smooths the surface with a planer before removing paint from the window frame.",yes,yes,1
+751,000045,Does the video show paint being scraped off?,Whether Something Happened(Y/N),Yes.,Yes.,yes,yes,1
+752,000045,Is the window frame being refinished?,Whether Something Happened(Y/N),Yes.,Yes.,yes,yes,1
+753,000045,Is a tool being used for paint removal?,Whether Something Happened(Y/N),Yes.,Yes.,yes,yes,1
+754,000045,Is the person working on interior maintenance?,Whether Something Happened(Y/N),No.,Yes.,no,yes,0
+755,000045,Is the window frame being replaced?,Whether Something Happened(Y/N),No.,Yes.,no,yes,0
+756,000045,Is the window opened before the paint is scraped?,Order Judging(Y/N),Yes,Yes.,yes,yes,1
+757,000045,Does the hand touch the window frame before using the scraper?,Order Judging(Y/N),Yes,"Yes, the hand touches the window frame before using the scraper.",yes,yes,1
+758,000045,Is the paint on the window frame removed before the hand is visible?,Order Judging(Y/N),No,No.,no,no,1
+759,000045,Does the window frame appear before the scraper is in motion?,Order Judging(Y/N),Yes,"Yes, the window frame appears before the scraper is in motion.",yes,yes,1
+760,000045,Is the paint removed from the window frame before using the planer?,Order Judging(Y/N),No,Yes.,no,yes,0
+761,000045,Does the surface smoothing with a planer occur before the scraping?,Order Judging(Y/N),Yes,"Yes, the surface smoothing with a planer occurs before the scraping.",yes,yes,1
+762,000045,Is the scraping of the surface completed before removing paint on the window frame?,Order Judging(Y/N),No,Yes.,no,yes,0
+773,000046,Does the video show the use of a woodworking planer?,Whether Something Happened(Y/N),Yes,"Yes, the video shows the use of a woodworking planer.",yes,yes,1
+774,000046,Is the person scraping a wooden surface?,Whether Something Happened(Y/N),Yes,Yes.,yes,yes,1
+775,000046,Are the actions performed indoor?,Whether Something Happened(Y/N),No,"Yes, the actions are performed indoors.",no,yes,0
+776,000046,Does the activity involve painting or staining?,Whether Something Happened(Y/N),No,"Yes, the activity involves painting or staining.",no,yes,0
+777,000046,Is the person wearing any safety gear?,Whether Something Happened(Y/N),No,"No, the person is not wearing any safety gear.",no,no,1
+778,000046,Was the window frame scraped before it was planed?,Order Judging(Y/N),No,"Yes, the window frame was scraped before it was planed.",no,yes,0
+779,000046,Did the scraping of a surface happen after smoothening it?,Order Judging(Y/N),Yes,"Yes, after the surface was smoothened, the person continued to scrape it with a tool.",yes,yes,1
+782,000046,Was the surface planed before the scraping of paint on the window frame?,Order Judging(Y/N),Yes,"Yes, the surface planed before the scraping of paint on the window frame was a wooden floor.",yes,yes,1
+783,000046,Was the window frame scraped before planing the surface?,Order Judging(Y/N),No,"Yes, the window frame was scraped before planing the surface.",no,yes,0
+784,000046,Was the window frame scraped first before using any tools?,Order Judging(Y/N),No,"Yes, the window frame was scraped first before using any tools.",no,yes,0
+788,000047,Is the person in the video using a tool for scraping?,Whether Something Happened(Y/N),Yes.,Yes.,yes,yes,1
+789,000047,Is the scraping happening indoors?,Whether Something Happened(Y/N),No.,Yes.,no,yes,0
+790,000047,Does the footage show the completion of the scraping task?,Whether Something Happened(Y/N),No.,"Yes, the video concludes with a close-up of the freshly scraped area on the window frame.",no,yes,0
+791,000047,Is the person wearing gloves while scraping?,Whether Something Happened(Y/N),No.,No.,no,no,1
+792,000047,Did I smoothen the surface with a planer before scraping it with a scraper?,Order Judging(Y/N),Yes,"Yes, the person used a planer to smooth out the surface before scraping it with a scraper.",yes,yes,1
+794,000047,Is the scraping of the window frame after smoothing the surface?,Order Judging(Y/N),Yes,Yes.,yes,yes,1
+798,000048,Does the person succeed in scraping off the material?,Whether Something Happened(Y/N),Yes.,Yes.,yes,yes,1
+799,000048,Is the scraping being done on an interior wall?,Whether Something Happened(Y/N),No.,Yes.,no,yes,0
+800,000048,Is the person using any tool other than a scraper?,Whether Something Happened(Y/N),No.,No.,no,no,1
+801,000048,Does the scrapping of the surface start before walking outside the house?,Order Judging(Y/N),No,"Yes, the scrapping of the surface starts before walking outside the house.",no,yes,0
+802,000048,"In the video, is the scraper used on the lower part of the wall before the upper part?",Order Judging(Y/N),No,Yes.,no,yes,0
+803,000048,Is the paint removal near the window sill done after removing paint near the flower pot?,Order Judging(Y/N),Yes,Yes.,yes,yes,1
+805,000048,Is the planer used before the scraper?,Order Judging(Y/N),Yes,Yes.,yes,yes,1
+806,000048,Is the scraping done before smoothing the surface?,Order Judging(Y/N),No,Yes.,no,yes,0
+807,000048,Does the planing occur after the scraping?,Order Judging(Y/N),No,"Yes, the planing continues after the scraping.",no,yes,0
+815,000049,Has the person completed the smoothening task?,Whether Something Happened(Y/N),Yes.,Yes,yes,yes,1
+816,000049,Does the individual use more than one tool?,Whether Something Happened(Y/N),Yes.,"Yes, the individual uses a paint roller and a brush to apply the white substance.",yes,yes,1
+819,000049,"In the video, is scraping done before smoothing with a planer?",Order Judging(Y/N),No,Yes,no,yes,0
+820,000049,Is the surface scraped after the house exterior is shown?,Order Judging(Y/N),Yes,Yes.,yes,yes,1
+822,000049,"In the sequence, is the scraper used before the planer?",Order Judging(Y/N),No,Yes,no,yes,0
+823,000049,Does the scraping happen outdoors?,Order Judging(Y/N),Yes,Yes.,yes,yes,1
+824,000049,Is the surface scraped after it is smoothened?,Order Judging(Y/N),Yes,Yes.,yes,yes,1
+825,000049,Is the scraping performed before standing up?,Order Judging(Y/N),No,Yes.,no,yes,0
+834,000050,Did the person climb a ladder in the video?,Whether Something Happened(Y/N),Yes.,"No, the person did not climb a ladder.",yes,no,0
+835,000050,Does the video show the person successfully removing the cover?,Whether Something Happened(Y/N),Yes.,Yes,yes,yes,1
+836,000050,Was the task performed indoors?,Whether Something Happened(Y/N),No.,Yes.,no,yes,0
+837,000050,Did I smoothen the surface with a planer before scraping it with a scraper?,Order Judging(Y/N),Yes.,"Yes, the person used a planer to smooth out the surface before scraping it with a scraper.",yes,yes,1
+838,000050,Did I climb the ladder before rubbing waste with my hand?,Order Judging(Y/N),No.,"No, the ladder was not used to climb before rubbing waste with a hand.",no,no,1
+839,000050,Did the removal of unwanted cover happen before climbing the ladder?,Order Judging(Y/N),No.,"Yes, the removal of unwanted cover happened before climbing the ladder.",no,yes,0
+840,000050,Did I scrape the surface before smoothening it with a planer?,Order Judging(Y/N),No.,"Yes, the person used a planer to smooth out the surface.",no,yes,0
+841,000050,Did the drawing a planer happen after climbing the ladder?,Order Judging(Y/N),No.,"No, the drawing a planer happened before climbing the ladder.",no,no,1
+844,000050,Did I scrape the surface before using a planer?,Order Judging(Y/N),No,"Yes, the person used a planer to remove any remaining paint from the surface.",no,yes,0
+845,000050,Did the planer use happen after the ladder climbing?,Order Judging(Y/N),No,"No, the planer did not use after the ladder climbing.",no,no,1
+846,000050,Was the surface scraped after using the planer?,Order Judging(Y/N),Yes,"Yes, the surface was scraped after using the planer.",yes,yes,1
+847,000050,Was the waste rubbed off before I climbed the ladder?,Order Judging(Y/N),Yes,"Yes, the waste was rubbed off before I climbed the ladder.",yes,yes,1
+855,000051,Did the individual successfully remove some of the unwanted cover?,Whether Something Happened(Y/N),Yes.,Yes,yes,yes,1
+856,000051,Is the person using a tool to work on the surface?,Whether Something Happened(Y/N),Yes.,Yes.,yes,yes,1
+857,000051,Has the person been carefully examining the wood surface?,Whether Something Happened(Y/N),Yes.,Yes,yes,yes,1
+858,000051,Is the work being performed close to a window?,Whether Something Happened(Y/N),Yes.,Yes.,yes,yes,1
+859,000051,Did I rub waste with my hand before climbing the ladder?,Order Judging(Y/N),Yes.,"Yes, you rubbed waste with your hand before climbing the ladder.",yes,yes,1
+860,000051,Is the unwanted cover removed after I stare at the wood surface?,Order Judging(Y/N),No.,Yes,no,yes,0
+861,000051,Do I hold the scraper before removing the unwanted cover?,Order Judging(Y/N),No.,"Yes, you hold the scraper before removing the unwanted cover.",no,yes,0
+862,000051,Am I outside when I stare at the wood surface?,Order Judging(Y/N),Yes.,"Yes, you are outside when you stare at the wood surface.",yes,yes,1
+864,000051,Did I smooth the surface with a planer before scraping it with a scraper?,Order Judging(Y/N),Yes,"Yes, the person used a planer to smooth out the surface before scraping it with a scraper.",yes,yes,1
+865,000051,Did I rub waste with my hand before climbing the ladder?,Order Judging(Y/N),Yes,"Yes, you rubbed waste with your hand before climbing the ladder.",yes,yes,1
+866,000051,Did I climb the ladder before removing the unwanted cover from the surface?,Order Judging(Y/N),Yes,"No, the ladder was not used before removing the unwanted cover from the surface.",yes,no,0
+875,000052,Has the protective cover been removed from the window surface?,Whether Something Happened(Y/N),Yes.,No.,yes,no,0
+880,000052,"In the video, does staring at the wood surface occur before removing the unwanted cover?",Order Judging(Y/N),No,"Yes, staring at the wood surface occurs before removing the unwanted cover.",no,yes,0
+881,000052,Is the wood surface rubbed after removing the unwanted cover?,Order Judging(Y/N),Yes,Yes.,yes,yes,1
+882,000052,"In the video, does holding the scraper happen before rubbing the surface?",Order Judging(Y/N),Yes,"No, the scraper is not held before rubbing the surface.",yes,no,0
+885,000052,Did rubbing the surface happen before staring at the wood surface?,Order Judging(Y/N),No,"Yes, rubbing the surface happened before staring at the wood surface.",no,yes,0
+886,000052,Was the ladder climbed before removing the unwanted cover?,Order Judging(Y/N),Yes,"Yes, the ladder was climbed before removing the unwanted cover.",yes,yes,1
+887,000052,Was the unwanted cover removed after rubbing waste with hand?,Order Judging(Y/N),Yes,"Yes, the unwanted cover was removed after rubbing waste with hand.",yes,yes,1
+888,000052,Did staring at the wood surface happen before holding the scraper?,Order Judging(Y/N),No,"Yes, staring at the wood surface happened before holding the scraper.",no,yes,0
+897,000053,Did the camera wearer completely remove the unwanted cover?,Whether Something Happened(Y/N),No.,"No, the camera wearer only partially removed the unwanted cover.",no,no,1
+900,000053,Did the rubbing of the surface happen before walking outside?,Order Judging(Y/N),No,"Yes, the person was seen rubbing the surface before walking outside.",no,yes,0
+901,000053,Is the scraper held after removing unwanted cover from the surface?,Order Judging(Y/N),Yes,Yes.,yes,yes,1
+902,000053,Does the unwanted cover get removed before the surface is rubbed?,Order Judging(Y/N),Yes,"Yes, the unwanted cover is removed before the surface is rubbed.",yes,yes,1
+903,000053,Did walking outside occur before holding the scraper?,Order Judging(Y/N),Yes,"Yes, walking outside occurred before holding the scraper.",yes,yes,1
+908,000053,Did I stare at the wood surface before removing the unwanted cover?,Order Judging(Y/N),No,"Yes, you stared at the wood surface before removing the unwanted cover.",no,yes,0
+909,000053,Did I rub the surface after removing the unwanted cover?,Order Judging(Y/N),Yes,"Yes, the person removed the unwanted cover and then rubbed it against the surface to remove any remaining debris.",yes,yes,1
+910,000053,Did I remove the unwanted cover before walking outside?,Order Judging(Y/N),Yes,"Yes, the person removed the unwanted cover before walking outside.",yes,yes,1
+919,000054,Did the person use a knife on the onions?,Whether Something Happened(Y/N),Yes.,Yes.,yes,yes,1
+920,000054,Was water added to the flour in the video?,Whether Something Happened(Y/N),Yes.,Yes.,yes,yes,1
+928,000055,Did the person start cooking as soon as the video began?,Whether Something Happened(Y/N),No.,"No, the person did not start cooking until after pouring the liquid into the pot.",no,no,1
+929,000055,Has the person used any kitchen utensils yet?,Whether Something Happened(Y/N),Yes.,Yes.,yes,yes,1
+931,000055,Has the heat been turned on under the pan yet?,Whether Something Happened(Y/N),No.,Yes.,no,yes,0
+932,000055,"In the video, does mixing flour with water happen before cutting onions?",Order Judging(Y/N),Yes.,"Yes, the video shows a hand mixing flour with water before cutting onions.",yes,yes,1
+933,000055,Is cooking the food shown before opening the door in the video?,Order Judging(Y/N),Yes.,Yes.,yes,yes,1
+934,000055,"In the video, does pouring oil in the pan occur after cutting onions?",Order Judging(Y/N),Yes.,"Yes, the video shows a hand pouring oil into the pan after cutting onions.",yes,yes,1
+935,000055,"In the video, is oil poured into the pan before cooking the food?",Order Judging(Y/N),No.,Yes,no,yes,0
+940,000056,Does the video show someone cooking?,Whether Something Happened(Y/N),Yes.,Yes.,yes,yes,1
+941,000056,Is the counter being cleaned in the video?,Whether Something Happened(Y/N),Yes.,Yes.,yes,yes,1
+942,000056,Is there a scene of rolling dough in the video?,Whether Something Happened(Y/N),Yes.,Yes.,yes,yes,1
+943,000056,Does rolling the dough happen before cleaning the counter?,Order Judging(Y/N),No,"Yes, the person starts rolling the dough on a black surface before cleaning the counter.",no,yes,0
+944,000056,Is the food cooked after I clean the counter?,Order Judging(Y/N),Yes,Yes.,yes,yes,1
+948,000056,"In the video, does the mixing of flour with water happen before cutting the onions?",Order Judging(Y/N),Yes,"Yes, the mixing of flour with water happens before cutting the onions.",yes,yes,1
+959,000057,Did the person use a rolling pin in the video?,Whether Something Happened(Y/N),Yes.,Yes.,yes,yes,1
+960,000057,Did the dough-making happen on a bare countertop?,Whether Something Happened(Y/N),No.,"Yes, the dough-making happened on a bare countertop.",no,yes,0
+961,000057,Was an electrical appliance used to roll the dough?,Whether Something Happened(Y/N),No.,"Yes, an electrical appliance was used to roll the dough.",no,yes,0
+963,000057,Is the flour container closed in the scene?,Whether Something Happened(Y/N),Yes.,Yes.,yes,yes,1
+964,000057,"In the video, is the dough rolled with hands before it's dipped in flour?",Order Judging(Y/N),Yes,Yes,yes,yes,1
+965,000057,Is the food cooked before the counter is cleaned?,Order Judging(Y/N),Yes,Yes.,yes,yes,1
+966,000057,Does the dough rolling with a rolling pin happen after hand rolling?,Order Judging(Y/N),Yes,"Yes, the dough is rolled with a rolling pin after hand rolling.",yes,yes,1
+967,000057,Is the counter cleaned before the dough is rolled with hands?,Order Judging(Y/N),Yes,Yes.,yes,yes,1
+968,000057,"In the video, is the rolling pin used before the dough is dipped in flour?",Order Judging(Y/N),Yes,Yes,yes,yes,1
+972,000057,Was the counter cleaned after cooking food?,Order Judging(Y/N),Yes,"Yes, the counter was cleaned after cooking food.",yes,yes,1
+973,000057,Did I roll the dough before dipping it in flour?,Order Judging(Y/N),No,"Yes, the person rolled the dough before dipping it in flour.",no,yes,0
+974,000057,Did I roll dough with hands before rolling it with a rolling pin?,Order Judging(Y/N),Yes,"Yes, the person rolled dough with hands before rolling it with a rolling pin.",yes,yes,1
+983,000058,Does the frame capture using a rolling pin?,Whether Something Happened(Y/N),Yes.,Yes,yes,yes,1
+984,000058,Is dough being prepared in this scene?,Whether Something Happened(Y/N),Yes.,Yes.,yes,yes,1
+985,000058,Are there ingredients visible on the kitchen counter?,Whether Something Happened(Y/N),Yes.,"Yes, there are ingredients visible on the kitchen counter.",yes,yes,1
+986,000058,"In the video, is the dough cut before it's rolled with hands?",Order Judging(Y/N),No,Yes.,no,yes,0
+987,000058,Does the dipping of dough in flour happen after using the rolling pin?,Order Judging(Y/N),No,"Yes, the person continues to dip the dough into flour after using the rolling pin.",no,yes,0
+988,000058,Does rolling the dough with hands happen before cutting the dough?,Order Judging(Y/N),Yes,"Yes, rolling the dough with hands happens before cutting it.",yes,yes,1
+989,000058,Is the dough rolled with a roller after being dipped in flour?,Order Judging(Y/N),Yes,Yes.,yes,yes,1
+993,000058,Did I clean the counter before rolling the dough?,Order Judging(Y/N),Yes,"Yes, the person rolled out the dough on the counter before cleaning it.",yes,yes,1
+994,000058,Was the dough cut before being rolled?,Order Judging(Y/N),Yes,Yes.,yes,yes,1
+995,000058,Did I dip the dough in flour before using the rolling pin?,Order Judging(Y/N),Yes,"Yes, the person dipped the dough in flour before using the rolling pin.",yes,yes,1
+996,000058,Did I cook food after rolling the dough with my hands?,Order Judging(Y/N),No,"Yes, after rolling the dough with your hands, you placed it on a newspaper.",no,yes,0
+997,000058,Was the counter cleaned after the dough was cut?,Order Judging(Y/N),No,"Yes, the counter was cleaned after the dough was cut.",no,yes,0
+1003,000059,Did the person successfully slice the cucumber?,Whether Something Happened(Y/N),Yes.,"Yes, the person successfully sliced the cucumber into thin pieces.",yes,yes,1
+1004,000059,Has the lemon been placed on the cucumber slices?,Whether Something Happened(Y/N),Yes.,"No, the lemon has not been placed on the cucumber slices.",yes,no,0
+1009,000060,Does the clip show a person flipping the roti?,Whether Something Happened(Y/N),No.,Yes,no,yes,0
+1010,000060,Is the roti being taken out of the pan in this frame?,Whether Something Happened(Y/N),Yes.,Yes.,yes,yes,1
+1011,000060,Does the clip involve any baking activity?,Whether Something Happened(Y/N),No.,"Yes, the clip involves baking activity as well.",no,yes,0
+1012,000060,Is there another person assisting with the cooking?,Whether Something Happened(Y/N),No.,"Yes, another person is visible in the background.",no,yes,0
+1013,000060,Was the flat bread prepared before the roti was roasted?,Order Judging(Y/N),Yes,"Yes, the flat bread was prepared before the roti was roasted.",yes,yes,1
+1014,000060,Did I put the roasted roti in the pot before cutting the cucumber?,Order Judging(Y/N),No,"Yes, the person cut the cucumber before placing it into the pot.",no,yes,0
+1015,000060,Did I roast the roti after preparing the flat bread?,Order Judging(Y/N),Yes,"Yes, the roti was roasted after preparing the flat bread.",yes,yes,1
+1017,000061,Is the person wearing oven mitts?,Whether Something Happened(Y/N),No.,No.,no,no,1
+1018,000061,"In the video, is the pot closed after the roti is put inside?",Order Judging(Y/N),Yes,Yes.,yes,yes,1
+1019,000061,Did I use a spatula to roast the roti before placing it in the pot?,Order Judging(Y/N),Yes,"Yes, the person used a spatula to roast the roti before placing it in the pot.",yes,yes,1
+1026,000062,Does the video show any monetary transaction?,Whether Something Happened(Y/N),No.,"Yes, the video shows a transaction of 10 Indian Rupees being exchanged for food.",no,yes,0
+1027,000062,Is the food prepared for a large group?,Whether Something Happened(Y/N),Yes.,Yes.,yes,yes,1
+1028,000062,Does the camera wearer handle more than one dish?,Whether Something Happened(Y/N),Yes.,"Yes, the camera wearer handles multiple dishes.",yes,yes,1
+1030,000063,Is the person serving food to more than one person?,Whether Something Happened(Y/N),Yes.,Yes.,yes,yes,1
+1031,000063,Is there a pot included in the food items being served?,Whether Something Happened(Y/N),Yes.,Yes.,yes,yes,1
+1032,000063,Is the setting of this video during a nighttime event?,Whether Something Happened(Y/N),Yes.,Yes.,yes,yes,1
+1033,000063,Is the food made for a man and some girls before serving food under the tent?,Order Judging(Y/N),Yes,Yes.,yes,yes,1
+1038,000064,Is the vendor wearing gloves while handling food?,Whether Something Happened(Y/N),No.,Yes.,no,yes,0
+1039,000064,Does the video show a customer receiving change after payment?,Whether Something Happened(Y/N),No.,Yes,no,yes,0
+1040,000064,Is there any interaction between the customers in the frame?,Whether Something Happened(Y/N),No.,"Yes, a customer is seen holding an item and interacting with the food preparation area.",no,yes,0
+1041,000064,Does the stall have a digital payment option displayed?,Whether Something Happened(Y/N),Yes.,Yes.,yes,yes,1
+1042,000064,Does the interaction with woman B happen before serving to woman C?,Order Judging(Y/N),Yes,"Yes, the interaction with woman B happens before serving to woman C.",yes,yes,1
+1043,000064,Do I serve food to a group of people before the roadside food stall scene?,Order Judging(Y/N),No,"Yes, the video shows a group of people gathered around the roadside food stall.",no,yes,0
+1044,000064,"In the video, did I serve food under the tent before talking to man A at the stand?",Order Judging(Y/N),No,"Yes, the man A at the stand served food under the tent before talking to him.",no,yes,0
+1045,000064,"In the video, does serving pani puri occur before making food for the man and girls?",Order Judging(Y/N),Yes,"Yes, the video shows a man and girls preparing food for themselves before serving pani puri.",yes,yes,1
+1049,000065,Did the vendor converse with two individuals?,Whether Something Happened(Y/N),Yes.,"Yes, the vendor conversed with two individuals.",yes,yes,1
+1050,000065,"In the sequence, is food served at the roadside stall before the food tent?",Order Judging(Y/N),No,"Yes, the video shows food being served at the roadside stall before the food tent.",no,yes,0
+1053,000066,Does the scene capture a customer receiving their order?,Whether Something Happened(Y/N),No.,Yes,no,yes,0
+1054,000066,Is there any indication of a payment transaction in the video?,Whether Something Happened(Y/N),No.,"Yes, there is a person in the background who appears to be interacting with the food stall.",no,yes,0
+1055,000066,Does the video show the cook finishing the dish?,Whether Something Happened(Y/N),No.,Yes,no,yes,0
+1056,000066,Is the cook multitasking between cooking and another activity?,Whether Something Happened(Y/N),Yes.,Yes.,yes,yes,1
+1057,000066,Does the cook appear to be preparing food for more than one person?,Whether Something Happened(Y/N),Yes.,"Yes, the cook appears to be preparing food for more than one person.",yes,yes,1
+1058,000066,Did the discussion with man X and man Y happen before serving woman Z?,Order Judging(Y/N),No,"No, the discussion with man X and man Y happened after serving woman Z.",no,no,1
+1060,000066,Was food made for woman A after the interaction with woman B?,Order Judging(Y/N),Yes,"Yes, food was made for woman A after the interaction with woman B.",yes,yes,1
+1061,000066,Did the phone conversation occur before discussing with man Y?,Order Judging(Y/N),Yes,"No, the phone conversation occurred after discussing with man Y.",yes,no,0
+1066,000067,Does the frame show the server handing pani puris to a customer?,Whether Something Happened(Y/N),Yes.,Yes,yes,yes,1
+1067,000067,Is the shown frame depicting an indoor activity?,Whether Something Happened(Y/N),No.,Yes.,no,yes,0
+1068,000067,Does the video involve interaction between the server and customers?,Whether Something Happened(Y/N),Yes.,"Yes, the server interacts with customers by offering them food and engaging in conversation.",yes,yes,1
+1069,000067,Is the phone conversation happening before making food for woman A?,Order Judging(Y/N),Yes,Yes.,yes,yes,1
+1070,000067,Does man Z get served before the phone conversation starts?,Order Judging(Y/N),No,"Yes, man Z gets served before the phone conversation starts.",no,yes,0
+1071,000067,"In the video, is the interaction with man X and Y before the food preparation for woman A and man B?",Order Judging(Y/N),No,"Yes, the interaction with man X and Y is briefly mentioned before the food preparation for woman A and man B.",no,yes,0
+1072,000067,Do I talk to man Z before making food for woman A and man B?,Order Judging(Y/N),No.,"Yes, you talk to man Z before making food for woman A and man B.",no,yes,0
+1073,000067,Is the food prepared for woman Z before the interaction with man Z?,Order Judging(Y/N),Yes.,Yes.,yes,yes,1
+1081,000068,Was there verbal exchange under the tent?,Whether Something Happened(Y/N),Yes.,"Yes, there was a conversation between the person and another individual in the tent.",yes,yes,1
+1082,000068,Is there visible evidence of food being consumed in the frame?,Whether Something Happened(Y/N),Yes.,"Yes, there is a hand reaching towards the food on the table.",yes,yes,1
+1084,000068,Is the preparation of pani puris shown before serving them to man X and Y?,Order Judging(Y/N),Yes,"Yes, the preparation of pani puris is shown before serving them to man X and Y.",yes,yes,1
+1085,000068,Do I talk on the phone prior to serving food under the food tent?,Order Judging(Y/N),Yes,"Yes, you can talk on the phone prior to serving food under the food tent.",yes,yes,1
+1094,000069,Does the video show the server using a foam plate for serving?,Whether Something Happened(Y/N),Yes.,Yes.,yes,yes,1
+1096,000069,Did the serving of potato balls occur before serving gruel?,Order Judging(Y/N),Yes,"Yes, the serving of potato balls occurred before serving gruel.",yes,yes,1
+1097,000069,Was the conversation with man E before serving food to the woman Z?,Order Judging(Y/N),No,"Yes, the conversation with man E was before serving food to the woman Z.",no,yes,0
+1101,000069,Did the serving of potato balls happen before the gruel in foam plates?,Order Judging(Y/N),No,"Yes, the serving of potato balls happened before the gruel in foam plates.",no,yes,0
+1102,000069,"In the video, is the food tent scene before the interaction with the group of people?",Order Judging(Y/N),No,No.,no,no,1
+1111,000070,Does the video show the food being cooked?,Whether Something Happened(Y/N),No.,Yes,no,yes,0
+1113,000070,Is there any indication of the kiosk's location being outdoors?,Whether Something Happened(Y/N),No.,"Yes, the background suggests an outdoor setting.",no,yes,0
+1114,000070,"In the video, is the gruel served after the interaction with the group of people?",Order Judging(Y/N),Yes,Yes.,yes,yes,1
+1115,000070,Was I at the kiosk before serving potato balls and gruel?,Order Judging(Y/N),No,"Yes, I was at the kiosk before serving potato balls and gruel.",no,yes,0
+1116,000070,Did I sell food before I prepared it in the kiosk?,Order Judging(Y/N),No,"Yes, the video caption mentions that the person was selling food before preparing it in the kiosk.",no,yes,0
+1117,000070,Is the food sold to the group of people after I prepared it?,Order Judging(Y/N),Yes,Yes,yes,yes,1
+1119,000070,Did I serve gruel before serving potato balls?,Order Judging(Y/N),No,"Yes, the person in the video served gruel before serving potato balls.",no,yes,0
+1141,000072,Is the person in the video engaging in a conversation?,Whether Something Happened(Y/N),Yes.,Yes.,yes,yes,1
+1142,000072,Does the person walk on a grassy path in the video?,Whether Something Happened(Y/N),No.,Yes.,no,yes,0
+1143,000072,Does the person in the video interact with more than one passerby?,Whether Something Happened(Y/N),Yes.,"Yes, the person in the video interacts with at least one other individual who is not visible.",yes,yes,1
+1145,000073,Is there any physical contact between the two individuals?,Whether Something Happened(Y/N),No.,"No, there is no physical contact between the two individuals in this scene.",no,no,1
+1146,000073,Did the person in the video stop walking while interacting?,Whether Something Happened(Y/N),No.,"Yes, the person in the video stopped walking while interacting with another individual.",no,yes,0
+1147,000073,Is the communication friendly and non-threatening?,Whether Something Happened(Y/N),Yes.,Yes.,yes,yes,1
+1148,000073,"In the video, do I interact with some passersby before walking with the woman on the road?",Order Judging(Y/N),No,"Yes, I interact with some passersby before walking with the woman on the road.",no,yes,0
+1149,000073,"In the video, do I walk alone on the road before interacting with a woman?",Order Judging(Y/N),Yes,"Yes, I walk alone on the road before interacting with a woman.",yes,yes,1
+1156,000074,Does the video show the subject entering a building?,Whether Something Happened(Y/N),No.,Yes.,no,yes,0
+1157,000074,Is the subject interacting with other people in the video?,Whether Something Happened(Y/N),No.,"No, the subject is not interacting with other people in the video.",no,no,1
+1158,000074,Does the video capture the subject engaging in a sport?,Whether Something Happened(Y/N),No.,"Yes, the video captures a person's feet as they walk across the tiled floor.",no,yes,0
+1159,000074,Is the subject seen leaving the field in the video?,Whether Something Happened(Y/N),Yes.,Yes.,yes,yes,1
+1165,000075,Does the person stop to observe a specific scene?,Whether Something Happened(Y/N),Yes.,"Yes, the person stops to look at a small child on the sidewalk.",yes,yes,1
+1166,000075,"In the video, did I look at the scenes before walking on the field?",Order Judging(Y/N),No,"No, you didn't look at the scenes before walking on the field.",no,no,1
+1167,000075,"In the video, was I indoors before going to the field?",Order Judging(Y/N),No,No.,no,no,1
+1171,000076,Does this video show a busy city street?,Whether Something Happened(Y/N),No.,No.,no,no,1
+1172,000076,Does the clip capture any interaction with people?,Whether Something Happened(Y/N),No.,"No, the clip does not capture any interaction with people.",no,no,1
+1173,000076,Is the person entering a building in this scene?,Whether Something Happened(Y/N),No.,Yes.,no,yes,0
+1174,000076,Was I in the field after walking on the walkway?,Order Judging(Y/N),No.,"Yes, I was in the field after walking on the walkway.",no,yes,0
+1175,000076,Did I go home before looking at the scenes?,Order Judging(Y/N),No.,"Yes, you went home before looking at the scenes.",no,yes,0
+1178,000076,Did I walk on the field before looking at the scenes?,Order Judging(Y/N),Yes,"Yes, you walked on the field before looking at the scenes.",yes,yes,1
+1179,000076,Is the walk on the walkway shown before going home in the video?,Order Judging(Y/N),Yes,Yes.,yes,yes,1
+1180,000076,"In the video, do we see walking through the walkways before walking on the field?",Order Judging(Y/N),No,"Yes, we see walking through the walkways before walking on the field.",no,yes,0
+1181,000076,Do I walk along the water before walking under the trees as shown in the clip?,Order Judging(Y/N),Yes,"Yes, you walk along the water before walking under the trees.",yes,yes,1
+1189,000077,Is there any sign of wildlife in the frames provided?,Whether Something Happened(Y/N),No.,"No, there are no signs of wildlife in the frames provided.",no,no,1
+1190,000077,Did the person in the video use any transportation other than walking?,Whether Something Happened(Y/N),No.,"No, the person in the video did not use any transportation other than walking.",no,no,1
+1191,000077,Does the footage include any sporting activities?,Whether Something Happened(Y/N),No.,"No, the footage does not include any sporting activities.",no,no,1
+1192,000077,"Is the person in the video engaging with the environment, like sitting or touching?",Whether Something Happened(Y/N),No.,"No, the person is not engaging with the environment; they are walking and moving around.",no,no,1
+1193,000077,Did I tour the park before walking on the walkways?,Order Judging(Y/N),Yes,"Yes, you can see the park's entrance and a person walking on one of the walkways before walking on the other.",yes,yes,1
+1195,000077,Did I walk through the park before going home?,Order Judging(Y/N),Yes,"Yes, you walked through the park before going home.",yes,yes,1
+1198,000078,Do I interact with anyone in this video clip?,Whether Something Happened(Y/N),No.,"No, there are no people visible in the video clip.",no,no,1
+1204,000079,Does the person interact with any objects in the scene?,Whether Something Happened(Y/N),No.,"Yes, the person interacts with a blue car parked on the side of the road.",no,yes,0
+1205,000079,Is the person traveling with someone else?,Whether Something Happened(Y/N),No.,Yes.,no,yes,0
+1206,000079,Does the video capture any animals in the scene?,Whether Something Happened(Y/N),No.,"No, the video does not capture any animals.",no,no,1
+1207,000079,Does the individual seem to be lost or searching for directions?,Whether Something Happened(Y/N),No.,"Yes, the individual appears to be lost or searching for directions.",no,yes,0
+1214,000080,Does the video capture the person sitting on the couch?,Whether Something Happened(Y/N),Yes.,"Yes, the video captures the person sitting on the couch throughout the entire scene.",yes,yes,1
+1215,000080,Is the person in the video engaged in a strenuous activity?,Whether Something Happened(Y/N),No.,"No, the person is not engaged in a strenuous activity; they are simply enjoying their reading experience.",no,no,1
+1222,000081,Does the clip show a person reading a physical book?,Whether Something Happened(Y/N),No.,Yes.,no,yes,0
+1223,000081,Is the subject standing while reading?,Whether Something Happened(Y/N),No.,"No, the subject is seated on a couch while reading.",no,no,1
+1224,000081,Does the video capture multiple people in the room?,Whether Something Happened(Y/N),No.,"No, the video captures only one person in the room.",no,no,1
+1225,000081,Does the video show a daytime setting?,Whether Something Happened(Y/N),No.,Yes.,no,yes,0
+1230,000082,Does the video show a person standing up?,Whether Something Happened(Y/N),No.,No.,no,no,1
+1231,000082,Is the video capturing outdoor activities?,Whether Something Happened(Y/N),No.,No.,no,no,1
+1232,000082,Does the video depict a social gathering?,Whether Something Happened(Y/N),No.,No.,no,no,1
+1233,000082,Is the individual in the video interacting with others?,Whether Something Happened(Y/N),No.,No.,no,no,1
+1234,000082,Is the scene taking place in a work environment?,Whether Something Happened(Y/N),No.,Yes.,no,yes,0
+1241,000083,Does the video show any social interaction?,Whether Something Happened(Y/N),No.,"No, the video does not show any social interaction.",no,no,1
+1242,000083,Is the reader changing positions frequently in this clip?,Whether Something Happened(Y/N),No.,"No, the reader remains seated on the couch throughout the clip.",no,no,1
+1244,000083,Does the reader make use of any physical book in the scene?,Whether Something Happened(Y/N),No.,"No, the reader does not make use of any physical book in the scene.",no,no,1
+1245,000083,Is there any indication of the reader being disturbed or interrupted?,Whether Something Happened(Y/N),No.,"No, there is no indication of the reader being disturbed or interrupted.",no,no,1
+1251,000084,Is the individual in the video eating?,Whether Something Happened(Y/N),No.,No.,no,no,1
+1252,000084,Does the video show the person lying down on the couch?,Whether Something Happened(Y/N),No.,Yes.,no,yes,0
+1253,000084,Is there a pet visible in the video clip?,Whether Something Happened(Y/N),No.,"No, there is no pet visible in the video clip.",no,no,1
+1254,000084,Does the video depict any outdoor scenes?,Whether Something Happened(Y/N),No.,No.,no,no,1
+1255,000084,Is the person in the video talking on the phone?,Whether Something Happened(Y/N),No.,No.,no,no,1
+1256,000084,Did I sit on the couch before reading the book on the tablet?,Order Judging(Y/N),Yes,"Yes, the person was sitting on the couch before reading the book on the tablet.",yes,yes,1
+1257,000084,Did I move my legs on the couch before using the tablet?,Order Judging(Y/N),Yes,"Yes, I moved my legs on the couch before using the tablet.",yes,yes,1
+1258,000084,Was I in the house before I sat on the couch?,Order Judging(Y/N),Yes,"Yes, I was in the house before I sat on the couch.",yes,yes,1
+1259,000084,Did I use the tablet before moving my legs on the couch?,Order Judging(Y/N),No,"Yes, I used the tablet before moving my legs on the couch.",no,yes,0
+1260,000084,Was the tablet in my hands before I sat on the couch?,Order Judging(Y/N),No,"Yes, the tablet was in my hands before I sat on the couch.",no,yes,0
+1272,000085,Did I move my legs on the couch before using the tablet?,Order Judging(Y/N),Yes,"Yes, I moved my legs on the couch before using the tablet.",yes,yes,1
+1273,000085,Did I raise my hands before sitting on the couch?,Order Judging(Y/N),No,"No, I did not raise my hands before sitting on the couch.",no,no,1
+1274,000085,Was I sitting on the couch before raising my hands?,Order Judging(Y/N),Yes,"Yes, I was sitting on the couch before raising my hands.",yes,yes,1
+1275,000085,Did I use the tablet after sitting on the couch?,Order Judging(Y/N),Yes,"Yes, the tablet was used after sitting on the couch.",yes,yes,1
+1278,000085,Is the tablet used after sitting on the couch as shown in the clip?,Order Judging(Y/N),Yes,Yes.,yes,yes,1
+1279,000085,"In the video, is the tablet picked up before legs are placed on the couch?",Order Judging(Y/N),Yes,"No, the tablet is not picked up before legs are placed on the couch.",yes,no,0
+1280,000085,Does sitting on the couch happen after raising hands in the sequence?,Order Judging(Y/N),No,"Yes, the person raises their hands to sit on the couch.",no,yes,0
+1285,000086,Is the person reading a book on the tablet?,Whether Something Happened(Y/N),Yes.,Yes.,yes,yes,1
+1286,000086,Does the scene show an interaction with digital technology?,Whether Something Happened(Y/N),Yes.,"Yes, the scene shows an interaction with digital technology as the person is seen holding a white device that displays text.",yes,yes,1
+1287,000086,Is the individual standing while using the tablet?,Whether Something Happened(Y/N),No.,No.,no,no,1
+1288,000086,Has the person positioned themselves comfortably for tablet use?,Whether Something Happened(Y/N),Yes.,"Yes, the person is comfortably seated on a couch with their legs crossed.",yes,yes,1
+1289,000086,Does the video show the person watching TV?,Whether Something Happened(Y/N),No.,No.,no,no,1
+1290,000086,"In the video, did I use the tablet before sitting on the couch?",Order Judging(Y/N),No,"Yes, the tablet was used before sitting on the couch.",no,yes,0
+1291,000086,Did I raise my hands before holding the tablet?,Order Judging(Y/N),No,"No, I did not raise my hands before holding the tablet.",no,no,1
+1292,000086,"In the video, was I already seated on the couch before using the tablet?",Order Judging(Y/N),Yes,"Yes, I was already seated on the couch before using the tablet.",yes,yes,1
+1293,000086,Was the tablet in my hand before I used it?,Order Judging(Y/N),Yes,"Yes, the tablet was in my hand before I used it.",yes,yes,1
+1296,000086,"In the video, did I move my legs on the couch before using the tablet?",Order Judging(Y/N),Yes,"No, the person did not move their legs on the couch before using the tablet.",yes,no,0
+1297,000086,"In the video, is the tablet held before raising hands?",Order Judging(Y/N),Yes,Yes,yes,yes,1
+1298,000086,"In the video, does sitting on the couch happen before moving legs on the couch?",Order Judging(Y/N),Yes,"Yes, sitting on the couch happens before moving legs on it.",yes,yes,1
+1306,000087,Is the person in the video standing up?,Whether Something Happened(Y/N),No.,"No, the person is sitting on a couch.",no,no,1
+1307,000087,Does the video capture the individual walking around?,Whether Something Happened(Y/N),No.,"No, the video does not capture the individual walking around; it focuses on their interaction with the book.",no,no,1
+1308,000087,Is there a group of people in the video clip?,Whether Something Happened(Y/N),No.,No.,no,no,1
+1309,000087,Does the frame show the person cooking in the kitchen?,Whether Something Happened(Y/N),No.,"No, the frame does not show the person cooking in the kitchen.",no,no,1
+1310,000087,Is the person in the video engaging in a conversation?,Whether Something Happened(Y/N),No.,"No, the person is not engaging in a conversation; they are focused on reading.",no,no,1
+1311,000087,Did I sit on the couch before using the tablet?,Order Judging(Y/N),Yes.,"Yes, the person was sitting on the couch before using the tablet.",yes,yes,1
+1312,000087,Did I hold the tablet before sitting on the couch?,Order Judging(Y/N),No.,"Yes, the tablet was held in front of you before sitting on the couch.",no,yes,0
+1313,000087,Did I sit down after picking up the tablet?,Order Judging(Y/N),Yes.,"Yes, the person picked up the tablet and sat down on the couch.",yes,yes,1
+1316,000087,Does the action of sitting on the couch happen before using the tablet?,Order Judging(Y/N),Yes,"Yes, the action of sitting on the couch happens before using the tablet.",yes,yes,1
+1317,000087,Does raising hands occur before sitting on the couch?,Order Judging(Y/N),No,"Yes, raising hands occur before sitting on the couch.",no,yes,0
+1318,000087,Is using the tablet done after sitting on the couch?,Order Judging(Y/N),Yes,"Yes, the tablet is fully turned on and displayed prominently in front of the person.",yes,yes,1
+1324,000088,Did I exit the house during the video?,Whether Something Happened(Y/N),No.,"Yes, the person exited the house through a door on the right side of the frame.",no,yes,0
+1325,000088,Did I ignore any rooms while checking?,Whether Something Happened(Y/N),No.,"No, I did not ignore any rooms while checking.",no,no,1
+1326,000088,Did the interaction with the other person seem hostile?,Whether Something Happened(Y/N),No.,"No, the interaction with the other person seemed friendly and casual.",no,no,1
+1335,000089,Did I hold the magazine before walking around the house?,Order Judging(Y/N),No,"Yes, the person holding the magazine was walking around the house before they walked towards the camera.",no,yes,0
+1336,000089,Did I look at the magazine before walking around with another person?,Order Judging(Y/N),Yes,"Yes, I did.",yes,yes,1
+1337,000089,Was the magazine held after checking on items in the house?,Order Judging(Y/N),No,"Yes, the magazine was held in front of the person who was holding it.",no,yes,0
+1349,000090,Did the person read a book in the video?,Whether Something Happened(Y/N),Yes.,Yes.,yes,yes,1
+1350,000090,Did the individual change the page of the book at least once?,Whether Something Happened(Y/N),Yes.,"Yes, the individual changed the page of the book by pointing at it and gesturing with their hands.",yes,yes,1
+1351,000090,Did the person have an interaction with someone in the room?,Whether Something Happened(Y/N),Yes.,"Yes, the person was seen holding a small object and gesturing with their hands.",yes,yes,1
+1352,000090,"In the video, is the magazine held before turning book pages?",Order Judging(Y/N),Yes.,Yes,yes,yes,1
+1353,000090,Is the book read after interacting with a woman?,Order Judging(Y/N),No.,Yes.,no,yes,0
+1354,000090,"In the video, does looking around occur before holding the magazine?",Order Judging(Y/N),No.,"Yes, looking around occurs before holding the magazine.",no,yes,0
+1359,000090,Did I walk around the house before holding the magazine?,Order Judging(Y/N),Yes.,"Yes, the person was seen walking around the house before holding the magazine.",yes,yes,1
+1360,000090,Was the magazine held before reading a book?,Order Judging(Y/N),Yes.,Yes.,yes,yes,1
+1361,000090,Did reading a book happen before walking around the house?,Order Judging(Y/N),No.,"Yes, the person was reading a book before walking around the house.",no,yes,0
+1368,000091,Did the characters sit down for a formal meeting?,Whether Something Happened(Y/N),No.,No.,no,no,1
+1369,000091,Are the characters in the video clip outdoors?,Whether Something Happened(Y/N),No.,No.,no,no,1
+1370,000091,Is there any sign of an argument happening in the video?,Whether Something Happened(Y/N),No.,"No, there is no sign of an argument happening in the video.",no,no,1
+1371,000091,Did the characters watch television in the clip?,Whether Something Happened(Y/N),No.,No.,no,no,1
+1372,000091,Is there any physical activity performed by the characters?,Whether Something Happened(Y/N),No.,"No, there is no physical activity performed by the characters.",no,no,1
+1373,000091,Does reading a book happen before talking to the woman?,Order Judging(Y/N),Yes.,Yes.,yes,yes,1
+1374,000091,Is looking around done before turning book pages?,Order Judging(Y/N),Yes.,Yes.,yes,yes,1
+1378,000091,Did I look around before holding the magazine?,Order Judging(Y/N),No.,"Yes, I looked around before holding the magazine.",no,yes,0
+1387,000092,Did I talk to the woman before reading the magazine?,Order Judging(Y/N),Yes,"Yes, she was seen talking to someone off-camera before reading the magazine.",yes,yes,1
+1388,000092,Did I read the magazine before making coffee?,Order Judging(Y/N),Yes,Yes,yes,yes,1
+1389,000092,Did I operate the phone before talking to the woman?,Order Judging(Y/N),No,"Yes, I operated the phone before talking to the woman.",no,yes,0
+1390,000092,Did I make coffee before sitting in the room?,Order Judging(Y/N),No,"Yes, the person made coffee before sitting in the room.",no,yes,0
+1391,000092,Did I make coffee before reading a magazine?,Order Judging(Y/N),No,"Yes, I made coffee before reading a magazine.",no,yes,0
+1392,000092,Did I interact with the woman before reading the book?,Order Judging(Y/N),Yes,"Yes, before reading the book, I interacted with her by holding a drink and engaging in conversation.",yes,yes,1
+1393,000092,Was the magazine read before interacting with the woman?,Order Judging(Y/N),No,Yes,no,yes,0
+1394,000092,Was the phone operated before making coffee?,Order Judging(Y/N),Yes,Yes.,yes,yes,1
+1401,000093,Did the individual participate in a recreational game?,Whether Something Happened(Y/N),Yes.,"Yes, the individual is seen playing a board game with wooden pieces.",yes,yes,1
+1402,000093,Was there any interaction with another person during the game?,Whether Something Happened(Y/N),Yes.,"Yes, the person in the green shirt was seen playing with a toy car during the game.",yes,yes,1
+1403,000093,Does the setting include contemporary room decor?,Whether Something Happened(Y/N),Yes.,Yes.,yes,yes,1
+1407,000094,Does the video show any form of artistic painting?,Whether Something Happened(Y/N),No.,"Yes, the video shows a painting on the wall in the background.",no,yes,0
+1408,000094,Is there a solo performance happening in the video?,Whether Something Happened(Y/N),No.,Yes.,no,yes,0
+1409,000094,Did I interact with Lady A after I sat on the chair?,Order Judging(Y/N),Yes.,"Yes, Lady A was seen interacting with someone off-camera in the background.",yes,yes,1
+1419,000095,Does the video show a Jenga tower on a glass table?,Whether Something Happened(Y/N),Yes.,Yes.,yes,yes,1
+1420,000095,Are the Jenga blocks being carefully handled?,Whether Something Happened(Y/N),Yes.,Yes.,yes,yes,1
+1421,000095,Is the Jenga tower intact at this moment in the video?,Whether Something Happened(Y/N),Yes.,Yes.,yes,yes,1
+1424,000095,Did I arrange wooden bricks before playing a card game?,Order Judging(Y/N),No,"Yes, the person in the video is seen arranging wooden bricks before playing a card game.",no,yes,0
+1425,000095,Did I sit on a chair before talking to a lady?,Order Judging(Y/N),Yes,"Yes, the person in the video is sitting on a gray chair before talking to a lady.",yes,yes,1
+1429,000096,Is the Jenga tower still standing?,Whether Something Happened(Y/N),Yes.,Yes.,yes,yes,1
+1430,000096,Has a Jenga block just been successfully moved?,Whether Something Happened(Y/N),Yes.,Yes,yes,yes,1
+1431,000096,Are the participants seated during the game?,Whether Something Happened(Y/N),Yes.,Yes.,yes,yes,1
+1432,000096,Is there a game being played on the floor?,Whether Something Happened(Y/N),No.,Yes.,no,yes,0
+1433,000096,Does the frame display a competitive match in progress?,Whether Something Happened(Y/N),Yes.,Yes.,yes,yes,1
+1434,000096,Did I sit on the chairs before playing Jenga?,Order Judging(Y/N),Yes.,"Yes, the person was sitting on a chair before playing Jenga.",yes,yes,1
+1435,000096,Did I take Jenga blocks from the tower before adding to its top?,Order Judging(Y/N),Yes.,"Yes, the person added more blocks to the tower before adding to its top.",yes,yes,1
+1436,000096,Did the Jenga game happen before relaxing on the chairs?,Order Judging(Y/N),No.,"Yes, the Jenga game was already in progress before relaxing on the chairs.",no,yes,0
+1437,000096,Was placing blocks atop the Jenga tower before taking blocks from it?,Order Judging(Y/N),No.,Yes.,no,yes,0
+1440,000096,Did the game start before arranging wooden bricks on a block?,Order Judging(Y/N),No,"No, the game started with arranging wooden bricks on a block before starting to build a tower.",no,no,1
+1446,000097,Is the Jenga game played before arranging wood pieces?,Order Judging(Y/N),Yes.,Yes.,yes,yes,1
+1447,000097,Does sitting on chairs happen before interacting with each other?,Order Judging(Y/N),Yes.,"Yes, sitting on chairs happens before interacting with each other.",yes,yes,1
+1448,000097,Is the wood arrangement completed before the Jenga tower is built?,Order Judging(Y/N),No.,"No, the wooden arrangement is incomplete before the Jenga tower is built.",no,no,1
+1451,000097,Did the Jenga game occur before sitting on the chairs?,Order Judging(Y/N),No.,"Yes, the Jenga game was completed before sitting on the chairs.",no,yes,0
+1452,000097,Was taking Jenga blocks from the tower after sitting on the chairs?,Order Judging(Y/N),Yes.,Yes.,yes,yes,1
+1459,000098,Is the person alone in the scene?,Whether Something Happened(Y/N),No.,"No, there is another person partially visible in the background.",no,no,1
+1460,000098,Did I interact with others after being at the office?,Order Judging(Y/N),Yes,"Yes, the person in the black shirt was seen interacting with others after being at the office.",yes,yes,1
+1461,000098,Did the office scene occur before the house activities?,Order Judging(Y/N),Yes,"Yes, the office scene occurred before the house activities.",yes,yes,1
+1463,000098,Did I play Jenga before arranging pieces of wood?,Order Judging(Y/N),Yes.,"Yes, you played Jenga before arranging pieces of wood.",yes,yes,1
+1464,000098,Did I use the phone before playing Jenga?,Order Judging(Y/N),No.,"Yes, you used the phone before playing Jenga.",no,yes,0
+1465,000098,Was I at the office before playing with the Jenga blocks?,Order Judging(Y/N),Yes.,"Yes, I was at the office before playing with the Jenga blocks.",yes,yes,1

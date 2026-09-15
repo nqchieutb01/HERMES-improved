@@ -1,0 +1,56 @@
+[
+  {
+    "name": "corrected_baseline",
+    "parameters": {
+      "sample_fps": 0.5,
+      "kv_size": 6000,
+      "encode_chunk_size": 16,
+      "max_new_tokens": 256,
+      "repetition_penalty": 1.1,
+      "recency_weight_start": 0.75,
+      "recency_weight_decay": 0.6,
+      "reindex_margin": 1024,
+      "use_history": true
+    },
+    "id": "00-corrected_baseline",
+    "state": "failed",
+    "error": "Inference worker exit codes: [1, 1]",
+    "seconds": 5.8
+  },
+  {
+    "name": "earlier_reindex",
+    "parameters": {
+      "sample_fps": 0.5,
+      "kv_size": 6000,
+      "encode_chunk_size": 16,
+      "max_new_tokens": 256,
+      "repetition_penalty": 1.1,
+      "recency_weight_start": 0.75,
+      "recency_weight_decay": 0.6,
+      "reindex_margin": 4096,
+      "use_history": true
+    },
+    "id": "01-earlier_reindex",
+    "state": "failed",
+    "error": "Inference worker exit codes: [1, 1]",
+    "seconds": 5.2
+  },
+  {
+    "name": "kv4000",
+    "parameters": {
+      "sample_fps": 0.5,
+      "kv_size": 4000,
+      "encode_chunk_size": 16,
+      "max_new_tokens": 256,
+      "repetition_penalty": 1.1,
+      "recency_weight_start": 0.75,
+      "recency_weight_decay": 0.6,
+      "reindex_margin": 1024,
+      "use_history": true
+    },
+    "id": "02-kv4000",
+    "state": "failed",
+    "error": "Inference worker exit codes: [1, 1]",
+    "seconds": 4.8
+  }
+]

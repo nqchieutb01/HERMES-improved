@@ -1,0 +1,96 @@
+{
+  "subset_definition": "Include Action Caption, Scene Summary, What event order; exclude both Y/N task categories, including explanatory answers in those categories. Reaggregate existing Qwen judgments; no new inference or judging.",
+  "included_tasks": [
+    "Action Caption",
+    "Scene Summary",
+    "What event order"
+  ],
+  "runs": {
+    "fps0.5-kv1024": {
+      "questions": 723,
+      "correct": 169,
+      "accuracy_percent": 23.374827109266942,
+      "mean_score": 1.7289073305670817,
+      "excluded_questions": 742,
+      "by_task": {
+        "Action Caption": {
+          "questions": 166,
+          "correct": 42,
+          "accuracy_percent": 25.301204819277107,
+          "mean_score": 1.9698795180722892
+        },
+        "Scene Summary": {
+          "questions": 300,
+          "correct": 109,
+          "accuracy_percent": 36.333333333333336,
+          "mean_score": 2.4233333333333333
+        },
+        "What event order": {
+          "questions": 257,
+          "correct": 18,
+          "accuracy_percent": 7.003891050583658,
+          "mean_score": 0.7626459143968871
+        }
+      }
+    },
+    "fps0.5-kv6072": {
+      "questions": 723,
+      "correct": 175,
+      "accuracy_percent": 24.20470262793914,
+      "mean_score": 1.7786998616874135,
+      "excluded_questions": 742,
+      "by_task": {
+        "Action Caption": {
+          "questions": 166,
+          "correct": 47,
+          "accuracy_percent": 28.313253012048193,
+          "mean_score": 2.072289156626506
+        },
+        "Scene Summary": {
+          "questions": 300,
+          "correct": 110,
+          "accuracy_percent": 36.666666666666664,
+          "mean_score": 2.47
+        },
+        "What event order": {
+          "questions": 257,
+          "correct": 18,
+          "accuracy_percent": 7.003891050583658,
+          "mean_score": 0.7821011673151751
+        }
+      }
+    },
+    "continuous-fps0.5-kv6000": {
+      "questions": 723,
+      "correct": 181,
+      "accuracy_percent": 25.03457814661134,
+      "mean_score": 1.798063623789765,
+      "excluded_questions": 742,
+      "by_task": {
+        "Action Caption": {
+          "questions": 166,
+          "correct": 47,
+          "accuracy_percent": 28.313253012048193,
+          "mean_score": 2.0240963855421685
+        },
+        "Scene Summary": {
+          "questions": 300,
+          "correct": 116,
+          "accuracy_percent": 38.666666666666664,
+          "mean_score": 2.53
+        },
+        "What event order": {
+          "questions": 257,
+          "correct": 18,
+          "accuracy_percent": 7.003891050583658,
+          "mean_score": 0.7976653696498055
+        }
+      }
+    }
+  },
+  "continuous_minus_prefix_kv6072": {
+    "correct": 6,
+    "accuracy_percent": 0.8298755186721998,
+    "mean_score": 0.019363762102351467
+  }
+}

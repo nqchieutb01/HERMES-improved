@@ -1,0 +1,142 @@
+{
+  "runs": {
+    "prefix_kv1024": {
+      "judge_accuracy_percent": 42.525597269624576,
+      "judge_score": 2.4225255972696247,
+      "yes_no_accuracy_percent": 65.9025787965616,
+      "judge_questions": 1465,
+      "yes_no_questions": 698,
+      "by_task": {
+        "Action Caption": {
+          "questions": 166,
+          "correct": 42,
+          "accuracy_percent": 25.301204819277107,
+          "score": 1.9698795180722892
+        },
+        "Order Judging(Y/N)": {
+          "questions": 409,
+          "correct": 238,
+          "accuracy_percent": 58.19070904645477,
+          "score": 2.958435207823961
+        },
+        "Scene Summary": {
+          "questions": 300,
+          "correct": 109,
+          "accuracy_percent": 36.333333333333336,
+          "score": 2.4233333333333333
+        },
+        "What event order": {
+          "questions": 257,
+          "correct": 18,
+          "accuracy_percent": 7.003891050583658,
+          "score": 0.7626459143968871
+        },
+        "Whether Something Happened(Y/N)": {
+          "questions": 333,
+          "correct": 216,
+          "accuracy_percent": 64.86486486486487,
+          "score": 3.27027027027027
+        }
+      }
+    },
+    "prefix_kv6072": {
+      "judge_accuracy_percent": 41.6382252559727,
+      "judge_score": 2.3754266211604094,
+      "yes_no_accuracy_percent": 63.18051575931232,
+      "judge_questions": 1465,
+      "yes_no_questions": 698,
+      "by_task": {
+        "Action Caption": {
+          "questions": 166,
+          "correct": 47,
+          "accuracy_percent": 28.313253012048193,
+          "score": 2.072289156626506
+        },
+        "Order Judging(Y/N)": {
+          "questions": 409,
+          "correct": 226,
+          "accuracy_percent": 55.256723716381416,
+          "score": 2.7970660146699267
+        },
+        "Scene Summary": {
+          "questions": 300,
+          "correct": 110,
+          "accuracy_percent": 36.666666666666664,
+          "score": 2.47
+        },
+        "What event order": {
+          "questions": 257,
+          "correct": 18,
+          "accuracy_percent": 7.003891050583658,
+          "score": 0.7821011673151751
+        },
+        "Whether Something Happened(Y/N)": {
+          "questions": 333,
+          "correct": 209,
+          "accuracy_percent": 62.76276276276276,
+          "score": 3.1531531531531534
+        }
+      }
+    },
+    "continuous_kv6000": {
+      "judge_accuracy_percent": 42.525597269624576,
+      "judge_score": 2.4061433447098977,
+      "yes_no_accuracy_percent": 63.32378223495702,
+      "judge_questions": 1465,
+      "yes_no_questions": 698,
+      "by_task": {
+        "Action Caption": {
+          "questions": 166,
+          "correct": 47,
+          "accuracy_percent": 28.313253012048193,
+          "score": 2.0240963855421685
+        },
+        "Order Judging(Y/N)": {
+          "questions": 409,
+          "correct": 230,
+          "accuracy_percent": 56.23471882640587,
+          "score": 2.823960880195599
+        },
+        "Scene Summary": {
+          "questions": 300,
+          "correct": 116,
+          "accuracy_percent": 38.666666666666664,
+          "score": 2.53
+        },
+        "What event order": {
+          "questions": 257,
+          "correct": 18,
+          "accuracy_percent": 7.003891050583658,
+          "score": 0.7976653696498055
+        },
+        "Whether Something Happened(Y/N)": {
+          "questions": 333,
+          "correct": 212,
+          "accuracy_percent": 63.66366366366366,
+          "score": 3.2132132132132134
+        }
+      }
+    }
+  },
+  "change_continuous_minus_prefix_kv6072": {
+    "judge_accuracy_percent": 0.887372013651877,
+    "judge_score": 0.03071672354948829,
+    "yes_no_accuracy_percent": 0.14326647564470107
+  },
+  "protocol_validation": {
+    "continuous_videos": 10,
+    "predictions": 1465,
+    "generic_compression_queries": 134,
+    "history_conditioned_compression_queries": 992,
+    "same_judge_model_revision_and_rubric": true
+  },
+  "paper_reference": {
+    "url": "https://arxiv.org/pdf/2601.14724",
+    "table": 2,
+    "model": "LLaVA-OV-0.5B + HERMES (6K tokens)",
+    "accuracy_percent": 53.0,
+    "score": 3.8,
+    "directly_comparable": false,
+    "reason": "Paper uses GPT-3.5-turbo-0125; local runs use Qwen3.8-27B-FP8 and a custom rubric. Existing extracted JPEG inputs also differ from original video decoding."
+  }
+}

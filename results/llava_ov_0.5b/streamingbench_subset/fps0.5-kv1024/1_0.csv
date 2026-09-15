@@ -1,0 +1,7 @@
+"video_id","question","choices","answer","correct_choice","pred_answer","pred_choice","qa_acc","task"
+165,"What card is this person playing now?","['Nine of Spades.', 'Six of Spades.', 'Nine of Hearts.', 'Seven of Diamonds.']","Nine of Spades.","A","A) Nine of Spades.","A",100.0,"Text-Rich Understanding"
+165,"What does the video primarily capture?","['A card game in progress between two individuals.', 'A cooking tutorial.', 'A conversation between two people.', 'A travel vlog.']","A card game in progress between two individuals.","A","A) A card game in progress between two individuals.","A",100.0,"Clips Summarize"
+422,"What color are the walls and the bed in the bedroom?","['Blue.', 'Green.', 'Yellow.', 'Red.']","Red.","D","D) Red.","D",100.0,"Attribute Recognition"
+422,"What does the person do after waking up?","['Lies back down.', 'Walks out of the room.', 'Sits up on the edge of the bed.', 'Stands up and stretches.']","Sits up on the edge of the bed.","C","C) Sits up on the edge of the bed.","C",100.0,"Action Recognition"
+12,"What are the patterns on the second fabric piece retrieved from the drawer?","['Polka dots.', 'Stripes.', 'Floral patterns.', 'Geometric shapes.']","Floral patterns.","C","C) Floral patterns.","C",100.0,"Attribute Recognition"
+12,"What pattern is on the stocking the person is wearing?","['Stripes.', 'Polka dots.', 'Checkered.', 'Floral.']","Checkered.","C","C) Checkered.","C",100.0,"Attribute Recognition"

@@ -1,0 +1,11 @@
+{
+  "sample_fps": 0.5,
+  "kv_size": 8000,
+  "encode_chunk_size": 16,
+  "max_new_tokens": 256,
+  "repetition_penalty": 1.0,
+  "recency_weight_start": 0.75,
+  "recency_weight_decay": 0.6,
+  "reindex_margin": 1024,
+  "use_history": true
+}

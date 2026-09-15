@@ -1,0 +1,89 @@
+{
+  "protocol": "10 continuous original videos; original question order and timestamps; cache reset only between videos",
+  "annotation_source": "/l/users/chieu.nguyen/HERMES/data/rvs/ego/ego4d_oe.json",
+  "annotation_source_sha256": "10482b9f2a799928a79a5c636eaa1dfb504568c4d1fb3063e775c455c3c4e872",
+  "annotations_sha256": "a07bc8cb5cab3044fb7316bcff160020c3a413cb352d4df5ba193056005f65ab",
+  "model": "llava_ov_0.5b",
+  "sample_fps": 0.5,
+  "kv_size": 6000,
+  "encode_chunk_size": 16,
+  "precision": "float16",
+  "decoding": "greedy",
+  "judge": "Qwen/Qwen3.8-27B-FP8; unchanged local rubric",
+  "remaining_paper_differences": [
+    "Qwen judge instead of GPT-3.5-turbo-0125",
+    "Existing extracted 1-FPS JPEG frames instead of decoding original videos"
+  ],
+  "videos": [
+    {
+      "video_id": "9198b9a4-8d8f-4ba6-9924-4c86982d890a",
+      "frame_prefix_id": "000012",
+      "frames": 3600,
+      "last_question_time": 3600,
+      "questions": 259
+    },
+    {
+      "video_id": "0fa75cb3-c4a0-4232-bdc4-15116ed39d88",
+      "frame_prefix_id": "000079",
+      "frames": 3540,
+      "last_question_time": 3540,
+      "questions": 57
+    },
+    {
+      "video_id": "879dd163-7588-45d1-9466-a5deabc59167",
+      "frame_prefix_id": "000087",
+      "frames": 3540,
+      "last_question_time": 3540,
+      "questions": 113
+    },
+    {
+      "video_id": "cbfeb6c8-ec1f-4884-bcbf-14d7764c4a36",
+      "frame_prefix_id": "000039",
+      "frames": 3601,
+      "last_question_time": 3600,
+      "questions": 181
+    },
+    {
+      "video_id": "6baa36c1-e4d0-4dbd-97b2-dff48ecf796e",
+      "frame_prefix_id": "000053",
+      "frames": 3601,
+      "last_question_time": 3600,
+      "questions": 236
+    },
+    {
+      "video_id": "e58207f1-84ec-424b-a997-ff64a57eb13b",
+      "frame_prefix_id": "000098",
+      "frames": 3270,
+      "last_question_time": 3270,
+      "questions": 145
+    },
+    {
+      "video_id": "89a95cd8-ca13-4edf-807e-d62138fd30e0",
+      "frame_prefix_id": "000061",
+      "frames": 3000,
+      "last_question_time": 3000,
+      "questions": 106
+    },
+    {
+      "video_id": "2bb31b69-fcda-4f54-8338-f590944df999",
+      "frame_prefix_id": "000026",
+      "frames": 3600,
+      "last_question_time": 3599,
+      "questions": 238
+    },
+    {
+      "video_id": "af400f98-3c57-46ad-acac-eaca6f940180",
+      "frame_prefix_id": "000073",
+      "frames": 3000,
+      "last_question_time": 3000,
+      "questions": 31
+    },
+    {
+      "video_id": "20bc995f-c3de-4789-bd7a-34cf1a313b0c",
+      "frame_prefix_id": "000070",
+      "frames": 3607,
+      "last_question_time": 3606,
+      "questions": 99
+    }
+  ]
+}

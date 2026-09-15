@@ -1,0 +1,25 @@
+{
+  "state": "search_exhausted",
+  "job_id": "243973",
+  "updated_at": "2026-09-15T13:31:53+0400",
+  "best": {
+    "name": "adaptive",
+    "parameters": {
+      "sample_fps": 0.5,
+      "kv_size": 12000,
+      "encode_chunk_size": 8,
+      "max_new_tokens": 256,
+      "repetition_penalty": 1.0,
+      "recency_weight_start": 0.75,
+      "recency_weight_decay": 0.6,
+      "reindex_margin": 4096,
+      "use_history": true
+    },
+    "id": "17-adaptive",
+    "state": "completed",
+    "accuracy_percent": 44.50511945392491,
+    "score": 2.508532423208191,
+    "seconds": 2249.8
+  },
+  "trials": 24
+}

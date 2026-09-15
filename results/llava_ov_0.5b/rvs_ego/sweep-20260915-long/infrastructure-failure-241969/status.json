@@ -1,0 +1,7 @@
+{
+  "state": "failed",
+  "job_id": "241969",
+  "updated_at": "2026-09-15T00:06:29+0400",
+  "reason": "Three consecutive failed trials; inspect logs",
+  "trials": 3
+}

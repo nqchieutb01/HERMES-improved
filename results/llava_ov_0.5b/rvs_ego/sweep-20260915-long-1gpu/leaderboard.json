@@ -1,0 +1,456 @@
+[
+  {
+    "name": "corrected_baseline",
+    "parameters": {
+      "sample_fps": 0.5,
+      "kv_size": 6000,
+      "encode_chunk_size": 16,
+      "max_new_tokens": 256,
+      "repetition_penalty": 1.1,
+      "recency_weight_start": 0.75,
+      "recency_weight_decay": 0.6,
+      "reindex_margin": 1024,
+      "use_history": true
+    },
+    "id": "00-corrected_baseline",
+    "state": "completed",
+    "accuracy_percent": 42.86689419795222,
+    "score": 2.439590443686007,
+    "seconds": 1812.2
+  },
+  {
+    "name": "earlier_reindex",
+    "parameters": {
+      "sample_fps": 0.5,
+      "kv_size": 6000,
+      "encode_chunk_size": 16,
+      "max_new_tokens": 256,
+      "repetition_penalty": 1.1,
+      "recency_weight_start": 0.75,
+      "recency_weight_decay": 0.6,
+      "reindex_margin": 4096,
+      "use_history": true
+    },
+    "id": "01-earlier_reindex",
+    "state": "completed",
+    "accuracy_percent": 42.593856655290104,
+    "score": 2.4177474402730375,
+    "seconds": 1724.5
+  },
+  {
+    "name": "kv4000",
+    "parameters": {
+      "sample_fps": 0.5,
+      "kv_size": 4000,
+      "encode_chunk_size": 16,
+      "max_new_tokens": 256,
+      "repetition_penalty": 1.1,
+      "recency_weight_start": 0.75,
+      "recency_weight_decay": 0.6,
+      "reindex_margin": 1024,
+      "use_history": true
+    },
+    "id": "02-kv4000",
+    "state": "completed",
+    "accuracy_percent": 41.29692832764505,
+    "score": 2.371331058020478,
+    "seconds": 1614.4
+  },
+  {
+    "name": "chunk8",
+    "parameters": {
+      "sample_fps": 0.5,
+      "kv_size": 6000,
+      "encode_chunk_size": 8,
+      "max_new_tokens": 256,
+      "repetition_penalty": 1.1,
+      "recency_weight_start": 0.75,
+      "recency_weight_decay": 0.6,
+      "reindex_margin": 1024,
+      "use_history": true
+    },
+    "id": "03-chunk8",
+    "state": "completed",
+    "accuracy_percent": 42.593856655290104,
+    "score": 2.419112627986348,
+    "seconds": 1791.0
+  },
+  {
+    "name": "fps1",
+    "parameters": {
+      "sample_fps": 1.0,
+      "kv_size": 6000,
+      "encode_chunk_size": 16,
+      "max_new_tokens": 256,
+      "repetition_penalty": 1.1,
+      "recency_weight_start": 0.75,
+      "recency_weight_decay": 0.6,
+      "reindex_margin": 1024,
+      "use_history": true
+    },
+    "id": "04-fps1",
+    "state": "completed",
+    "accuracy_percent": 41.97952218430034,
+    "score": 2.3918088737201364,
+    "seconds": 2584.0
+  },
+  {
+    "name": "no_repetition_penalty",
+    "parameters": {
+      "sample_fps": 0.5,
+      "kv_size": 6000,
+      "encode_chunk_size": 16,
+      "max_new_tokens": 256,
+      "repetition_penalty": 1.0,
+      "recency_weight_start": 0.75,
+      "recency_weight_decay": 0.6,
+      "reindex_margin": 1024,
+      "use_history": true
+    },
+    "id": "05-no_repetition_penalty",
+    "state": "completed",
+    "accuracy_percent": 43.27645051194539,
+    "score": 2.4443686006825938,
+    "seconds": 1841.5
+  },
+  {
+    "name": "generic_guidance",
+    "parameters": {
+      "sample_fps": 0.5,
+      "kv_size": 6000,
+      "encode_chunk_size": 16,
+      "max_new_tokens": 256,
+      "repetition_penalty": 1.1,
+      "recency_weight_start": 0.75,
+      "recency_weight_decay": 0.6,
+      "reindex_margin": 1024,
+      "use_history": false
+    },
+    "id": "06-generic_guidance",
+    "state": "completed",
+    "accuracy_percent": 41.02389078498293,
+    "score": 2.3406143344709895,
+    "seconds": 1656.2
+  },
+  {
+    "name": "previous_recency",
+    "parameters": {
+      "sample_fps": 0.5,
+      "kv_size": 6000,
+      "encode_chunk_size": 16,
+      "max_new_tokens": 256,
+      "repetition_penalty": 1.1,
+      "recency_weight_start": 1.0,
+      "recency_weight_decay": 0.9,
+      "reindex_margin": 1024,
+      "use_history": true
+    },
+    "id": "07-previous_recency",
+    "state": "completed",
+    "accuracy_percent": 42.86689419795222,
+    "score": 2.419112627986348,
+    "seconds": 1782.5
+  },
+  {
+    "name": "adaptive",
+    "parameters": {
+      "sample_fps": 0.5,
+      "kv_size": 4000,
+      "encode_chunk_size": 16,
+      "max_new_tokens": 256,
+      "repetition_penalty": 1.0,
+      "recency_weight_start": 0.75,
+      "recency_weight_decay": 0.6,
+      "reindex_margin": 1024,
+      "use_history": true
+    },
+    "id": "08-adaptive",
+    "state": "completed",
+    "accuracy_percent": 41.774744027303754,
+    "score": 2.387713310580205,
+    "seconds": 1828.6
+  },
+  {
+    "name": "adaptive",
+    "parameters": {
+      "sample_fps": 0.5,
+      "kv_size": 8000,
+      "encode_chunk_size": 16,
+      "max_new_tokens": 256,
+      "repetition_penalty": 1.0,
+      "recency_weight_start": 0.75,
+      "recency_weight_decay": 0.6,
+      "reindex_margin": 1024,
+      "use_history": true
+    },
+    "id": "09-adaptive",
+    "state": "completed",
+    "accuracy_percent": 42.93515358361775,
+    "score": 2.4252559726962457,
+    "seconds": 1959.4
+  },
+  {
+    "name": "adaptive",
+    "parameters": {
+      "sample_fps": 0.5,
+      "kv_size": 12000,
+      "encode_chunk_size": 16,
+      "max_new_tokens": 256,
+      "repetition_penalty": 1.0,
+      "recency_weight_start": 0.75,
+      "recency_weight_decay": 0.6,
+      "reindex_margin": 1024,
+      "use_history": true
+    },
+    "id": "10-adaptive",
+    "state": "completed",
+    "accuracy_percent": 43.34470989761092,
+    "score": 2.454607508532423,
+    "seconds": 2025.3
+  },
+  {
+    "name": "adaptive",
+    "parameters": {
+      "sample_fps": 1.0,
+      "kv_size": 12000,
+      "encode_chunk_size": 16,
+      "max_new_tokens": 256,
+      "repetition_penalty": 1.0,
+      "recency_weight_start": 0.75,
+      "recency_weight_decay": 0.6,
+      "reindex_margin": 1024,
+      "use_history": true
+    },
+    "id": "11-adaptive",
+    "state": "completed",
+    "accuracy_percent": 42.525597269624576,
+    "score": 2.4129692832764507,
+    "seconds": 3047.2
+  },
+  {
+    "name": "adaptive",
+    "parameters": {
+      "sample_fps": 0.5,
+      "kv_size": 12000,
+      "encode_chunk_size": 8,
+      "max_new_tokens": 256,
+      "repetition_penalty": 1.0,
+      "recency_weight_start": 0.75,
+      "recency_weight_decay": 0.6,
+      "reindex_margin": 1024,
+      "use_history": true
+    },
+    "id": "12-adaptive",
+    "state": "completed",
+    "accuracy_percent": 43.54948805460751,
+    "score": 2.4737201365187715,
+    "seconds": 2245.3
+  },
+  {
+    "name": "adaptive",
+    "parameters": {
+      "sample_fps": 0.5,
+      "kv_size": 4000,
+      "encode_chunk_size": 8,
+      "max_new_tokens": 256,
+      "repetition_penalty": 1.0,
+      "recency_weight_start": 0.75,
+      "recency_weight_decay": 0.6,
+      "reindex_margin": 1024,
+      "use_history": true
+    },
+    "id": "13-adaptive",
+    "state": "completed",
+    "accuracy_percent": 41.84300341296928,
+    "score": 2.393174061433447,
+    "seconds": 1992.9
+  },
+  {
+    "name": "adaptive",
+    "parameters": {
+      "sample_fps": 0.5,
+      "kv_size": 6000,
+      "encode_chunk_size": 8,
+      "max_new_tokens": 256,
+      "repetition_penalty": 1.0,
+      "recency_weight_start": 0.75,
+      "recency_weight_decay": 0.6,
+      "reindex_margin": 1024,
+      "use_history": true
+    },
+    "id": "14-adaptive",
+    "state": "completed",
+    "accuracy_percent": 42.32081911262799,
+    "score": 2.414334470989761,
+    "seconds": 2058.6
+  },
+  {
+    "name": "adaptive",
+    "parameters": {
+      "sample_fps": 0.5,
+      "kv_size": 8000,
+      "encode_chunk_size": 8,
+      "max_new_tokens": 256,
+      "repetition_penalty": 1.0,
+      "recency_weight_start": 0.75,
+      "recency_weight_decay": 0.6,
+      "reindex_margin": 1024,
+      "use_history": true
+    },
+    "id": "15-adaptive",
+    "state": "completed",
+    "accuracy_percent": 43.0716723549488,
+    "score": 2.4279863481228667,
+    "seconds": 2097.1
+  },
+  {
+    "name": "adaptive",
+    "parameters": {
+      "sample_fps": 1.0,
+      "kv_size": 12000,
+      "encode_chunk_size": 8,
+      "max_new_tokens": 256,
+      "repetition_penalty": 1.0,
+      "recency_weight_start": 0.75,
+      "recency_weight_decay": 0.6,
+      "reindex_margin": 1024,
+      "use_history": true
+    },
+    "id": "16-adaptive",
+    "state": "completed",
+    "accuracy_percent": 42.45733788395904,
+    "score": 2.395221843003413,
+    "seconds": 3397.9
+  },
+  {
+    "name": "adaptive",
+    "parameters": {
+      "sample_fps": 0.5,
+      "kv_size": 12000,
+      "encode_chunk_size": 8,
+      "max_new_tokens": 256,
+      "repetition_penalty": 1.0,
+      "recency_weight_start": 0.75,
+      "recency_weight_decay": 0.6,
+      "reindex_margin": 4096,
+      "use_history": true
+    },
+    "id": "17-adaptive",
+    "state": "completed",
+    "accuracy_percent": 44.50511945392491,
+    "score": 2.508532423208191,
+    "seconds": 2249.8
+  },
+  {
+    "name": "adaptive",
+    "parameters": {
+      "sample_fps": 0.5,
+      "kv_size": 4000,
+      "encode_chunk_size": 8,
+      "max_new_tokens": 256,
+      "repetition_penalty": 1.0,
+      "recency_weight_start": 0.75,
+      "recency_weight_decay": 0.6,
+      "reindex_margin": 4096,
+      "use_history": true
+    },
+    "id": "18-adaptive",
+    "state": "completed",
+    "accuracy_percent": 41.70648464163823,
+    "score": 2.3870307167235496,
+    "seconds": 2006.6
+  },
+  {
+    "name": "adaptive",
+    "parameters": {
+      "sample_fps": 0.5,
+      "kv_size": 6000,
+      "encode_chunk_size": 8,
+      "max_new_tokens": 256,
+      "repetition_penalty": 1.0,
+      "recency_weight_start": 0.75,
+      "recency_weight_decay": 0.6,
+      "reindex_margin": 4096,
+      "use_history": true
+    },
+    "id": "19-adaptive",
+    "state": "completed",
+    "accuracy_percent": 42.45733788395904,
+    "score": 2.425938566552901,
+    "seconds": 2075.9
+  },
+  {
+    "name": "adaptive",
+    "parameters": {
+      "sample_fps": 0.5,
+      "kv_size": 8000,
+      "encode_chunk_size": 8,
+      "max_new_tokens": 256,
+      "repetition_penalty": 1.0,
+      "recency_weight_start": 0.75,
+      "recency_weight_decay": 0.6,
+      "reindex_margin": 4096,
+      "use_history": true
+    },
+    "id": "20-adaptive",
+    "state": "completed",
+    "accuracy_percent": 43.41296928327645,
+    "score": 2.445051194539249,
+    "seconds": 2090.9
+  },
+  {
+    "name": "adaptive",
+    "parameters": {
+      "sample_fps": 1.0,
+      "kv_size": 12000,
+      "encode_chunk_size": 8,
+      "max_new_tokens": 256,
+      "repetition_penalty": 1.0,
+      "recency_weight_start": 0.75,
+      "recency_weight_decay": 0.6,
+      "reindex_margin": 4096,
+      "use_history": true
+    },
+    "id": "21-adaptive",
+    "state": "completed",
+    "accuracy_percent": 42.79863481228669,
+    "score": 2.4218430034129694,
+    "seconds": 3453.0
+  },
+  {
+    "name": "adaptive",
+    "parameters": {
+      "sample_fps": 0.5,
+      "kv_size": 12000,
+      "encode_chunk_size": 16,
+      "max_new_tokens": 256,
+      "repetition_penalty": 1.0,
+      "recency_weight_start": 0.75,
+      "recency_weight_decay": 0.6,
+      "reindex_margin": 4096,
+      "use_history": true
+    },
+    "id": "22-adaptive",
+    "state": "failed",
+    "error": "Inference worker exit codes: [1]",
+    "seconds": 16.1
+  },
+  {
+    "name": "adaptive",
+    "parameters": {
+      "sample_fps": 0.5,
+      "kv_size": 12000,
+      "encode_chunk_size": 8,
+      "max_new_tokens": 256,
+      "repetition_penalty": 1.05,
+      "recency_weight_start": 0.75,
+      "recency_weight_decay": 0.6,
+      "reindex_margin": 4096,
+      "use_history": true
+    },
+    "id": "23-adaptive",
+    "state": "failed",
+    "error": "Inference worker exit codes: [1]",
+    "seconds": 8.4
+  }
+]

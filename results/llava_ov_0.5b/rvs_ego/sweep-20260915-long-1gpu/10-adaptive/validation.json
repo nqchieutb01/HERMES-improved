@@ -1,0 +1,25 @@
+{
+  "status": "PASS",
+  "checks": "Coverage, annotation metadata, CSV structure, and nonempty predictions; no answer correctness judging",
+  "expected_clips": 10,
+  "observed_clips": 10,
+  "expected_questions": 1465,
+  "prediction_rows": 1465,
+  "nonempty_predictions": 1465,
+  "missing_records": 0,
+  "unexpected_records": 0,
+  "empty_prediction_records": [],
+  "malformed_records": [],
+  "missing_examples": [],
+  "unexpected_examples": [],
+  "task_counts": {
+    "Action Caption": 166,
+    "Order Judging(Y/N)": 409,
+    "Scene Summary": 300,
+    "What event order": 257,
+    "Whether Something Happened(Y/N)": 333
+  },
+  "errors": [],
+  "results_path": "/l/users/chieu.nguyen/HERMES/results/llava_ov_0.5b/rvs_ego/sweep-20260915-long-1gpu/10-adaptive/results.csv",
+  "anno_path": "/l/users/chieu.nguyen/HERMES/results/llava_ov_0.5b/rvs_ego/sweep-20260915-long-1gpu/annotations.json"
+}

@@ -1,0 +1,36 @@
+{
+  "model": "Qwen/Qwen3.8-27B-FP8",
+  "revision": "017b9c7af6b5689d5dd426a76e0bc077eb5ca20a",
+  "input_sha256": "c5d1cd98b2e91d67026e05077db84cc9843a261f83d4fddaca4491c3bd34d8f0",
+  "prompt_version": "hermes_original_rubric_v1",
+  "system_prompt": "You are an intelligent chatbot designed for evaluating the correctness of generative outputs for question-answer pairs. Your task is to compare the predicted answer with the correct answer and determine if they match meaningfully. Here's how you can accomplish the task:------##INSTRUCTIONS: - Focus on the meaningful match between the predicted answer and the correct answer.\n- Consider synonyms or paraphrases as valid matches.\n- Evaluate the correctness of the prediction compared to the answer.",
+  "user_prompt_template": "Please evaluate the following video-based question-answer pair:\n\nQuestion: {question}\nCorrect Answer: {answer}\nPredicted Answer: {pred}\n\nProvide your evaluation only as a yes/no and score where the score is an integer value between 0 and 5, with 5 indicating the highest meaningful match. Please generate the response in the form of a JSON object with keys 'correct' and 'score', where value of 'correct' is a string of 'yes' or 'no' and value of 'score' is in INTEGER, not STRING. DO NOT PROVIDE ANY OTHER OUTPUT TEXT OR EXPLANATION. Only provide the JSON object. For example, your response should look like this: {{\"correct\": \"yes\", \"score\": 5}}.",
+  "schema": {
+    "type": "object",
+    "properties": {
+      "correct": {
+        "type": "string",
+        "enum": [
+          "yes",
+          "no"
+        ]
+      },
+      "score": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 5
+      }
+    },
+    "required": [
+      "correct",
+      "score"
+    ],
+    "additionalProperties": false
+  },
+  "temperature": 0,
+  "seed": 2024,
+  "enable_thinking": false,
+  "max_tokens": 128,
+  "questions": 1465,
+  "hf_home": "/nfs-stor/chieu.nguyen/.cache/huggingface"
+}

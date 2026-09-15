@@ -1,0 +1,5 @@
+{
+  "cancelled_job": 241976,
+  "reason": "User requested one GPU",
+  "replacement_directory": "/l/users/chieu.nguyen/HERMES/results/llava_ov_0.5b/rvs_ego/sweep-20260915-long-1gpu"
+}

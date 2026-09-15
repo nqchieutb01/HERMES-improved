@@ -1,0 +1,52 @@
+{
+  "model": "Qwen/Qwen3.8-27B-FP8",
+  "revision": "017b9c7af6b5689d5dd426a76e0bc077eb5ca20a",
+  "prompt_version": "hermes_original_rubric_v1",
+  "questions": 1465,
+  "correct": 636,
+  "accuracy_percent": 43.41296928327645,
+  "score": 2.445051194539249,
+  "by_task": {
+    "Action Caption": {
+      "questions": 166,
+      "correct": 46,
+      "accuracy_percent": 27.710843373493976,
+      "score": 1.9698795180722892
+    },
+    "Order Judging(Y/N)": {
+      "questions": 409,
+      "correct": 234,
+      "accuracy_percent": 57.21271393643032,
+      "score": 2.87041564792176
+    },
+    "Scene Summary": {
+      "questions": 300,
+      "correct": 116,
+      "accuracy_percent": 38.666666666666664,
+      "score": 2.5633333333333335
+    },
+    "What event order": {
+      "questions": 257,
+      "correct": 17,
+      "accuracy_percent": 6.614785992217898,
+      "score": 0.7237354085603113
+    },
+    "Whether Something Happened(Y/N)": {
+      "questions": 333,
+      "correct": 223,
+      "accuracy_percent": 66.96696696696696,
+      "score": 3.3813813813813813
+    }
+  },
+  "open_ended_subset": {
+    "included_tasks": [
+      "Action Caption",
+      "Scene Summary",
+      "What event order"
+    ],
+    "questions": 723,
+    "correct": 179,
+    "accuracy_percent": 24.75795297372061,
+    "score": 1.7731673582295988
+  }
+}

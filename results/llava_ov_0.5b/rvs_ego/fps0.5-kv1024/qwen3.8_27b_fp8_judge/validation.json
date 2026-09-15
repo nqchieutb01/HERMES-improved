@@ -1,0 +1,11 @@
+{
+  "status": "PASS",
+  "checked_records": 1465,
+  "unique_rows": 1465,
+  "correct": 623,
+  "score_sum": 3549,
+  "input_unchanged": true,
+  "all_inputs_match": true,
+  "all_judgments_valid": true,
+  "aggregates_recomputed": true
+}

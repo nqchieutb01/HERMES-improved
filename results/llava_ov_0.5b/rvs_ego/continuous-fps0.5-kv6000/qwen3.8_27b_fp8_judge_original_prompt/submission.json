@@ -1,0 +1,9 @@
+{
+  "slurm_job_id": 241584,
+  "results_path": "/l/users/chieu.nguyen/HERMES/results/llava_ov_0.5b/rvs_ego/continuous-fps0.5-kv6000/results.csv",
+  "input_sha256": "69907ae835d80b11ff7961a779bf44df62b0f85458c5706a79d588202304176a",
+  "judge_script_sha256_at_submission": "c4efaf7b22fdb54527393c6526e5e980d86485841a86fbaaf6e17ebcb8e687c3",
+  "prompt_version": "hermes_original_rubric_v1",
+  "expected_questions": 1465,
+  "expected_open_ended_questions": 723
+}

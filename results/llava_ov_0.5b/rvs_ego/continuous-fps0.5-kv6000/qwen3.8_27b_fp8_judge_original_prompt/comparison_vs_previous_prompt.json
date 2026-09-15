@@ -1,0 +1,44 @@
+{
+  "same_predictions_and_judge_settings": true,
+  "new_prompt_version": "hermes_original_rubric_v1",
+  "subsets": {
+    "all_questions": {
+      "previous_prompt": {
+        "questions": 1465,
+        "correct": 623,
+        "accuracy_percent": 42.525597269624576,
+        "score": 2.4061433447098977
+      },
+      "original_rubric_prompt": {
+        "questions": 1465,
+        "correct": 612,
+        "accuracy_percent": 41.774744027303754,
+        "score": 2.391126279863481
+      },
+      "change": {
+        "correct": -11,
+        "accuracy_percent": -0.7508532423208223,
+        "score": -0.015017064846416517
+      }
+    },
+    "open_ended": {
+      "previous_prompt": {
+        "questions": 723,
+        "correct": 181,
+        "accuracy_percent": 25.03457814661134,
+        "score": 1.798063623789765
+      },
+      "original_rubric_prompt": {
+        "questions": 723,
+        "correct": 168,
+        "accuracy_percent": 23.236514522821576,
+        "score": 1.7496542185338866
+      },
+      "change": {
+        "correct": -13,
+        "accuracy_percent": -1.7980636237897656,
+        "score": -0.048409405255878335
+      }
+    }
+  }
+}

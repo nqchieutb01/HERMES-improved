@@ -1,0 +1,175 @@
+#!/usr/bin/env python3
+"""Run a local Qwen judge and report correctness accuracy and mean 0-5 score."""
+import argparse
+import csv
+import hashlib
+import json
+import os
+from pathlib import Path
+
+# Set before importing any Hugging Face or inference libraries.
+HF_ROOT = "/nfs-stor/chieu.nguyen/.cache/huggingface"
+os.environ["HF_HOME"] = HF_ROOT
+os.environ["HF_HUB_CACHE"] = HF_ROOT + "/hub"
+os.environ["HF_XET_CACHE"] = HF_ROOT + "/xet"
+os.environ["TRANSFORMERS_CACHE"] = HF_ROOT + "/hub"
+
+MODEL = "Qwen/Qwen3.8-27B-FP8"
+ROOT = Path(__file__).resolve().parents[1]
+# Match eval/eval_open_ended.py's rubric. Only the output serialization differs:
+# JSON with `correct` instead of a Python dictionary with `pred`.
+PROMPT_VERSION = "hermes_original_rubric_v1"
+SYSTEM = (
+    "You are an intelligent chatbot designed for evaluating the correctness of generative outputs for question-answer pairs. "
+    "Your task is to compare the predicted answer with the correct answer and determine if they match meaningfully. Here's how you can accomplish the task:"
+    "------"
+    "##INSTRUCTIONS: "
+    "- Focus on the meaningful match between the predicted answer and the correct answer.\n"
+    "- Consider synonyms or paraphrases as valid matches.\n"
+    "- Evaluate the correctness of the prediction compared to the answer."
+)
+USER_TEMPLATE = (
+    "Please evaluate the following video-based question-answer pair:\n\n"
+    "Question: {question}\n"
+    "Correct Answer: {answer}\n"
+    "Predicted Answer: {pred}\n\n"
+    "Provide your evaluation only as a yes/no and score where the score is an integer value between 0 and 5, with 5 indicating the highest meaningful match. "
+    "Please generate the response in the form of a JSON object with keys 'correct' and 'score', where value of 'correct' is a string of 'yes' or 'no' and value of 'score' is in INTEGER, not STRING. "
+    "DO NOT PROVIDE ANY OTHER OUTPUT TEXT OR EXPLANATION. Only provide the JSON object. "
+    'For example, your response should look like this: {{"correct": "yes", "score": 5}}.'
+)
+
+
+def judge_messages(row):
+    return [
+        {"role": "system", "content": SYSTEM},
+        {"role": "user", "content": USER_TEMPLATE.format(
+            question=row["question"], answer=row["answer"], pred=row["pred_answer"])},
+    ]
+
+
+SCHEMA = {"type": "object", "properties": {
+    "correct": {"type": "string", "enum": ["yes", "no"]},
+    "score": {"type": "integer", "minimum": 0, "maximum": 5}},
+    "required": ["correct", "score"], "additionalProperties": False}
+
+
+def parse_judgment(text):
+    value = json.loads(text)
+    if set(value) != {"correct", "score"} or value["correct"] not in ("yes", "no"):
+        raise ValueError(f"Invalid correctness judgment: {text}")
+    if type(value["score"]) is not int or not 0 <= value["score"] <= 5:
+        raise ValueError(f"Invalid score: {text}")
+    return value
+
+
+def aggregate(records):
+    count = len(records)
+    correct = sum(r["correct"] == "yes" for r in records)
+    return {"questions": count, "correct": correct,
+            "accuracy_percent": 100 * correct / count,
+            "score": sum(r["score"] for r in records) / count}
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--results-path", type=Path, default=ROOT / "results/llava_ov_0.5b/rvs_ego/fps0.5-kv1024/results.csv")
+    parser.add_argument("--output-dir", type=Path)
+    parser.add_argument("--tensor-parallel-size", type=int, default=2)
+    parser.add_argument("--batch-size", type=int, default=64)
+    args = parser.parse_args()
+    output = args.output_dir or args.results_path.parent / "qwen3.8_27b_fp8_judge_original_prompt"
+    output.mkdir(parents=True, exist_ok=True)
+    with args.results_path.open(newline="", encoding="utf-8-sig") as source:
+        rows = list(csv.DictReader(source))
+    if not rows or any(not all(k in r and r[k] is not None for k in ("question", "answer", "pred_answer")) for r in rows):
+        raise ValueError("Empty or malformed predictions")
+
+    from huggingface_hub import snapshot_download
+    model_path = snapshot_download(MODEL, local_files_only=True)
+    manifest = {"model": MODEL, "revision": Path(model_path).name,
+                "input_sha256": hashlib.sha256(args.results_path.read_bytes()).hexdigest(),
+                "prompt_version": PROMPT_VERSION,
+                "system_prompt": SYSTEM, "user_prompt_template": USER_TEMPLATE, "schema": SCHEMA,
+                "temperature": 0, "seed": 2024, "enable_thinking": False,
+                "max_tokens": 128, "questions": len(rows), "hf_home": HF_ROOT}
+    manifest_path = output / "manifest.json"
+    if manifest_path.exists() and json.loads(manifest_path.read_text()) != manifest:
+        raise ValueError("Existing run has different inputs/model/prompt; use a fresh output directory")
+    manifest_path.write_text(json.dumps(manifest, indent=2) + "\n")
+    checkpoint = output / "judgments.jsonl"
+    records = [json.loads(line) for line in checkpoint.read_text().splitlines()] if checkpoint.exists() else []
+    for index, record in enumerate(records):
+        assert record["row_index"] == index and record["question"] == rows[index]["question"]
+        parse_judgment(json.dumps({k: record[k] for k in ("correct", "score")}))
+
+    if len(records) < len(rows):
+        from vllm import LLM, SamplingParams
+        from vllm.sampling_params import StructuredOutputsParams
+        llm = LLM(model=model_path, tensor_parallel_size=args.tensor_parallel_size,
+                  max_model_len=4096, max_num_seqs=64, gpu_memory_utilization=0.85,
+                  enforce_eager=True, seed=2024, enable_prefix_caching=True,
+                  limit_mm_per_prompt={"image": 0, "video": 0})
+        tokenizer = llm.get_tokenizer()
+        sampling = SamplingParams(temperature=0, max_tokens=128,
+                                  structured_outputs=StructuredOutputsParams(json=SCHEMA))
+        with checkpoint.open("a") as stream:
+            for start in range(len(records), len(rows), args.batch_size):
+                batch = rows[start:start + args.batch_size]
+                prompts = [tokenizer.apply_chat_template(judge_messages(r),
+                    tokenize=False, add_generation_prompt=True, enable_thinking=False) for r in batch]
+                generated = llm.generate(prompts, sampling, use_tqdm=False)
+                for offset, (row, result) in enumerate(zip(batch, generated)):
+                    raw = result.outputs[0].text
+                    judgment = parse_judgment(raw)
+                    record = {"row_index": start + offset, **row, **judgment, "raw_judgment": raw}
+                    stream.write(json.dumps(record, ensure_ascii=False) + "\n")
+                    stream.flush()
+                    records.append(record)
+                print(f"Judged {len(records)}/{len(rows)}", flush=True)
+
+    assert len(records) == len(rows)
+    report = {"model": MODEL, "revision": manifest["revision"],
+              "prompt_version": PROMPT_VERSION, **aggregate(records),
+              "by_task": {task: aggregate([r for r in records if r.get("task", "") == task])
+                          for task in sorted({r.get("task", "") for r in records})}}
+    open_ended_tasks = {"Action Caption", "Scene Summary", "What event order"}
+    open_ended = [r for r in records if r.get("task") in open_ended_tasks]
+    if open_ended:
+        report["open_ended_subset"] = {
+            "included_tasks": sorted(open_ended_tasks), **aggregate(open_ended)}
+    (output / "summary.json").write_text(json.dumps(report, indent=2) + "\n")
+    with (output / "judgments.csv").open("w", newline="") as stream:
+        writer = csv.DictWriter(stream, fieldnames=list(records[0]))
+        writer.writeheader()
+        writer.writerows(records)
+    previous_dir = args.results_path.parent / "qwen3.8_27b_fp8_judge"
+    if previous_dir.resolve() != output.resolve() and (previous_dir / "summary.json").exists():
+        previous_manifest = json.loads((previous_dir / "manifest.json").read_text())
+        comparable = all(previous_manifest.get(k) == manifest[k] for k in (
+            "model", "revision", "input_sha256", "temperature", "seed", "enable_thinking", "max_tokens"))
+        if comparable:
+            old_records = [json.loads(line) for line in
+                           (previous_dir / "judgments.jsonl").read_text().splitlines()]
+            assert len(old_records) == len(records)
+            assert all(old["row_index"] == new["row_index"] and
+                       all(old[k] == new[k] for k in ("question", "answer", "pred_answer"))
+                       for old, new in zip(old_records, records))
+            comparison = {"same_predictions_and_judge_settings": True,
+                          "new_prompt_version": PROMPT_VERSION, "subsets": {}}
+            for label, old, new in (
+                ("all_questions", old_records, records),
+                ("open_ended", [r for r in old_records if r.get("task") in open_ended_tasks], open_ended),
+            ):
+                if not new:
+                    continue
+                before, after = aggregate(old), aggregate(new)
+                comparison["subsets"][label] = {
+                    "previous_prompt": before, "original_rubric_prompt": after,
+                    "change": {k: after[k] - before[k] for k in ("correct", "accuracy_percent", "score")}}
+            (output / "comparison_vs_previous_prompt.json").write_text(json.dumps(comparison, indent=2) + "\n")
+    print(json.dumps(report, indent=2), flush=True)
+
+
+if __name__ == "__main__":
+    main()

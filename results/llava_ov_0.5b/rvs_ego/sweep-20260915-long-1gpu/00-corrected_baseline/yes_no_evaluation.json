@@ -1,0 +1,50 @@
+{
+  "results_path": "/l/users/chieu.nguyen/HERMES/results/llava_ov_0.5b/rvs_ego/sweep-20260915-long-1gpu/00-corrected_baseline/results.csv",
+  "normalization": "Unicode NFKC, case folding, punctuation/symbol and whitespace normalization. Select exact yes/no references. Predictions use the leading whole yes/no word, optionally after an answer prefix; explanations are ignored. Unparseable predictions count as incorrect.",
+  "total_input_rows": 1465,
+  "excluded_non_binary_rows": 767,
+  "questions": 698,
+  "correct": 448,
+  "accuracy_percent": 64.18338108882521,
+  "unparseable": 0,
+  "by_reference": {
+    "yes": {
+      "questions": 380,
+      "correct": 352,
+      "accuracy_percent": 92.63157894736842,
+      "unparseable": 0
+    },
+    "no": {
+      "questions": 318,
+      "correct": 96,
+      "accuracy_percent": 30.18867924528302,
+      "unparseable": 0
+    }
+  },
+  "by_task": {
+    "Order Judging(Y/N)": {
+      "questions": 409,
+      "correct": 247,
+      "accuracy_percent": 60.391198044009776,
+      "unparseable": 0
+    },
+    "Whether Something Happened(Y/N)": {
+      "questions": 289,
+      "correct": 201,
+      "accuracy_percent": 69.55017301038062,
+      "unparseable": 0
+    }
+  },
+  "confusion_matrix": {
+    "yes": {
+      "yes": 352,
+      "no": 28,
+      "unparseable": 0
+    },
+    "no": {
+      "yes": 222,
+      "no": 96,
+      "unparseable": 0
+    }
+  }
+}

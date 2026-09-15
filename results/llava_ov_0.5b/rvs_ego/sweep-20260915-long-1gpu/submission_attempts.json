@@ -1,0 +1,9 @@
+[
+  {
+    "job_id": 241989,
+    "node": "gpu-24",
+    "gpus": 1,
+    "state": "failed",
+    "reason": "nvidia-smi: No devices were found; no inference started"
+  }
+]

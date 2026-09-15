@@ -1,0 +1,4 @@
+id,name,state,accuracy_percent,score,seconds,error,sample_fps,kv_size,encode_chunk_size,max_new_tokens,repetition_penalty,recency_weight_start,recency_weight_decay,reindex_margin,use_history
+00-corrected_baseline,corrected_baseline,failed,,,5.8,"Inference worker exit codes: [1, 1]",0.5,6000,16,256,1.1,0.75,0.6,1024,True
+01-earlier_reindex,earlier_reindex,failed,,,5.2,"Inference worker exit codes: [1, 1]",0.5,6000,16,256,1.1,0.75,0.6,4096,True
+02-kv4000,kv4000,failed,,,4.8,"Inference worker exit codes: [1, 1]",0.5,4000,16,256,1.1,0.75,0.6,1024,True
