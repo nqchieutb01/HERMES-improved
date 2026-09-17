@@ -1,0 +1,7 @@
+name: rvs_ego
+annotation: data/rvs/ego/ego4d_oe.json
+streaming: true
+evaluators:
+  - kind: open_ended
+    work_dir: tmp
+    output: results.json

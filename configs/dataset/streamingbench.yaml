@@ -1,0 +1,6 @@
+name: streamingbench
+annotation: data/streamingbench/streamingbench_realtime.json
+streaming: true
+evaluators:
+  - kind: multiple_choice
+    mode: general

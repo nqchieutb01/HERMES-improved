@@ -1,7 +1,6 @@
 import csv
 import warnings
 import random
-import json
 import os
 import math
 import argparse
@@ -19,6 +18,7 @@ import logzero
 from logzero import logger
 
 from inference.llavaov_hermes import load_model as llavaov_hermes_load_model
+from video_qa.adapters import load_annotations
 
 
 def qwenvl_hermes_load_model(*args, **kwargs):
@@ -193,20 +193,44 @@ class BaseVQA:
             except:
                 return s
 
-    def video_open_qa(self, question, max_new_tokens=1024, retrieved_indices=None):
+    def video_open_qa(
+        self,
+        question,
+        max_new_tokens=1024,
+        retrieved_indices=None,
+        *,
+        prompt=None,
+        preserve_newlines=False,
+    ):
+        model_query = prompt if prompt is not None else question
         input_text = {
             "question": question,
-            "prompt": self.qa_model.get_prompt(question)
+            "prompt": self.qa_model.get_prompt(model_query)
         }
         pred_answer = self.qa_model.question_answering(
             input_text, max_new_tokens=max_new_tokens,
             repetition_penalty=getattr(self, 'repetition_penalty', 1.1))
         return {
-            'pred_answer': pred_answer.replace('\n', ''),
+            'pred_answer': pred_answer if preserve_newlines else pred_answer.replace('\n', ''),
         }
 
-    def video_close_qa(self, question, candidates, correct_choice, retrieved_indices=None):
-        input_text = self.format_mcqa_prompt(question, candidates)
+    def video_close_qa(
+        self,
+        question,
+        candidates,
+        correct_choice,
+        retrieved_indices=None,
+        *,
+        prompt=None,
+    ):
+        if prompt is None:
+            input_text = self.format_mcqa_prompt(question, candidates)
+        else:
+            input_text = {
+                "question": question,
+                "formatted_question": prompt,
+                "prompt": self.qa_model.get_prompt(prompt),
+            }
         pred_answer = self.qa_model.question_answering(input_text, max_new_tokens=16)
         pred_letter = self.extract_characters_regex(pred_answer)
         return {
@@ -257,6 +281,15 @@ def work(QA_CLASS):
     parser.add_argument("--chunk_idx", type=int, default=0)
     parser.add_argument("--save_dir", type=str, required=True)
     parser.add_argument("--anno_path", type=str, required=True)
+    parser.add_argument("--dataset_adapter", type=str, default=None)
+    parser.add_argument("--video_root", type=str, default=None)
+    parser.add_argument("--max_videos", type=int, default=None)
+    parser.add_argument(
+        "--question_categories",
+        nargs="+",
+        default=None,
+        help="Optional S-EMBER question-category IDs to retain",
+    )
     parser.add_argument("--model", type=str, default="llava_ov_7b")
     parser.add_argument("--debug", type=str2bool, nargs='?', const=True, default=True)
     parser.add_argument("--kv_size", type=int)
@@ -329,8 +362,14 @@ def work(QA_CLASS):
         setattr(videoqa_model, name, getattr(args, name))
     logger.info(f'Effective inference settings: {vars(args)}')
 
-    # Load ground truth file
-    anno = json.load(open(args.anno_path))
+    # Load ground truth file, adapting external benchmark formats when needed.
+    anno = load_annotations(
+        args.anno_path,
+        adapter=args.dataset_adapter,
+        video_root=args.video_root,
+        max_videos=args.max_videos,
+        question_categories=args.question_categories,
+    )
 
     analyzer = QA_CLASS(
         anno=anno,

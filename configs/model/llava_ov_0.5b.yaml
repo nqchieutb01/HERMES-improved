@@ -1,0 +1,2 @@
+name: llava_ov_0.5b
+gpus_per_worker: 1

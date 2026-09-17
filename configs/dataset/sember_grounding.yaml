@@ -1,0 +1,11 @@
+name: sember_grounding
+annotation: /nfs-stor/chieu.nguyen/s-ember/sember_grounding.jsonl
+adapter: sember_grounding
+video_root: /nfs-stor/chieu.nguyen/s-ember/videos
+max_videos: null
+question_categories: null
+streaming: true
+evaluators:
+  - kind: sember_grounding
+    output: sember_grounding_metrics.json
+    details_output: sember_grounding_scored.jsonl

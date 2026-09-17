@@ -1,0 +1,22 @@
+# @package _global_
+
+defaults:
+  - override /model: llava_ov_0.5b
+  - override /dataset: rvs_ego_local
+
+dataset:
+  annotation: ${paths.save_dir}/annotations.json
+
+run:
+  mode: full
+  num_chunks: 2
+  sample_fps: 0.5
+  kv_size: 6000
+  debug: false
+
+paths:
+  save_dir: results/${model.name}/${dataset.name}/continuous-fps${run.sample_fps}-kv${run.kv_size}
+
+runtime:
+  capture_worker_logs: true
+  capture_evaluation_logs: true

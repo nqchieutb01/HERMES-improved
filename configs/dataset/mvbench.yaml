@@ -1,0 +1,6 @@
+name: mvbench
+annotation: data/mvbench/mvbench.json
+streaming: false
+evaluators:
+  - kind: multiple_choice
+    mode: general

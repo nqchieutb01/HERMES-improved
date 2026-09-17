@@ -1,4 +1,5 @@
 import math
+import json
 import os
 import torch
 from logzero import logger
@@ -71,7 +72,12 @@ class HermesVQA(BaseVQA):
                 if answer is None:
                     answer = choices[0]
                 correct_choice = self.choice_letters[choices.index(answer)]
-                qa_results = self.video_close_qa(question, choices, correct_choice)
+                qa_results = self.video_close_qa(
+                    question,
+                    choices,
+                    correct_choice,
+                    prompt=sample.get('prompt'),
+                )
                 print("Pred Answer: ", qa_results['pred_answer'])
 
                 record_entry = {
@@ -84,8 +90,16 @@ class HermesVQA(BaseVQA):
                     'pred_choice': qa_results['pred_choice'],
                     'qa_acc': qa_results['acc'] * 100,
                 }
+                if sample.get('benchmark') == 'sember_mcq':
+                    record_entry['pred_raw'] = qa_results['pred_answer']
             else:
-                qa_results = self.video_open_qa(question, max_new_tokens=getattr(self, 'max_new_tokens', 256))
+                is_sember = sample.get('benchmark') == 'sember_grounding'
+                qa_results = self.video_open_qa(
+                    question,
+                    max_new_tokens=getattr(self, 'max_new_tokens', 256),
+                    prompt=sample.get('prompt'),
+                    preserve_newlines=is_sember,
+                )
                 print("Pred Answer: ", qa_results['pred_answer'])
 
                 record_entry = {
@@ -94,6 +108,8 @@ class HermesVQA(BaseVQA):
                     'answer': answer,
                     'pred_answer': qa_results['pred_answer'],
                 }
+                if is_sember:
+                    record_entry['pred_raw'] = qa_results['pred_answer']
 
             task = sample.get('task', sample.get('question_type', video_sample.get('task', None)))
             if task is not None:
@@ -102,6 +118,48 @@ class HermesVQA(BaseVQA):
             duration_category = video_sample.get('duration_category', None)
             if duration_category is not None:
                 record_entry['duration_category'] = duration_category
+
+            if sample.get('benchmark') == 'sember_grounding':
+                for field in (
+                    'question_id',
+                    'question_time',
+                    'question_category',
+                    'memory_recency',
+                    'answer_start_time',
+                    'answer_end_time',
+                    'answer_range',
+                    'duration',
+                    'video_category',
+                    'video_category_broad',
+                ):
+                    if field in sample:
+                        record_entry[field] = sample[field]
+                record_entry['answers_json'] = json.dumps(
+                    sample.get('answers', []), ensure_ascii=False
+                )
+
+            if sample.get('benchmark') == 'sember_mcq':
+                for field in (
+                    'question_id',
+                    'question_time',
+                    'question_category',
+                    'correct_index',
+                    'correct_letter',
+                    'correct_option_source',
+                    'answer_start_time',
+                    'answer_end_time',
+                    'duration',
+                    'video_category',
+                    'video_category_broad',
+                ):
+                    if field in sample:
+                        record_entry[field] = sample[field]
+                record_entry['options_json'] = json.dumps(
+                    sample.get('choices', []), ensure_ascii=False
+                )
+                record_entry['ground_truths_json'] = json.dumps(
+                    sample.get('ground_truths', []), ensure_ascii=False
+                )
 
             self.record.append(record_entry)
 

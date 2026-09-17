@@ -1,0 +1,2 @@
+name: qwen2.5_vl_7b
+gpus_per_worker: 1

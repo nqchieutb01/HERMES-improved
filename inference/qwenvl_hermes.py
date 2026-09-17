@@ -480,7 +480,7 @@ class QwenVL_Hermes(Qwen2_5_VLForConditionalGeneration, Abstract_Hermes):
 
     @torch.inference_mode()
     def predict_next_question(self):
-        if hasattr(self, 'conv_history') and len(self.conv_history) > 0:
+        if getattr(self, 'use_history', True) and hasattr(self, 'conv_history') and len(self.conv_history) > 0:
             last_q, last_a, last_options = self.conv_history[-1]
 
             option_match = re.match(r'^\s*(?:\()?([A-Z])(?:\))?\.?\s*$', last_a)

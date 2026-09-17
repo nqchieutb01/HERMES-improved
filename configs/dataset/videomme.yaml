@@ -1,0 +1,8 @@
+name: videomme
+annotation: data/videomme/videomme.json
+streaming: false
+evaluators:
+  - kind: multiple_choice
+    mode: general
+  - kind: multiple_choice
+    mode: videomme
