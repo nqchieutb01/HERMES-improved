@@ -167,6 +167,65 @@ python video_qa/run_infer.py \
     --kv_size 6000
 ```
 
+To run only the Real-Time Visual Understanding subtasks Causal Reasoning (CR),
+Spatial Understanding (SU), and Event Understanding (EU), use the focused
+launcher below. It first downloads only the referenced video members from the
+official ZIP archives into shared storage, then runs inference and evaluation:
+
+```bash
+sbatch scripts/run_streamingbench_cr_su_eu.sh
+```
+
+The script requests one GPU from the `cscc-gpu-p` production partition with
+the same Slurm account/QoS settings as the repository's other batch jobs. It
+runs the default `k=1,0` sweep sequentially inside that one allocation and
+can also be run with `bash` from an existing GPU allocation. It defaults to
+`llava_ov_0.5b`, 0.5 FPS, one GPU, and a 6,000-token
+KV budget. Override `STREAMINGBENCH_MODEL`, `STREAMINGBENCH_SAMPLE_FPS`,
+`STREAMINGBENCH_KV_SIZE`, `STREAMINGBENCH_ROOT`,
+`STREAMINGBENCH_MIN_TOKENS_SWEEP`, or `STREAMINGBENCH_SAVE_DIR` as needed. Set
+`STREAMINGBENCH_MIN_TOKENS_PER_FRAME` to run only one `k` value.
+Set `STREAMINGBENCH_DEBUG=true` for a one-video validation run, or
+`STREAMINGBENCH_SKIP_DOWNLOAD=true` when the prepared manifest is already
+complete. The downloader can also be
+inspected without network access using:
+
+```bash
+python scripts/download_streamingbench_tasks.py --dry-run
+```
+
+For the prepared three-video subset under `data/streamingbench/subset/`, run:
+
+```bash
+sbatch scripts/run_streamingbench_subset.sh
+```
+
+This submits one Slurm job with one GPU and runs the default `k=1,0` sweep
+sequentially inside that allocation. Each `k` writes isolated predictions and
+evaluation under `results/<model>/streamingbench_subset/`; for example,
+`min-k4/` contains the `k=4` result. To run one configuration directly with an
+existing GPU allocation, use `bash` instead. Override
+`STREAMINGBENCH_MODEL`, `STREAMINGBENCH_SAMPLE_FPS`, `STREAMINGBENCH_KV_SIZE`,
+`STREAMINGBENCH_SUBSET_ROOT`, `STREAMINGBENCH_ANNO_PATH`, or
+`STREAMINGBENCH_SAVE_DIR` as needed. The launcher also writes per-frame token
+retention to `token_retention.csv`; override its location with
+`STREAMINGBENCH_TOKEN_TRACE_PATH`. It also writes
+`token_retention_summary.csv` with per-event/per-layer and overall averages.
+The CSV trace remains enabled, but detailed per-event/per-layer console output
+is disabled by default; pass `--verbose_token_trace true` to the inference
+script when that diagnostic logging is needed.
+Set `STREAMINGBENCH_MIN_TOKENS_SWEEP`, for example to `1,4,8,16`, to change the
+sequential sweep. Set
+`STREAMINGBENCH_MIN_TOKENS_PER_FRAME` to a positive value, such as `4`, when
+running directly with `bash` to first select the normal `kv_size` tokens and
+then top up frames with fewer than that many selected tokens in every layer.
+For `k=1`, a frame with no selected patch token receives one synthetic summary
+token: its K/V values are mean-pooled from that frame after position-aware
+RoPE alignment, and its trace records the frame's mean attention score.
+The effective cache can then exceed
+`kv_size` by the amount needed for this guarantee. Set
+`STREAMINGBENCH_DEBUG=true` to run only the first video as a quick validation.
+
 **Arguments:**
 
 | Argument | Description |
@@ -176,6 +235,7 @@ python video_qa/run_infer.py \
 | `num_chunks` | Number of parallel processes for evaluation, typically set to the number of GPUs |
 | `sample_fps` | Frame sampling rate (frames per second) from the video |
 | `kv_size` | Maximum KV cache size for HERMES hierarchical memory management |
+| `min_tokens_per_frame` | Optional per-frame visual-token floor; may increase the effective KV budget |
 | `only_eval` | If set, skip inference and only run evaluation on existing results |
 
 

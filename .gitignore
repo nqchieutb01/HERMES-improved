@@ -30,7 +30,7 @@ dist/
 *.pth
 
 # Runtime outputs stay local to the working directory.
-# /results/
+/results/
 /outputs/
 /logs/
 /wandb/

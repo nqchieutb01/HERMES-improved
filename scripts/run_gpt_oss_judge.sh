@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
 #SBATCH --job-name=gpt-oss-rvs-judge
 #SBATCH --partition=long
-#SBATCH --qos=gpu-debug-qos
-#SBATCH --account=cscc-users
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=8
 #SBATCH --gres=gpu:1
-#SBATCH --mem=64G
+#SBATCH --mem=40G
 #SBATCH --time=03:00:00
+#SBATCH --qos=gpu-debug-qos
+
 set -euo pipefail
 repo_dir="/l/users/chieu.nguyen/HERMES"
 cd "$repo_dir"

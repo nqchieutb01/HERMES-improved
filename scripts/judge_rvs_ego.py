@@ -120,7 +120,7 @@ def main():
             import torch
             from transformers import AutoModelForCausalLM, AutoTokenizer
             tokenizer = AutoTokenizer.from_pretrained(model_path, local_files_only=True)
-            model = AutoModelForCausalLM.from_pretrained(model_path, device_map="cuda:0", torch_dtype="auto", local_files_only=True)
+            model = AutoModelForCausalLM.from_pretrained(model_path, device_map="cuda:0", torch_dtype="auto", trust_remote_code=True, local_files_only=True)
             model.eval()
         else:
             from vllm import LLM, SamplingParams

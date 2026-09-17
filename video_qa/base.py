@@ -267,11 +267,35 @@ def work(QA_CLASS):
     parser.add_argument("--recency_weight_decay", type=float, default=0.6)
     parser.add_argument("--reindex_margin", type=int, default=1024)
     parser.add_argument("--use_history", type=str2bool, default=True)
+    parser.add_argument(
+        "--token_trace_path",
+        type=str,
+        default=None,
+        help="Optional CSV path for per-frame retained visual-token counts",
+    )
+    parser.add_argument(
+        "--verbose_token_trace",
+        type=str2bool,
+        default=False,
+        help="Print detailed token-retention messages during inference",
+    )
+    parser.add_argument(
+        "--min_tokens_per_frame",
+        type=int,
+        default=0,
+        help=(
+            "Minimum visual tokens retained per frame during compression; "
+            "k=1 adds a mean-pooled frame summary when no patch survives "
+            "(0 disables the floor)"
+        ),
+    )
     parser.add_argument("--streaming", type=str2bool, nargs='?', const=True, default=False,
                         help="Streaming (online) mode. If False (default), uses offline mode where should_compact is always True.")
     args = parser.parse_args()
     if args.encode_chunk_size <= 0 or args.max_new_tokens <= 0 or args.repetition_penalty <= 0:
         parser.error("Chunk size, answer length and repetition penalty must be positive")
+    if args.min_tokens_per_frame < 0:
+        parser.error("min_tokens_per_frame must be nonnegative")
     if not 0 <= args.recency_weight_decay <= args.recency_weight_start <= 1:
         parser.error("Require 0 <= recency_weight_decay <= recency_weight_start <= 1")
     if args.reindex_margin < 0:
@@ -297,6 +321,10 @@ def work(QA_CLASS):
         streaming=args.streaming,
         sample_fps=args.sample_fps,
     )
+    if args.token_trace_path:
+        videoqa_model.enable_token_trace(args.token_trace_path)
+    videoqa_model.set_token_trace_verbose(args.verbose_token_trace)
+    videoqa_model.set_min_tokens_per_frame(args.min_tokens_per_frame)
     for name in ('recency_weight_start', 'recency_weight_decay', 'reindex_margin', 'use_history'):
         setattr(videoqa_model, name, getattr(args, name))
     logger.info(f'Effective inference settings: {vars(args)}')
@@ -318,3 +346,4 @@ def work(QA_CLASS):
     analyzer.max_new_tokens = args.max_new_tokens
     analyzer.repetition_penalty = args.repetition_penalty
     analyzer.analyze(debug=args.debug)
+    videoqa_model.write_token_trace()

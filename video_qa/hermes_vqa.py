@@ -36,6 +36,8 @@ class HermesVQA(BaseVQA):
             video = self.load_video(video_path, clip=clip)
             video_tensor = torch.from_numpy(video)
 
+        if getattr(self.qa_model, 'token_trace_enabled', False):
+            self.qa_model.set_token_trace_video(video_sample['video_id'])
         self.qa_model.clear_cache()
         self.qa_model.encode_init_prompt()
 

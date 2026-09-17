@@ -216,6 +216,34 @@ class QwenVL_Hermes(Qwen2_5_VLForConditionalGeneration, Abstract_Hermes):
 
         old_position_ids_cache = [cache.clone() if cache is not None else None for cache in self._position_ids_cache]
 
+        if self.token_provenance_enabled:
+            if (
+                self._token_frame_ids_per_layer is None
+                or any(
+                    ids.shape[0] != curr_lens[layer_idx]
+                    for layer_idx, ids in enumerate(self._token_frame_ids_per_layer)
+                )
+            ):
+                self._initialize_token_frame_ids(curr_lens)
+            old_token_frame_ids = [
+                ids.clone() for ids in self._token_frame_ids_per_layer
+            ]
+            if self._token_frame_summary_scores_per_layer is None:
+                self._token_frame_summary_scores_per_layer = [
+                    torch.full(
+                        (curr_lens[layer_idx],),
+                        float("nan"),
+                        dtype=torch.float32,
+                    )
+                    for layer_idx in range(self.num_layers)
+                ]
+            old_token_frame_summary_scores = [
+                scores.clone()
+                for scores in self._token_frame_summary_scores_per_layer
+            ]
+            new_token_frame_ids = []
+            new_token_frame_summary_scores = []
+
         sample_k = self.kv_cache[0][0]
         dtype = sample_k.dtype
         mrope_section = self._mrope_section
@@ -233,6 +261,15 @@ class QwenVL_Hermes(Qwen2_5_VLForConditionalGeneration, Abstract_Hermes):
             if safe_idx.numel() == 0:
                 logger.warning(f"Layer {layer_idx}: After sanitization, keep_indices is empty; keeping first token")
                 safe_idx = torch.tensor([0], device=device)
+
+            if self.token_provenance_enabled:
+                selected_frame_ids = old_token_frame_ids[layer_idx].index_select(
+                    0, safe_idx.detach().cpu()
+                )
+                selected_frame_summary_scores = (
+                    old_token_frame_summary_scores[layer_idx]
+                    .index_select(0, safe_idx.detach().cpu())
+                )
 
             is_long_term = (layer_idx >= self.long_term_threshold)
 
@@ -274,6 +311,98 @@ class QwenVL_Hermes(Qwen2_5_VLForConditionalGeneration, Abstract_Hermes):
                 new_pos_kept = old_pos_kept
                 k_kept_final = k_kept
 
+            # k=1 frame-floor mode represents a frame that lost all of its
+            # patches with one synthetic mean-pooled KV token. Align source
+            # keys to the summary position before averaging to preserve M-RoPE.
+            frame_summary_specs = []
+            if self._frame_summary_specs_per_layer is not None:
+                frame_summary_specs = self._frame_summary_specs_per_layer[layer_idx]
+
+            frame_summary_k = []
+            frame_summary_v = []
+            frame_summary_positions = []
+            frame_summary_ids = []
+            frame_summary_scores = []
+            next_summary_pos = new_pos_kept.max().item() + 1
+            for spec in frame_summary_specs:
+                source_idx = torch.as_tensor(
+                    spec["source_indices"], device=device, dtype=torch.long
+                )
+                if source_idx.numel() == 0:
+                    continue
+
+                k_source = torch.index_select(k_layer, dim=2, index=source_idx)
+                v_source = torch.index_select(v_layer, dim=2, index=source_idx)
+                summary_pos = torch.tensor(
+                    [next_summary_pos], device=device, dtype=torch.float32
+                ).repeat(3, 1)
+                old_pos_source = old_position_ids_cache[layer_idx][:, source_idx]
+                target_pos_source = summary_pos.expand(3, old_pos_source.shape[1])
+
+                cos_old, sin_old = compute_cos_sin_for_positions(
+                    self.language_model,
+                    old_pos_source.shape[1],
+                    old_pos_source,
+                    dtype,
+                    device,
+                )
+                cos_new, sin_new = compute_cos_sin_for_positions(
+                    self.language_model,
+                    target_pos_source.shape[1],
+                    target_pos_source,
+                    dtype,
+                    device,
+                )
+                cos_delta, sin_delta = rotary_delta(
+                    cos_old, sin_old, cos_new, sin_new
+                )
+                k_source = apply_rotary_delta_to_keys_only(
+                    k_source, cos_delta, sin_delta, mrope_section
+                )
+
+                frame_summary_k.append(k_source.mean(dim=2, keepdim=True))
+                frame_summary_v.append(v_source.mean(dim=2, keepdim=True))
+                frame_summary_positions.append(summary_pos)
+                frame_summary_ids.append(int(spec["frame_id"]))
+                frame_summary_scores.append(float(spec["attention_score"]))
+                next_summary_pos += 1
+
+            if frame_summary_k:
+                k_frame_summaries = torch.cat(frame_summary_k, dim=2)
+                v_frame_summaries = torch.cat(frame_summary_v, dim=2)
+                frame_summary_pos_tensor = torch.cat(frame_summary_positions, dim=1)
+                k_kept_final = torch.cat((k_kept_final, k_frame_summaries), dim=2)
+                v_kept = torch.cat((v_kept, v_frame_summaries), dim=2)
+                new_pos_kept = torch.cat(
+                    (new_pos_kept, frame_summary_pos_tensor), dim=1
+                )
+                if self.token_trace_verbose:
+                    logger.info(
+                        "Layer %d: added %d mean frame summary token(s); "
+                        "average attention score=%.6g",
+                        layer_idx,
+                        len(frame_summary_k),
+                        sum(
+                            float(spec["attention_score"])
+                            for spec in frame_summary_specs
+                        ) / len(frame_summary_specs),
+                    )
+                if self.token_provenance_enabled:
+                    frame_summary_ids_tensor = torch.tensor(
+                        frame_summary_ids, dtype=torch.long
+                    )
+                    selected_frame_ids = torch.cat(
+                        (selected_frame_ids, frame_summary_ids_tensor)
+                    )
+                    selected_frame_summary_scores = torch.cat(
+                        (
+                            selected_frame_summary_scores,
+                            torch.tensor(
+                                frame_summary_scores, dtype=torch.float32
+                            ),
+                        )
+                    )
+
             if is_long_term:
                 mask = torch.ones(seq_len_layer, dtype=torch.bool, device=device)
                 mask[safe_idx] = False
@@ -305,19 +434,44 @@ class QwenVL_Hermes(Qwen2_5_VLForConditionalGeneration, Abstract_Hermes):
                     k_final = torch.cat([k_kept_final, k_summary_final], dim=2)
                     v_final = torch.cat([v_kept, v_summary], dim=2)
                     new_pos_layer = torch.cat([new_pos_kept, summary_pos_tensor], dim=1)
+                    if self.token_provenance_enabled:
+                        new_frame_ids = torch.cat(
+                            (selected_frame_ids, torch.tensor([-2], dtype=torch.long))
+                        )
+                        new_frame_summary_scores = torch.cat(
+                            (
+                                selected_frame_summary_scores,
+                                torch.tensor([float("nan")], dtype=torch.float32),
+                            )
+                        )
                 else:
                     k_final = k_kept_final
                     v_final = v_kept
                     new_pos_layer = new_pos_kept
+                    if self.token_provenance_enabled:
+                        new_frame_ids = selected_frame_ids
+                        new_frame_summary_scores = selected_frame_summary_scores
             else:
                 k_final = k_kept_final
                 v_final = v_kept
                 new_pos_layer = new_pos_kept
+                if self.token_provenance_enabled:
+                    new_frame_ids = selected_frame_ids
+                    new_frame_summary_scores = selected_frame_summary_scores
 
             new_kv_cache.append((k_final.contiguous(), v_final.contiguous()))
+            if self.token_provenance_enabled:
+                new_token_frame_ids.append(new_frame_ids)
+                new_token_frame_summary_scores.append(new_frame_summary_scores)
             self._position_ids_cache[layer_idx] = new_pos_layer.clone()
 
         self.kv_cache = new_kv_cache
+        if self.token_provenance_enabled:
+            self._token_frame_ids_per_layer = new_token_frame_ids
+            self._token_frame_summary_scores_per_layer = (
+                new_token_frame_summary_scores
+            )
+        self._frame_summary_specs_per_layer = None
         contiguous_kv(self.kv_cache)
 
         new_lens = self._get_cache_seq_len_per_layer()
@@ -379,6 +533,7 @@ class QwenVL_Hermes(Qwen2_5_VLForConditionalGeneration, Abstract_Hermes):
         for layer_idx in range(self.num_layers):
             pos = torch.arange(curr_lens[layer_idx], device=self.device, dtype=torch.float32)
             self._position_ids_cache[layer_idx] = pos.unsqueeze(0).expand(3, -1).clone()
+        self._initialize_token_frame_ids(curr_lens)
 
     @torch.inference_mode()
     def encode_video_chunk(self, video_chunk):
@@ -435,6 +590,14 @@ class QwenVL_Hermes(Qwen2_5_VLForConditionalGeneration, Abstract_Hermes):
             if layer_offset != base_offset:
                 current_layer_pos = current_layer_pos + (layer_offset - base_offset)
             self._append_position_ids_layer_explicit(layer_idx, current_layer_pos)
+
+        if self.token_provenance_enabled:
+            frame_ids = self._frame_ids_for_video_tokens(
+                num_frames=video_chunk.shape[0],
+                num_tokens=q_len,
+                first_frame=self.total_processed_frames,
+            )
+            self._append_token_frame_ids(frame_ids)
 
         self.last_encoded_frames = video_chunk.shape[0]
         self.total_processed_frames += video_chunk.shape[0]
@@ -537,6 +700,7 @@ class QwenVL_Hermes(Qwen2_5_VLForConditionalGeneration, Abstract_Hermes):
         keep_indices_all_layers = []
 
         layer_raw_scores = []
+        layer_attention_scores = []
         layer_configs = []
 
         for layer_idx in range(len(attn_weights_local)):
@@ -564,10 +728,8 @@ class QwenVL_Hermes(Qwen2_5_VLForConditionalGeneration, Abstract_Hermes):
 
             visual_attn_weights = layer_attn_weights[0].mean(dim=0)[:,visual_start_idx:-1*question_len].mean(dim=0)
             num_visual_tokens = visual_attn_weights.shape[0]
+            layer_attention_scores.append(visual_attn_weights.detach())
             layer_budget = budget_per_layer[layer_idx]
-
-            if layer_type == 'long-term':
-                layer_budget = max(0, layer_budget - 1)
 
             positions = torch.arange(num_visual_tokens, device=device, dtype=torch.float32)
             time_distances = (num_visual_tokens - 1 - positions) / max(num_visual_tokens - 1, 1)
@@ -620,7 +782,25 @@ class QwenVL_Hermes(Qwen2_5_VLForConditionalGeneration, Abstract_Hermes):
             actual_num_keep = config['budget']
             start_idx = config['visual_start_idx']
 
-            topk_indices_relative = torch.topk(score, actual_num_keep, sorted=False)[1]
+            frame_ids = None
+            if self.min_tokens_per_frame > 0:
+                frame_ids = self._token_frame_ids_per_layer[layer_idx][
+                    start_idx:start_idx + score.numel()
+                ]
+            topk_indices_relative, effective_num_keep = (
+                self._select_indices_with_frame_minimum(
+                    score, frame_ids, actual_num_keep
+                )
+            )
+            if effective_num_keep > actual_num_keep and self.token_trace_verbose:
+                logger.info(
+                    "Layer %d: raised visual budget from %d to %d for "
+                    "min_tokens_per_frame=%d",
+                    layer_idx,
+                    actual_num_keep,
+                    effective_num_keep,
+                    self.min_tokens_per_frame,
+                )
             topk_indices_absolute = topk_indices_relative + start_idx
             topk_indices_absolute_sorted = torch.sort(topk_indices_absolute)[0]
 
@@ -631,6 +811,21 @@ class QwenVL_Hermes(Qwen2_5_VLForConditionalGeneration, Abstract_Hermes):
 
             keep_indices_all_layers.append(keep_indices)
 
+        keep_indices_all_layers = self._equalize_keep_indices_by_layer(
+            keep_indices_all_layers,
+            refined_scores,
+            layer_configs,
+            layer_frame_ids=(
+                self._token_frame_ids_per_layer
+                if self.frame_summary_mode
+                else None
+            ),
+        )
+        self._frame_summary_specs_per_layer = self._build_frame_summary_specs(
+            keep_indices_all_layers,
+            layer_attention_scores,
+            layer_configs,
+        )
         return keep_indices_all_layers
 
     @torch.inference_mode()
@@ -724,15 +919,29 @@ class QwenVL_Hermes(Qwen2_5_VLForConditionalGeneration, Abstract_Hermes):
 
         print(f"GPU memory usage: {self.get_gpu_memory_usage_gb()} GB")
         current_k_states_len = self.kv_cache[0][0].shape[2]
+        cache_lengths_before = self._get_cache_seq_len_per_layer()
+        frame_ids_before = (
+            [ids.clone() for ids in self._token_frame_ids_per_layer]
+            if self.token_trace_enabled
+            else None
+        )
 
         keep_indices_all_layers = self.prune_kv_cache_by_attention(
             attn_weights_local, attn_weights_global, attn_weights_mixed,
             num_keep=self.kv_size
         )
 
-        if current_k_states_len > self.kv_size:
+        compression_applied = current_k_states_len > self.kv_size
+        if compression_applied:
             print(f"Applying KV-Cache compression due to k_states > {self.kv_size}")
             self.apply_kv_cache_pruning_strict(keep_indices_all_layers)
+
+        if self.token_trace_enabled:
+            self._record_token_retention(
+                frame_ids_before=frame_ids_before,
+                cache_lengths_before=cache_lengths_before,
+                compression_applied=compression_applied,
+            )
 
     @torch.inference_mode()
     def predict_and_compress(self):
