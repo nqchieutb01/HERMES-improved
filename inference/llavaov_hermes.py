@@ -300,28 +300,32 @@ class LlavaOneVision_Hermes(LlavaOnevisionForConditionalGeneration, Abstract_Her
                     0, source_idx
                 )
 
-                if should_compact:
-                    target_pos_source = summary_pos.repeat(old_pos_source.shape[0])
-                    cos_old, sin_old = compute_cos_sin_for_positions(
-                        self.language_model,
-                        old_pos_source.shape[0],
-                        old_pos_source,
-                        dtype,
-                        device,
-                    )
-                    cos_new, sin_new = compute_cos_sin_for_positions(
-                        self.language_model,
-                        target_pos_source.shape[0],
-                        target_pos_source,
-                        dtype,
-                        device,
-                    )
-                    cos_delta, sin_delta = rotary_delta(
-                        cos_old, sin_old, cos_new, sin_new
-                    )
-                    k_source = apply_rotary_delta_to_keys_only(
-                        k_source, cos_delta, sin_delta
-                    )
+                # A synthetic key is assigned ``summary_pos`` regardless of
+                # whether the rest of the cache is compacted. Align every
+                # source key to that position before pooling; otherwise the
+                # common streaming path averages incompatible RoPE phases and
+                # later treats the result as if it had the new phase.
+                target_pos_source = summary_pos.repeat(old_pos_source.shape[0])
+                cos_old, sin_old = compute_cos_sin_for_positions(
+                    self.language_model,
+                    old_pos_source.shape[0],
+                    old_pos_source,
+                    dtype,
+                    device,
+                )
+                cos_new, sin_new = compute_cos_sin_for_positions(
+                    self.language_model,
+                    target_pos_source.shape[0],
+                    target_pos_source,
+                    dtype,
+                    device,
+                )
+                cos_delta, sin_delta = rotary_delta(
+                    cos_old, sin_old, cos_new, sin_new
+                )
+                k_source = apply_rotary_delta_to_keys_only(
+                    k_source, cos_delta, sin_delta
+                )
 
                 frame_summary_k.append(k_source.mean(dim=2, keepdim=True))
                 frame_summary_v.append(v_source.mean(dim=2, keepdim=True))
@@ -727,6 +731,12 @@ class LlavaOneVision_Hermes(LlavaOnevisionForConditionalGeneration, Abstract_Her
                 self.token_activity_cache[layer_idx][visual_start_idx:end_idx] += visual_attn_weights
             
             layer_budget = budget_per_layer[layer_idx]
+
+            # Long-term layers append one fold token for the pruned visual
+            # entries. Reserve its slot so ``num_keep`` remains the total
+            # visual-memory budget (the behavior of the k=0 baseline).
+            if layer_type == 'long-term':
+                layer_budget = max(0, layer_budget - 1)
 
             positions = torch.arange(num_visual_tokens, device=device, dtype=torch.float32)
             time_distances = (num_visual_tokens - 1 - positions) / max(num_visual_tokens - 1, 1)

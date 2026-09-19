@@ -1,43 +1,34 @@
 #!/usr/bin/env bash
-#SBATCH --job-name=streamingbench-cr-su-eu
-#SBATCH --partition=cscc-gpu-p
-#SBATCH --qos=cscc-gpu-qos
-#SBATCH --account=cscc-users
-#SBATCH --nodes=1
-#SBATCH --ntasks=1
-#SBATCH --cpus-per-task=8
-#SBATCH --gres=gpu:1
-#SBATCH --mem=41G
-## #SBATCH --time=06:00:00
-#SBATCH --output=slurm-streamingbench-cr-su-eu-%j.out
 set -euo pipefail
 
 if [[ -n "${STREAMINGBENCH_REPO_DIR:-}" ]]; then
     repo_dir="$STREAMINGBENCH_REPO_DIR"
-elif [[ -n "${SLURM_SUBMIT_DIR:-}" && -f "$SLURM_SUBMIT_DIR/video_qa/hermes_vqa.py" ]]; then
-    # sbatch may execute a copied script from /var/lib/slurm-llnl/...;
-    # SLURM_SUBMIT_DIR still points to the submitted repository.
-    repo_dir="$SLURM_SUBMIT_DIR"
-elif [[ -f "/l/users/chieu.nguyen/HERMES/video_qa/hermes_vqa.py" ]]; then
-    repo_dir="/l/users/chieu.nguyen/HERMES"
 else
-    repo_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    repo_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 fi
 cd "$repo_dir"
+
+hermes_env="$repo_dir/hermes"
+if [[ ! -f "$hermes_env/bin/activate" ]]; then
+    echo "Hermes environment not found: $hermes_env/bin/activate" >&2
+    exit 1
+fi
+# This launcher runs directly on the local machine; it does not require Slurm.
+source "$hermes_env/bin/activate"
 
 export PYTHONPATH="$repo_dir${PYTHONPATH:+:$PYTHONPATH}"
 export OMP_NUM_THREADS="${OMP_NUM_THREADS:-8}"
 export TOKENIZERS_PARALLELISM=false
 
-python_bin="${STREAMINGBENCH_PYTHON:-$repo_dir/.venv/hermes/bin/python}"
-dataset_root="${STREAMINGBENCH_ROOT:-/nfs-stor/chieu.nguyen/StreamingBench}"
+python_bin="${STREAMINGBENCH_PYTHON:-python}"
+dataset_root="${STREAMINGBENCH_ROOT:-$repo_dir/data/streamingbench/realtime_cr_su_eu}"
 model="${STREAMINGBENCH_MODEL:-llava_ov_0.5b}"
 sample_fps="${STREAMINGBENCH_SAMPLE_FPS:-0.5}"
-kv_size="${STREAMINGBENCH_KV_SIZE:-4000}"
+kv_size="${STREAMINGBENCH_KV_SIZE:-6000}"
 num_chunks="${STREAMINGBENCH_NUM_CHUNKS:-1}"
 debug="${STREAMINGBENCH_DEBUG:-false}"
 encode_chunk_size="${STREAMINGBENCH_ENCODE_CHUNK_SIZE:-16}"
-min_tokens_sweep="${STREAMINGBENCH_MIN_TOKENS_SWEEP:-1,0}"
+min_tokens_sweep="${STREAMINGBENCH_MIN_TOKENS_SWEEP:-1}"
 if [[ -n "${STREAMINGBENCH_MIN_TOKENS_PER_FRAME:-}" ]]; then
     min_tokens_sweep="$STREAMINGBENCH_MIN_TOKENS_PER_FRAME"
 fi
@@ -56,29 +47,67 @@ done
 
 base_save_dir="${STREAMINGBENCH_SAVE_DIR:-$repo_dir/results/$model/streamingbench_cr_su_eu/fps${sample_fps}-kv${kv_size}}"
 anno_path="$dataset_root/streamingbench_realtime_cr_su_eu.json"
+skip_download="${STREAMINGBENCH_SKIP_DOWNLOAD:-}"
+if [[ -z "$skip_download" ]]; then
+    if [[ -s "$anno_path" ]]; then
+        skip_download=true
+    else
+        skip_download=false
+    fi
+fi
 chunk_idx=0
 
-if [[ ! -x "$python_bin" ]]; then
-    echo "Python interpreter not found or not executable: $python_bin" >&2
+if ! command -v "$python_bin" >/dev/null 2>&1; then
+    echo "Python interpreter not found in the hermes environment: $python_bin" >&2
     exit 1
 fi
 if [[ "$num_chunks" != 1 ]]; then
-    echo "This one-GPU Slurm script requires STREAMINGBENCH_NUM_CHUNKS=1" >&2
+    echo "This local one-GPU script requires STREAMINGBENCH_NUM_CHUNKS=1" >&2
     exit 1
 fi
 
-if [[ ! -s "$anno_path" ]]; then
-    echo "CR/SU/EU annotation not found or empty: $anno_path" >&2
+case "$model" in
+    llava_ov_0.5b)
+        model_path="$repo_dir/models/llava-onevision-qwen2-0.5b-ov-hf"
+        ;;
+    llava_ov_7b)
+        model_path="$repo_dir/models/llava-onevision-qwen2-7b-ov-hf"
+        ;;
+    llava_ov_72b)
+        model_path="$repo_dir/models/llava-onevision-qwen2-72b-ov-hf"
+        ;;
+    qwen2.5_vl_3b)
+        model_path="$repo_dir/models/Qwen2.5-VL-3B-Instruct"
+        ;;
+    qwen2.5_vl_7b)
+        model_path="$repo_dir/models/Qwen2.5-VL-7B-Instruct"
+        ;;
+    qwen2.5_vl_32b)
+        model_path="$repo_dir/models/Qwen2.5-VL-32B-Instruct"
+        ;;
+    *)
+        echo "Unsupported StreamingBench model: $model" >&2
+        echo "Use one of the model names supported by video_qa/base.py." >&2
+        exit 1
+        ;;
+esac
+if [[ ! -d "$model_path" ]]; then
+    echo "Model directory not found: $model_path" >&2
+    echo "Download the selected model into models/ before running inference." >&2
     exit 1
 fi
 
-if [[ "${STREAMINGBENCH_SKIP_DOWNLOAD:-true}" == "true" ]]; then
+if [[ "$skip_download" == "true" ]]; then
     echo "Skipping dataset preparation because STREAMINGBENCH_SKIP_DOWNLOAD=true"
 else
     echo "Preparing StreamingBench CR/SU/EU data under $dataset_root"
     "$python_bin" scripts/download_streamingbench_tasks.py \
         --tasks CR SU EU \
         --output "$dataset_root"
+fi
+if [[ ! -s "$anno_path" ]]; then
+    echo "CR/SU/EU annotation not found or empty after preparation: $anno_path" >&2
+    exit 1
 fi
 
 echo "Running $model on $(basename "$anno_path") with $num_chunks chunk(s)"

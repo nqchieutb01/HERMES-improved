@@ -1,0 +1,6 @@
+# Minimal local judge environment. Deliberately excludes vLLM.
+accelerate==1.11.0
+huggingface_hub==0.36.2
+safetensors==0.6.2
+torch==2.9.1
+transformers==4.57.1

@@ -35,6 +35,7 @@ dist/
 /logs/
 /wandb/
 /runs/
+/data
 *.log
 slurm-*.out
 

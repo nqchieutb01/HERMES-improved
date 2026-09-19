@@ -4,6 +4,7 @@ import argparse
 import bisect
 import io
 import json
+import os
 from pathlib import Path
 import shutil
 import zipfile
@@ -60,7 +61,10 @@ class SplitArchive(io.RawIOBase):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--dataset-root", type=Path, default=Path("/nfs-stor/chieu.nguyen/VStream-QA"))
+    default_root = os.environ.get(
+        "VSTREAM_QA_ROOT", str(Path(__file__).resolve().parents[1] / "data/vstream-qa")
+    )
+    parser.add_argument("--dataset-root", type=Path, default=Path(default_root))
     parser.add_argument("--extract", action="store_true", help="Extract and CRC-check every RVS-Ego frame")
     args = parser.parse_args()
     root = args.dataset_root.resolve() / "vstream-realtime"

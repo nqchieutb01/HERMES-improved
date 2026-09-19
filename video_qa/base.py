@@ -263,6 +263,7 @@ def work(QA_CLASS):
     parser.add_argument("--encode_chunk_size", type=int, default=16)
     parser.add_argument("--max_new_tokens", type=int, default=256)
     parser.add_argument("--repetition_penalty", type=float, default=1.1)
+    parser.add_argument("--seed", type=int, default=2024)
     parser.add_argument("--recency_weight_start", type=float, default=0.75)
     parser.add_argument("--recency_weight_decay", type=float, default=0.6)
     parser.add_argument("--reindex_margin", type=int, default=1024)
@@ -307,9 +308,15 @@ def work(QA_CLASS):
 
     os.makedirs(args.save_dir, exist_ok=True)
 
-    # fix random seed
-    random.seed(2024)
-    logger.info('seed: 2024')
+    # Seed every RNG used by the inference pipeline. Greedy decoding should be
+    # deterministic, but exposing the seed makes repeated-run checks explicit
+    # and also covers any stochastic preprocessing/backend behavior.
+    random.seed(args.seed)
+    np.random.seed(args.seed)
+    torch.manual_seed(args.seed)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed_all(args.seed)
+    logger.info(f'seed: {args.seed}')
 
     # VideoQA model
     model_path = MODELS[args.model]['model_path']

@@ -7,8 +7,8 @@ export PYTHONPATH="$repo_dir${PYTHONPATH:+:$PYTHONPATH}"
 export OMP_NUM_THREADS="${OMP_NUM_THREADS:-8}"
 export TOKENIZERS_PARALLELISM=false
 
-python_bin="$repo_dir/.venv/hermes/bin/python"
-dataset_root="${VSTREAM_QA_ROOT:-/nfs-stor/chieu.nguyen/VStream-QA}"
+python_bin="${STREAMINGBENCH_PYTHON:-${VSTREAM_QA_PYTHON:-$repo_dir/.venv/hermes/bin/python}}"
+dataset_root="${VSTREAM_QA_ROOT:-$repo_dir/data/vstream-qa}"
 anno_path="$dataset_root/vstream-realtime/rvs_ego_hermes.json"
 save_dir="$repo_dir/results/llava_ov_0.5b/rvs_ego/fps0.5-kv1001"
 mkdir -p "$save_dir"

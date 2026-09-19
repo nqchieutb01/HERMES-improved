@@ -31,7 +31,16 @@ export PYTHONPATH="$repo_dir${PYTHONPATH:+:$PYTHONPATH}"
 export OMP_NUM_THREADS="${OMP_NUM_THREADS:-8}"
 export TOKENIZERS_PARALLELISM=false
 
-python_bin="${STREAMINGBENCH_PYTHON:-$repo_dir/.venv/hermes/bin/python}"
+python_bin="${STREAMINGBENCH_PYTHON:-}"
+if [[ -z "$python_bin" ]]; then
+    for candidate in "$repo_dir/.venv/hermes/bin/python" "$repo_dir/.venv/gpt-oss/bin/python"; do
+        if [[ -x "$candidate" ]]; then
+            python_bin="$candidate"
+            break
+        fi
+    done
+fi
+python_bin="${python_bin:-$(command -v python3 || true)}"
 subset_root="${STREAMINGBENCH_SUBSET_ROOT:-$repo_dir/data/streamingbench/subset}"
 anno_path="${STREAMINGBENCH_ANNO_PATH:-$subset_root/streamingbench_realtime_subset.json}"
 model="${STREAMINGBENCH_MODEL:-llava_ov_0.5b}"

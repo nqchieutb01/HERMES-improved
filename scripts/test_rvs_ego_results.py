@@ -7,6 +7,7 @@ import argparse
 from collections import Counter
 import csv
 import json
+import os
 from pathlib import Path
 
 
@@ -69,7 +70,13 @@ def validate(annotations, rows, fieldnames):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--results-path", type=Path, default=REPO_ROOT / "results/llava_ov_0.5b/rvs_ego/fps0.5-kv1024/results.csv")
-    parser.add_argument("--anno-path", type=Path, default=Path("/nfs-stor/chieu.nguyen/VStream-QA/vstream-realtime/rvs_ego_hermes.json"))
+    default_anno = Path(
+        os.environ.get(
+            "VSTREAM_QA_ROOT",
+            str(REPO_ROOT / "data/vstream-qa"),
+        )
+    ) / "vstream-realtime/rvs_ego_hermes.json"
+    parser.add_argument("--anno-path", type=Path, default=default_anno)
     parser.add_argument("--report-path", type=Path, help="Defaults to validation.json beside the predictions")
     args = parser.parse_args()
     report_path = args.report_path or args.results_path.with_name("validation.json")

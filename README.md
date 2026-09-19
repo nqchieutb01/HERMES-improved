@@ -74,6 +74,18 @@ Download the benchmark videos from their official sources and place them accordi
 | RVS-Ego | `/data/rvs/ego/videos/` | 🤗 [RVS](https://huggingface.co/datasets/Becomebright/RVS) |
 | RVS-Movie | `/data/rvs/movie/videos/` | 🤗 [RVS](https://huggingface.co/datasets/Becomebright/RVS) |
 
+To download only StreamingBench's Real-Time Visual Understanding subtasks
+**Causal Reasoning (CR)**, **Spatial Understanding (SU)**, and **Event Understanding
+(EU)**, run:
+
+```bash
+python scripts/download_streamingbench_subset.py
+```
+
+This creates `data/streamingbench/realtime_cr_su_eu/` with filtered annotations,
+the required videos, and a provenance manifest. The downloader uses HTTP byte
+ranges and does not download complete ZIP archives.
+
 **Offline Benchmarks:**
 
 | Benchmark | Video Path | Official Source |
