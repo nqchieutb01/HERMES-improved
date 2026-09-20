@@ -296,6 +296,7 @@ def work(QA_CLASS):
     parser.add_argument("--encode_chunk_size", type=int, default=16)
     parser.add_argument("--max_new_tokens", type=int, default=256)
     parser.add_argument("--repetition_penalty", type=float, default=1.1)
+    parser.add_argument("--seed", type=int, default=2024)
     parser.add_argument("--recency_weight_start", type=float, default=0.75)
     parser.add_argument("--recency_weight_decay", type=float, default=0.6)
     parser.add_argument("--reindex_margin", type=int, default=1024)
@@ -318,9 +319,30 @@ def work(QA_CLASS):
         default=0,
         help=(
             "Minimum visual tokens retained per frame during compression; "
-            "k=1 adds a mean-pooled frame summary when no patch survives "
+            "k=1 applies frame_summary_strategy when no patch survives "
             "(0 disables the floor)"
         ),
+    )
+    parser.add_argument(
+        "--frame_summary_strategy",
+        choices=(
+            "mean",
+            "top_patch",
+            "top_attention_patch",
+            "attention_weighted",
+            "softmax_score_weighted",
+        ),
+        default="mean",
+        help=(
+            "Representation for a frame with no selected patch when "
+            "min_tokens_per_frame=1"
+        ),
+    )
+    parser.add_argument(
+        "--frame_summary_temperature",
+        type=float,
+        default=0.1,
+        help="Softmax temperature for softmax_score_weighted summaries",
     )
     parser.add_argument("--streaming", type=str2bool, nargs='?', const=True, default=False,
                         help="Streaming (online) mode. If False (default), uses offline mode where should_compact is always True.")
@@ -329,6 +351,8 @@ def work(QA_CLASS):
         parser.error("Chunk size, answer length and repetition penalty must be positive")
     if args.min_tokens_per_frame < 0:
         parser.error("min_tokens_per_frame must be nonnegative")
+    if args.frame_summary_temperature <= 0:
+        parser.error("frame_summary_temperature must be positive")
     if not 0 <= args.recency_weight_decay <= args.recency_weight_start <= 1:
         parser.error("Require 0 <= recency_weight_decay <= recency_weight_start <= 1")
     if args.reindex_margin < 0:
@@ -340,9 +364,15 @@ def work(QA_CLASS):
 
     os.makedirs(args.save_dir, exist_ok=True)
 
-    # fix random seed
-    random.seed(2024)
-    logger.info('seed: 2024')
+    # Seed every RNG used by the inference pipeline. Greedy decoding should be
+    # deterministic, but exposing the seed makes repeated-run checks explicit
+    # and also covers any stochastic preprocessing/backend behavior.
+    random.seed(args.seed)
+    np.random.seed(args.seed)
+    torch.manual_seed(args.seed)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed_all(args.seed)
+    logger.info(f'seed: {args.seed}')
 
     # VideoQA model
     model_path = MODELS[args.model]['model_path']
@@ -357,6 +387,9 @@ def work(QA_CLASS):
     if args.token_trace_path:
         videoqa_model.enable_token_trace(args.token_trace_path)
     videoqa_model.set_token_trace_verbose(args.verbose_token_trace)
+    videoqa_model.set_frame_summary_strategy(
+        args.frame_summary_strategy, args.frame_summary_temperature
+    )
     videoqa_model.set_min_tokens_per_frame(args.min_tokens_per_frame)
     for name in ('recency_weight_start', 'recency_weight_decay', 'reindex_margin', 'use_history'):
         setattr(videoqa_model, name, getattr(args, name))

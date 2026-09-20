@@ -292,8 +292,8 @@ def main() -> None:
     parser.add_argument(
         "--output",
         type=pathlib.Path,
-        default=pathlib.Path("/nfs-stor/chieu.nguyen/StreamingBench"),
-        help="Dataset output directory; keep large videos on shared storage",
+        default=repo_root / "data/streamingbench/realtime_cr_su_eu",
+        help="Dataset output directory; override for shared storage",
     )
     parser.add_argument(
         "--max-videos",

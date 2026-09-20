@@ -10,8 +10,9 @@
 #SBATCH --mem=64G
 #SBATCH --time=06:00:00
 set -euo pipefail
-cd /l/users/chieu.nguyen/HERMES
-export HF_HOME=/nfs-stor/chieu.nguyen/.cache/huggingface
+repo_dir="${HERMES_REPO_DIR:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
+cd "$repo_dir"
+export HF_HOME="${HF_HOME:-$repo_dir/.cache/huggingface}"
 export HF_HUB_CACHE="$HF_HOME/hub"
 export HF_XET_CACHE="$HF_HOME/xet"
 export TRANSFORMERS_CACHE="$HF_HUB_CACHE"
