@@ -286,9 +286,30 @@ def work(QA_CLASS):
         default=0,
         help=(
             "Minimum visual tokens retained per frame during compression; "
-            "k=1 adds a mean-pooled frame summary when no patch survives "
+            "k=1 applies frame_summary_strategy when no patch survives "
             "(0 disables the floor)"
         ),
+    )
+    parser.add_argument(
+        "--frame_summary_strategy",
+        choices=(
+            "mean",
+            "top_patch",
+            "top_attention_patch",
+            "attention_weighted",
+            "softmax_score_weighted",
+        ),
+        default="mean",
+        help=(
+            "Representation for a frame with no selected patch when "
+            "min_tokens_per_frame=1"
+        ),
+    )
+    parser.add_argument(
+        "--frame_summary_temperature",
+        type=float,
+        default=0.1,
+        help="Softmax temperature for softmax_score_weighted summaries",
     )
     parser.add_argument("--streaming", type=str2bool, nargs='?', const=True, default=False,
                         help="Streaming (online) mode. If False (default), uses offline mode where should_compact is always True.")
@@ -297,6 +318,8 @@ def work(QA_CLASS):
         parser.error("Chunk size, answer length and repetition penalty must be positive")
     if args.min_tokens_per_frame < 0:
         parser.error("min_tokens_per_frame must be nonnegative")
+    if args.frame_summary_temperature <= 0:
+        parser.error("frame_summary_temperature must be positive")
     if not 0 <= args.recency_weight_decay <= args.recency_weight_start <= 1:
         parser.error("Require 0 <= recency_weight_decay <= recency_weight_start <= 1")
     if args.reindex_margin < 0:
@@ -331,6 +354,9 @@ def work(QA_CLASS):
     if args.token_trace_path:
         videoqa_model.enable_token_trace(args.token_trace_path)
     videoqa_model.set_token_trace_verbose(args.verbose_token_trace)
+    videoqa_model.set_frame_summary_strategy(
+        args.frame_summary_strategy, args.frame_summary_temperature
+    )
     videoqa_model.set_min_tokens_per_frame(args.min_tokens_per_frame)
     for name in ('recency_weight_start', 'recency_weight_decay', 'reindex_margin', 'use_history'):
         setattr(videoqa_model, name, getattr(args, name))

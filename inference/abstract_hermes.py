@@ -6,6 +6,13 @@ import torch
 
 class Abstract_Hermes:
     kv_cache = None
+    FRAME_SUMMARY_STRATEGIES = (
+        "mean",
+        "top_patch",
+        "top_attention_patch",
+        "attention_weighted",
+        "softmax_score_weighted",
+    )
 
     def __init__(self, processor, init_prompt_ids, kv_size):
         self.processor = processor
@@ -25,6 +32,8 @@ class Abstract_Hermes:
         self._token_frame_ids_per_layer = None
         self._token_frame_summary_scores_per_layer = None
         self.min_tokens_per_frame = 0
+        self.frame_summary_strategy = "mean"
+        self.frame_summary_temperature = 0.1
         self.frame_summary_mode = False
         self._frame_summary_specs_per_layer = None
         self.token_trace_verbose = False
@@ -55,10 +64,31 @@ class Abstract_Hermes:
         if value < 0:
             raise ValueError("min_tokens_per_frame must be nonnegative")
         self.min_tokens_per_frame = value
-        # k=1 uses a synthetic frame summary instead of selecting an
-        # arbitrary single patch token. Larger k values keep the existing
-        # top-up behavior until they receive their own summary strategy.
-        self.frame_summary_mode = value == 1
+        self._refresh_frame_summary_mode()
+
+    def set_frame_summary_strategy(self, strategy, temperature=0.1):
+        """Choose how a frame with no surviving patch is represented."""
+        strategy = str(strategy)
+        if strategy not in self.FRAME_SUMMARY_STRATEGIES:
+            choices = ", ".join(self.FRAME_SUMMARY_STRATEGIES)
+            raise ValueError(
+                f"Unknown frame summary strategy {strategy!r}; choose from {choices}"
+            )
+        temperature = float(temperature)
+        if temperature <= 0:
+            raise ValueError("frame_summary_temperature must be positive")
+        self.frame_summary_strategy = strategy
+        self.frame_summary_temperature = temperature
+        self._refresh_frame_summary_mode()
+
+    def _refresh_frame_summary_mode(self):
+        # top_patch satisfies k=1 by retaining a real source token. The other
+        # strategies synthesize one pooled token for an otherwise missing frame.
+        self.frame_summary_mode = (
+            self.min_tokens_per_frame == 1
+            and self.frame_summary_strategy
+            not in {"top_patch", "top_attention_patch"}
+        )
 
     def _reset_token_frame_ids(self):
         """Forget frame provenance when starting a new video."""
@@ -120,7 +150,9 @@ class Abstract_Hermes:
         )
         return frame_indices + int(first_frame)
 
-    def _select_indices_with_frame_minimum(self, scores, frame_ids, budget):
+    def _select_indices_with_frame_minimum(
+        self, scores, frame_ids, budget, frame_floor_scores=None
+    ):
         """Select the normal budget, then top up frames below the floor.
 
         ``budget`` is the normal visual-token budget for one layer. The
@@ -137,6 +169,13 @@ class Abstract_Hermes:
             raise RuntimeError(
                 "Frame provenance is unavailable or misaligned; cannot enforce "
                 "min_tokens_per_frame"
+            )
+        if frame_floor_scores is None:
+            frame_floor_scores = scores
+        elif frame_floor_scores.numel() != scores.numel():
+            raise RuntimeError(
+                "Frame-floor scores do not match selection scores: "
+                f"{frame_floor_scores.numel()} != {scores.numel()}"
             )
 
         if self.frame_summary_mode:
@@ -166,7 +205,7 @@ class Abstract_Hermes:
             unselected = frame_indices[~selected_mask[frame_indices]]
             missing_count = min(missing_count, unselected.numel())
             if missing_count > 0:
-                unselected_scores = scores.index_select(0, unselected)
+                unselected_scores = frame_floor_scores.index_select(0, unselected)
                 top_up = torch.topk(
                     unselected_scores, missing_count, sorted=False
                 ).indices
@@ -317,8 +356,9 @@ class Abstract_Hermes:
         keep_indices_all_layers,
         layer_attention_scores,
         layer_configs,
+        layer_selection_scores=None,
     ):
-        """Describe one synthetic mean token for each missing frame.
+        """Describe one synthetic pooled token for each missing frame.
 
         The source indices point to the original, pre-pruning KV cache. The
         model-specific shrinker turns each source group into one K/V entry and
@@ -332,6 +372,11 @@ class Abstract_Hermes:
         specs_per_layer = []
         for layer_idx, keep_indices in enumerate(keep_indices_all_layers):
             score = layer_attention_scores[layer_idx]
+            selection_score = (
+                layer_selection_scores[layer_idx]
+                if layer_selection_scores is not None
+                else score
+            )
             start_idx = layer_configs[layer_idx]["visual_start_idx"]
             num_visual_tokens = score.numel()
             frame_ids = self._token_frame_ids_per_layer[layer_idx][
@@ -358,14 +403,60 @@ class Abstract_Hermes:
                 if selected_mask[frame_relative].any():
                     continue
                 frame_score = score.index_select(0, frame_relative).mean()
-                specs.append({
+                spec = {
                     "frame_id": int(frame_id),
                     "source_indices": (frame_relative + start_idx).detach().cpu(),
                     "attention_score": float(frame_score.item()),
-                })
+                    "pool_strategy": self.frame_summary_strategy,
+                }
+                if self.frame_summary_strategy == "attention_weighted":
+                    pool_weights = score.index_select(
+                        0, frame_relative
+                    ).float().clamp_min(0)
+                    weight_sum = pool_weights.sum()
+                    if not torch.isfinite(weight_sum) or weight_sum <= 0:
+                        pool_weights = torch.full_like(
+                            pool_weights, 1.0 / max(pool_weights.numel(), 1)
+                        )
+                    else:
+                        pool_weights = pool_weights / weight_sum
+                    spec["pool_weights"] = pool_weights.detach().cpu()
+                elif self.frame_summary_strategy == "softmax_score_weighted":
+                    pool_scores = selection_score.index_select(
+                        0, frame_relative
+                    ).float()
+                    pool_weights = torch.softmax(
+                        pool_scores / self.frame_summary_temperature, dim=0
+                    )
+                    spec["pool_weights"] = pool_weights.detach().cpu()
+                specs.append(spec)
             specs_per_layer.append(specs)
 
         return specs_per_layer
+
+    @staticmethod
+    def _pool_frame_states(k_source, v_source, spec):
+        """Pool aligned source K/V states according to a summary specification."""
+        weights = spec.get("pool_weights")
+        if weights is None:
+            return (
+                k_source.mean(dim=2, keepdim=True),
+                v_source.mean(dim=2, keepdim=True),
+            )
+
+        weights = torch.as_tensor(
+            weights, device=k_source.device, dtype=torch.float32
+        )
+        if weights.numel() != k_source.shape[2]:
+            raise RuntimeError(
+                "Frame-summary weights do not match source-token count: "
+                f"{weights.numel()} != {k_source.shape[2]}"
+            )
+        weights = weights / weights.sum().clamp_min(torch.finfo(weights.dtype).eps)
+        weights = weights.view(1, 1, -1, 1)
+        pooled_k = (k_source.float() * weights).sum(dim=2, keepdim=True)
+        pooled_v = (v_source.float() * weights).sum(dim=2, keepdim=True)
+        return pooled_k.to(k_source.dtype), pooled_v.to(v_source.dtype)
 
     @staticmethod
     def _count_frame_tokens(frame_ids):

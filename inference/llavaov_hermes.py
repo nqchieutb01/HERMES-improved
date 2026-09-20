@@ -266,8 +266,8 @@ class LlavaOneVision_Hermes(LlavaOnevisionForConditionalGeneration, Abstract_Her
             else:
                 k_kept_final = k_kept
 
-            # k=1 frame-floor mode represents a frame that lost all of its
-            # patches with one synthetic mean-pooled KV token. The source
+            # Pooled k=1 frame-floor modes represent a frame that lost all of
+            # its patches with one synthetic KV token. The source
             # tokens are aligned to the new position before averaging keys so
             # that RoPE phases do not cancel across the frame's patches.
             frame_summary_specs = []
@@ -327,8 +327,11 @@ class LlavaOneVision_Hermes(LlavaOnevisionForConditionalGeneration, Abstract_Her
                     k_source, cos_delta, sin_delta
                 )
 
-                frame_summary_k.append(k_source.mean(dim=2, keepdim=True))
-                frame_summary_v.append(v_source.mean(dim=2, keepdim=True))
+                pooled_k, pooled_v = self._pool_frame_states(
+                    k_source, v_source, spec
+                )
+                frame_summary_k.append(pooled_k)
+                frame_summary_v.append(pooled_v)
                 frame_summary_positions.append(summary_pos)
                 frame_summary_ids.append(int(spec["frame_id"]))
                 frame_summary_scores.append(float(spec["attention_score"]))
@@ -345,10 +348,11 @@ class LlavaOneVision_Hermes(LlavaOnevisionForConditionalGeneration, Abstract_Her
                 )
                 if self.token_trace_verbose:
                     logger.info(
-                        "Layer %d: added %d mean frame summary token(s); "
+                        "Layer %d: added %d %s frame summary token(s); "
                         "average attention score=%.6g",
                         layer_idx,
                         len(frame_summary_k),
+                        self.frame_summary_strategy,
                         sum(
                             float(spec["attention_score"])
                             for spec in frame_summary_specs
@@ -798,7 +802,15 @@ class LlavaOneVision_Hermes(LlavaOnevisionForConditionalGeneration, Abstract_Her
                 ]
             topk_indices_relative, effective_num_keep = (
                 self._select_indices_with_frame_minimum(
-                    score, frame_ids, actual_num_keep
+                    score,
+                    frame_ids,
+                    actual_num_keep,
+                    frame_floor_scores=(
+                        layer_attention_scores[layer_idx]
+                        if getattr(self, "frame_summary_strategy", "mean")
+                        == "top_attention_patch"
+                        else None
+                    ),
                 )
             )
             if effective_num_keep > actual_num_keep and self.token_trace_verbose:
@@ -834,6 +846,7 @@ class LlavaOneVision_Hermes(LlavaOnevisionForConditionalGeneration, Abstract_Her
             keep_indices_all_layers,
             layer_attention_scores,
             layer_configs,
+            refined_scores,
         )
         return keep_indices_all_layers
     

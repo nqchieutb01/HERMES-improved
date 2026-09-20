@@ -132,6 +132,7 @@ class FrameFloorCompressionTest(unittest.TestCase):
                 "source_indices": torch.tensor([1, 2]),
                 "attention_score": 0.25,
             }]],
+            _pool_frame_states=Abstract_Hermes._pool_frame_states,
             token_trace_verbose=False,
             # Keep this layer out of the separate long-term fold path.
             long_term_threshold=2,
@@ -167,6 +168,135 @@ class FrameFloorCompressionTest(unittest.TestCase):
         observed = probe.kv_cache[0][0][:, :, 3, :]
         torch.testing.assert_close(observed, expected, rtol=1e-5, atol=1e-6)
         self.assertEqual(probe._position_ids_cache[0].tolist(), [0, 3, 4, 5])
+
+    def test_top_patch_keeps_best_real_token_from_missing_frame(self):
+        """top_patch must add the best real patch instead of a synthetic token."""
+        probe = SimpleNamespace(
+            min_tokens_per_frame=1,
+            frame_summary_mode=False,
+        )
+        scores = torch.tensor([0.9, 0.1, 0.8, 0.7])
+        frame_ids = torch.tensor([10, 10, 11, 11])
+
+        selected, effective_budget = (
+            Abstract_Hermes._select_indices_with_frame_minimum(
+                probe, scores, frame_ids, budget=1
+            )
+        )
+
+        self.assertEqual(selected.tolist(), [0, 2])
+        self.assertEqual(effective_budget, 2)
+
+    def test_top_attention_patch_uses_raw_attention_for_frame_top_up(self):
+        """The raw-attention variant must not reuse the blended HERMES score."""
+        probe = SimpleNamespace(
+            min_tokens_per_frame=1,
+            frame_summary_mode=False,
+        )
+        selection_scores = torch.tensor([0.9, 0.1, 0.8, 0.7])
+        attention_scores = torch.tensor([0.4, 0.3, 0.1, 0.9])
+        frame_ids = torch.tensor([10, 10, 11, 11])
+
+        selected, effective_budget = (
+            Abstract_Hermes._select_indices_with_frame_minimum(
+                probe,
+                selection_scores,
+                frame_ids,
+                budget=1,
+                frame_floor_scores=attention_scores,
+            )
+        )
+
+        self.assertEqual(selected.tolist(), [0, 3])
+        self.assertEqual(effective_budget, 2)
+
+    def test_top_attention_patch_keeps_two_distinct_patches_per_frame(self):
+        """k=2 must top each frame up with distinct raw-attention patches."""
+        probe = SimpleNamespace(
+            min_tokens_per_frame=2,
+            frame_summary_mode=False,
+        )
+        selection_scores = torch.tensor([0.9, 0.1, 0.2, 0.8, 0.3, 0.4])
+        attention_scores = torch.tensor([0.1, 0.2, 0.9, 0.1, 0.2, 0.8])
+        frame_ids = torch.tensor([10, 10, 10, 11, 11, 11])
+
+        selected, effective_budget = (
+            Abstract_Hermes._select_indices_with_frame_minimum(
+                probe,
+                selection_scores,
+                frame_ids,
+                budget=2,
+                frame_floor_scores=attention_scores,
+            )
+        )
+
+        self.assertEqual(selected.tolist(), [0, 2, 3, 5])
+        self.assertEqual(effective_budget, 4)
+
+    def test_attention_weighted_summary_uses_raw_attention(self):
+        """Attention pooling must normalize weights inside the missing frame."""
+        probe = SimpleNamespace(
+            frame_summary_mode=True,
+            frame_summary_strategy="attention_weighted",
+            frame_summary_temperature=0.1,
+            _token_frame_ids_per_layer=[
+                torch.tensor([-1, 10, 10, 11, 11])
+            ],
+        )
+        specs = Abstract_Hermes._build_frame_summary_specs(
+            probe,
+            keep_indices_all_layers=[[0, 3]],
+            layer_attention_scores=[torch.tensor([1.0, 3.0, 2.0, 4.0])],
+            layer_configs=[{"visual_start_idx": 1}],
+            layer_selection_scores=[torch.tensor([0.8, 0.2, 0.7, 0.1])],
+        )
+
+        self.assertEqual(len(specs[0]), 1)
+        self.assertEqual(specs[0][0]["source_indices"].tolist(), [1, 2])
+        torch.testing.assert_close(
+            specs[0][0]["pool_weights"], torch.tensor([0.25, 0.75])
+        )
+
+    def test_softmax_score_summary_and_pooling(self):
+        """Softmax pooling must use final HERMES scores and pool in FP32."""
+        probe = SimpleNamespace(
+            frame_summary_mode=True,
+            frame_summary_strategy="softmax_score_weighted",
+            frame_summary_temperature=0.1,
+            _token_frame_ids_per_layer=[
+                torch.tensor([-1, 10, 10, 11, 11])
+            ],
+        )
+        specs = Abstract_Hermes._build_frame_summary_specs(
+            probe,
+            keep_indices_all_layers=[[0, 3]],
+            layer_attention_scores=[torch.tensor([1.0, 3.0, 2.0, 4.0])],
+            layer_configs=[{"visual_start_idx": 1}],
+            layer_selection_scores=[torch.tensor([0.8, 0.2, 0.7, 0.1])],
+        )
+        spec = specs[0][0]
+        expected_weights = torch.softmax(torch.tensor([0.8, 0.2]) / 0.1, dim=0)
+        torch.testing.assert_close(spec["pool_weights"], expected_weights)
+
+        keys = torch.tensor([[[[2.0], [10.0]]]], dtype=torch.float16)
+        values = torch.tensor([[[[4.0], [20.0]]]], dtype=torch.float16)
+        pooled_k, pooled_v = Abstract_Hermes._pool_frame_states(
+            keys, values, spec
+        )
+        torch.testing.assert_close(
+            pooled_k.float().flatten(),
+            torch.tensor([2.0]) * expected_weights[0]
+            + torch.tensor([10.0]) * expected_weights[1],
+            rtol=1e-3,
+            atol=1e-3,
+        )
+        torch.testing.assert_close(
+            pooled_v.float().flatten(),
+            torch.tensor([4.0]) * expected_weights[0]
+            + torch.tensor([20.0]) * expected_weights[1],
+            rtol=1e-3,
+            atol=1e-3,
+        )
 
     @torch.inference_mode()
     def test_long_term_selection_reserves_space_for_fold_summary(self):
