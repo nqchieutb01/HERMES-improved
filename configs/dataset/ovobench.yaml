@@ -1,0 +1,6 @@
+name: ovobench
+annotation: data/ovobench/ovobench_realtime_backeward.json
+streaming: true
+evaluators:
+  - kind: multiple_choice
+    mode: general

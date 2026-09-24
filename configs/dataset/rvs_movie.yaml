@@ -1,0 +1,7 @@
+name: rvs_movie
+annotation: data/rvs/movie/movienet_oe.json
+streaming: true
+evaluators:
+  - kind: open_ended
+    work_dir: tmp
+    output: results.json

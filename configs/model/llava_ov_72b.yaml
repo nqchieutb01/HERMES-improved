@@ -1,0 +1,2 @@
+name: llava_ov_72b
+gpus_per_worker: 4

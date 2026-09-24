@@ -1,0 +1,30 @@
+# @package _global_
+
+defaults:
+  - override /model: llava_ov_0.5b
+  - override /dataset: sember_mcq
+
+dataset:
+  question_categories:
+    - time_duration
+    - counting_objects_events
+    - location_trace
+  # The first 12 matching videos cover all three selected task categories.
+  max_videos: 12
+
+run:
+  mode: full
+  num_chunks: 1
+  sample_fps: 0.2
+  kv_size: 1024
+  encode_chunk_size: 8
+  max_new_tokens: 16
+  debug: false
+  use_history: false
+
+paths:
+  save_dir: results/${model.name}/${dataset.name}/time-count-location-smoke-fps${run.sample_fps}-kv${run.kv_size}
+
+runtime:
+  capture_worker_logs: true
+  capture_evaluation_logs: true

@@ -30,13 +30,17 @@ pip install -r requirements_llava.txt
 pip install flash-attn --no-build-isolation
 ```
 
-For **Qwen2.5-VL** model inference:
+For **Qwen2.5-VL and Qwen3-VL** model inference, use a separate environment
+from LLaVA. Keep the larger environment on NFS; the Qwen3 model profile uses
+this interpreter by default:
 ```bash
-conda create -n hermes-qwen python=3.12 -y
-conda activate hermes-qwen
-pip install -r requirements_qwen.txt
-pip install flash-attn --no-build-isolation
+python3.12 -m venv /nfs-stor/chieu.nguyen/venvs/hermes-qwen
+/nfs-stor/chieu.nguyen/venvs/hermes-qwen/bin/python3 -m pip install -r requirements_qwen.txt
+/nfs-stor/chieu.nguyen/venvs/hermes-qwen/bin/python3 -m pip install flash-attn --no-build-isolation
 ```
+
+The Hydra driver can still run from the LLaVA environment; `model=qwen3_vl_8b`
+selects the dedicated Qwen interpreter for the inference subprocess.
 
 
 ## 📦 Preparation
@@ -59,6 +63,11 @@ We support the following models (choose one or more):
 | Qwen2.5-VL | Qwen2.5-VL-3B-Instruct | [Qwen/Qwen2.5-VL-3B-Instruct](https://huggingface.co/Qwen/Qwen2.5-VL-3B-Instruct) |
 | Qwen2.5-VL | Qwen2.5-VL-7B-Instruct | [Qwen/Qwen2.5-VL-7B-Instruct](https://huggingface.co/Qwen/Qwen2.5-VL-7B-Instruct) |
 | Qwen2.5-VL | Qwen2.5-VL-32B-Instruct | [Qwen/Qwen2.5-VL-32B-Instruct](https://huggingface.co/Qwen/Qwen2.5-VL-32B-Instruct) |
+| Qwen3-VL | Qwen3-VL-8B-Instruct | [Qwen/Qwen3-VL-8B-Instruct](https://huggingface.co/Qwen/Qwen3-VL-8B-Instruct) |
+
+Store the Qwen3-VL checkpoint outside the repository at
+`/nfs-stor/chieu.nguyen/models/Qwen3-VL-8B-Instruct`, as configured in
+`configs/model/qwen3_vl_8b.yaml`.
 
 
 ### Data Preparation
@@ -125,24 +134,28 @@ HERMES/
 │   └── videomme/
 │       ├── videos/
 │       └── videomme.json
+├── configs/
+│   ├── dataset/
+│   ├── experiment/
+│   └── model/
 ├── eval/
+│   ├── rvs/
 │   ├── eval_multiple_choice.py
 │   └── eval_open_ended.py
 ├── inference/
 │   ├── abstract_hermes.py
 │   ├── llavaov_hermes.py
 │   ├── qwenvl_hermes.py
+│   ├── qwen3vl_hermes.py
 │   ├── reindex_1d.py
-│   └── reindex_3d.py
-├── models/
-│   ├── llava-onevision-qwen2-0.5b-ov-hf/
-│   ├── llava-onevision-qwen2-7b-ov-hf/
-│   ├── llava-onevision-qwen2-72b-ov-hf/
-│   ├── Qwen2.5-VL-3B-Instruct/
-│   ├── Qwen2.5-VL-7B-Instruct/
-│   └── Qwen2.5-VL-32B-Instruct/
+│   ├── reindex_3d.py
+│   └── reindex_qwen3.py
 ├── scripts/
-│   └── run_infer.sh
+│   ├── data/
+│   ├── slurm/
+│   ├── sweeps/
+│   └── run.py
+├── tests/
 ├── video_qa/
 │   ├── base.py
 │   ├── hermes_vqa.py
@@ -154,127 +167,247 @@ HERMES/
 ```
 
 
-## 🚀 Inference
+## 🚀 Inference and evaluation with Hydra
 
-Simply run the inference script:
+All public run configuration is under `configs/` and composed by
+`scripts/run.py`. Model, dataset, and experiment settings are separate config
+groups, so a run and its evaluation use one resolved configuration.
 
-```bash
-bash scripts/run_infer.sh
-```
-
-Here is the content of `scripts/run_infer.sh`:
+Run StreamingBench inference and its configured evaluation:
 
 ```bash
-export PYTHONPATH=$(cd "$(dirname "$0")/.." && pwd):$PYTHONPATH
-
-num_chunks=8
-model=llava_ov_7b
-dataset=streamingbench
-
-python video_qa/run_infer.py \
-    --num_chunks $num_chunks \
-    --model ${model} \
-    --dataset ${dataset} \
-    --sample_fps 0.5 \
-    --kv_size 6000
+python scripts/run.py \
+    model=llava_ov_7b dataset=streamingbench \
+    run.num_chunks=8 run.sample_fps=0.5 run.kv_size=6000
 ```
 
-To run only the Real-Time Visual Understanding subtasks Causal Reasoning (CR),
-Spatial Understanding (SU), and Event Understanding (EU), use the focused
-launcher below. It first downloads only the referenced video members from the
-official ZIP archives into shared storage, then runs inference and evaluation:
+Hydra overrides replace the old argparse flags and launcher-specific environment
+variables. Useful settings include `run.mode`, `run.num_chunks`,
+`run.sample_fps`, `run.kv_size`, `run.min_tokens_per_frame`,
+`run.encode_chunk_size`, `run.debug`, `paths.save_dir`, and
+`paths.results_path`. Run `python scripts/run.py --cfg job --resolve` to inspect
+the complete configuration without loading a model.
 
-```bash
-sbatch scripts/run_streamingbench_cr_su_eu.sh
-```
+The available modes are:
 
-The script requests one GPU from the `cscc-gpu-p` production partition with
-the same Slurm account/QoS settings as the repository's other batch jobs. It
-runs the default `k=1,0` sweep sequentially inside that one allocation and
-can also be run with `bash` from an existing GPU allocation. It defaults to
-`llava_ov_0.5b`, 0.5 FPS, one GPU, and a 6,000-token
-KV budget. Override `STREAMINGBENCH_MODEL`, `STREAMINGBENCH_SAMPLE_FPS`,
-`STREAMINGBENCH_KV_SIZE`, `STREAMINGBENCH_ROOT`,
-`STREAMINGBENCH_MIN_TOKENS_SWEEP`, or `STREAMINGBENCH_SAVE_DIR` as needed. Set
-`STREAMINGBENCH_MIN_TOKENS_PER_FRAME` to run only one `k` value.
-Set `STREAMINGBENCH_DEBUG=true` for a one-video validation run, or
-`STREAMINGBENCH_SKIP_DOWNLOAD=true` when the prepared manifest is already
-complete. The downloader can also be
-inspected without network access using:
-
-```bash
-python scripts/download_streamingbench_tasks.py --dry-run
-```
-
-For the prepared three-video subset under `data/streamingbench/subset/`, run:
-
-```bash
-sbatch scripts/run_streamingbench_subset.sh
-```
-
-This submits one Slurm job with one GPU and runs the default `k=1,0` sweep
-sequentially inside that allocation. Each `k` writes isolated predictions and
-evaluation under `results/<model>/streamingbench_subset/`; for example,
-`min-k4/` contains the `k=4` result. To run one configuration directly with an
-existing GPU allocation, use `bash` instead. Override
-`STREAMINGBENCH_MODEL`, `STREAMINGBENCH_SAMPLE_FPS`, `STREAMINGBENCH_KV_SIZE`,
-`STREAMINGBENCH_SUBSET_ROOT`, `STREAMINGBENCH_ANNO_PATH`, or
-`STREAMINGBENCH_SAVE_DIR` as needed. The launcher also writes per-frame token
-retention to `token_retention.csv`; override its location with
-`STREAMINGBENCH_TOKEN_TRACE_PATH`. It also writes
-`token_retention_summary.csv` with per-event/per-layer and overall averages.
-The CSV trace remains enabled, but detailed per-event/per-layer console output
-is disabled by default; pass `--verbose_token_trace true` to the inference
-script when that diagnostic logging is needed.
-Set `STREAMINGBENCH_MIN_TOKENS_SWEEP`, for example to `1,4,8,16`, to change the
-sequential sweep. Set
-`STREAMINGBENCH_MIN_TOKENS_PER_FRAME` to a positive value, such as `4`, when
-running directly with `bash` to first select the normal `kv_size` tokens and
-then top up frames with fewer than that many selected tokens in every layer.
-For `k=1`, a frame with no selected patch token receives one synthetic summary
-token: its K/V values are mean-pooled from that frame after position-aware
-RoPE alignment, and its trace records the frame's mean attention score.
-The effective cache can then exceed
-`kv_size` by the amount needed for this guarantee. Set
-`STREAMINGBENCH_DEBUG=true` to run only the first video as a quick validation.
-
-**Arguments:**
-
-| Argument | Description |
+| Mode | Behavior |
 |:---|:---|
-| `model` | Model to use. Options: `llava_ov_0.5b`, `llava_ov_7b`, `llava_ov_72b`, `qwen2.5_vl_3b`, `qwen2.5_vl_7b`, `qwen2.5_vl_32b` |
-| `dataset` | Benchmark dataset. Options: `videomme`, `mvbench`, `egoschema`, `rvs_ego`, `rvs_movie`, `ovobench`, `streamingbench` |
-| `num_chunks` | Number of parallel processes for evaluation, typically set to the number of GPUs |
-| `sample_fps` | Frame sampling rate (frames per second) from the video |
-| `kv_size` | Maximum KV cache size for HERMES hierarchical memory management |
-| `min_tokens_per_frame` | Optional per-frame visual-token floor; may increase the effective KV budget |
-| `only_eval` | If set, skip inference and only run evaluation on existing results |
+| `full` | Run inference, merge chunk CSVs, and run all dataset evaluators |
+| `infer` | Run inference and merge predictions only |
+| `evaluate` | Evaluate an existing `results.csv` without loading a model |
+| `validate` | Run the dataset's configured integrity checks only |
 
-
-## 📊 Evaluation
-
-The evaluation scripts compute metrics on the inference results:
-
-- **Multiple-choice benchmarks** (VideoMME, MVBench, EgoSchema, OVBench, StreamingBench) are evaluated by `eval/eval_multiple_choice.py`, which takes a subcommand as its first argument:
-
-| Subcommand | Description | Used by |
-|:---|:---|:---|
-| `general` | Compute overall accuracy, task-specific breakdown (auto-detects OVBench / StreamingBench), and prediction error analysis | MVBench, OVBench, StreamingBench, VideoMME |
-| `videomme` | Report accuracy broken down by video duration (short / medium / long) | VideoMME |
-| `egoschema` | Generate EgoSchema submission CSV file | EgoSchema |
+For example, evaluate existing StreamingBench predictions with the same Hydra
+dataset profile used for inference:
 
 ```bash
-python eval/eval_multiple_choice.py general --results_path results/llava_ov_7b/streamingbench/fps0.5-kv6000/results.csv
+python scripts/run.py dataset=streamingbench run.mode=evaluate \
+    paths.results_path=results/llava_ov_7b/streamingbench/fps0.5-kv6000/results.csv
 ```
 
-- **Open-ended benchmarks** (RVS-Ego, RVS-Movie) are evaluated by `eval/eval_open_ended.py`, which uses GPT for answer scoring:
+The three-video smoke profile is run with:
 
 ```bash
-python eval/eval_open_ended.py \
-    --pred_path results/llava_ov_7b/rvs_ego/fps0.5-kv6000/results.csv \
-    --output_dir results/llava_ov_7b/rvs_ego/fps0.5-kv6000/tmp \
-    --output_json results/llava_ov_7b/rvs_ego/fps0.5-kv6000/results.json
+python scripts/run.py experiment=streamingbench_smoke
 ```
+
+Hydra multirun provides parameter sweeps. Each value below has an isolated
+output directory and token trace:
+
+```bash
+python scripts/run.py -m experiment=streamingbench_min_tokens \
+    run.min_tokens_per_frame=0,1,4,8,16
+```
+
+The per-frame token floor may increase the effective KV budget. With `k=1`, a
+frame with no selected patch token receives a position-aligned mean-pooled
+summary token.
+
+Cluster launchers contain only Slurm resources and environment setup; experiment
+parameters remain in Hydra profiles:
+
+```bash
+sbatch scripts/slurm/streamingbench_subset.sh
+sbatch scripts/slurm/streamingbench_cr_su_eu.sh
+```
+
+Prepare the focused CR/SU/EU dataset separately when needed:
+
+```bash
+python scripts/data/download_streamingbench_tasks.py --dry-run
+python scripts/data/download_streamingbench_tasks.py --tasks CR SU EU
+```
+
+Python utilities are organized by responsibility:
+
+```text
+configs/             Hydra model, dataset, and experiment profiles
+eval/                benchmark metrics
+eval/rvs/            RVS validation and judging
+scripts/data/         dataset preparation
+scripts/slurm/        cluster launchers
+scripts/sweeps/       sweep controllers
+tests/                CPU regression tests
+```
+
+Run the configuration and CPU regression tests with:
+
+```bash
+python -m unittest discover -s tests
+```
+
+## S-EMBER grounded streaming evaluation
+
+S-EMBER can be read directly from its official JSONL layout; no converted copy
+of the 369 GB video dataset is needed. The adapter resolves videos from NFS,
+groups questions by video, and sorts them by `question_time` before causal
+streaming inference.
+
+Run the one-video, three-question smoke test with the local 0.5B checkpoint:
+
+```bash
+source .venv/hermes/bin/activate
+python scripts/run.py experiment=sember_smoke
+```
+
+On Slurm:
+
+```bash
+sbatch scripts/slurm/sember_smoke.sh
+```
+
+The smoke profile reads
+`/nfs-stor/chieu.nguyen/s-ember/sember_grounding.jsonl`, samples at 0.2 FPS,
+and writes predictions plus deterministic S-EMBER temporal grounding metrics
+under `results/llava_ov_0.5b/sember_grounding/smoke-fps0.2-kv1024/`.
+
+Inspect the resolved command without loading a model:
+
+```bash
+python scripts/run.py experiment=sember_smoke runtime.dry_run=true
+```
+
+For the full dataset, remove the smoke limit and choose the intended model and
+sampling settings explicitly, for example:
+
+```bash
+python scripts/run.py dataset=sember_grounding model=llava_ov_0.5b \
+    dataset.max_videos=null run.sample_fps=0.5 run.kv_size=6000 \
+    run.use_history=false
+```
+
+The model is prompted to return both a short answer and
+`Time: [start_seconds, end_seconds]`. Evaluation reports temporal mIoU,
+R@1 at IoU >= 0.5, parse rate, and per-category results. LLM-based semantic
+answer judging remains a separate optional stage.
+
+To run open-ended temporal grounding only for Time Duration, Counting, and
+Location Trace, use the dedicated full profile:
+
+```bash
+python scripts/run.py experiment=sember_grounding_time_count_location
+```
+
+On Slurm:
+
+```bash
+sbatch scripts/slurm/sember_grounding_time_count_location.sh
+```
+
+Run a Cartesian sweep sequentially within one Slurm allocation by passing
+Hydra's `-m` flag and comma-separated values. Every combination receives a
+separate output directory because the path includes FPS, KV size, and the
+per-frame token floor:
+
+```bash
+sbatch scripts/slurm/sember_grounding_time_count_location.sh \
+    -m \
+    run.sample_fps=0.2,0.5 \
+    run.min_tokens_per_frame=0,1 \
+    run.kv_size=4000,6000
+```
+
+Predictions and grounding metrics are written under
+`results/<model>/sember_grounding/time-count-location-fps<fps>-kv<kv_size>-k<min_tokens_per_frame>/`.
+The generated artifacts include `results.csv`, `sember_grounding_metrics.json`,
+and `sember_grounding_scored.jsonl`.
+
+### Fixed-frame uniform baseline
+
+The uniform baseline resets model state for each question and selects 32 unique
+source frames, spaced uniformly from video time zero through the question
+timestamp. It uses the source video's native FPS and does not run the HERMES
+streaming prediction/compression step. Each output row records the selected
+source-frame indices.
+
+Run the default 100-video Time Duration, Counting, and Location Trace profile:
+
+```bash
+python scripts/run.py experiment=sember_grounding_uniform
+```
+
+On Slurm:
+
+```bash
+sbatch scripts/slurm/sember_grounding_uniform.sh
+```
+
+Change the fixed frame count through Hydra, for example:
+
+```bash
+python scripts/run.py experiment=sember_grounding_uniform \
+    run.uniform_num_frames=16 \
+    paths.save_dir=results/llava_ov_7b/sember_grounding/uniform-n16-time-count-location-v100
+```
+
+Set `dataset.max_videos=null` and use a new output directory to evaluate all
+2,752 videos in the three selected categories.
+
+### S-EMBER MCQ
+
+The five-way MCQ split is also read directly from the official JSONL. Run its
+one-video, two-question smoke test with:
+
+```bash
+python scripts/run.py experiment=sember_mcq_smoke
+```
+
+On Slurm:
+
+```bash
+sbatch scripts/slurm/sember_mcq_smoke.sh
+```
+
+The adapter uses the official prompt, preserves the A-E options, and requires
+the model to return only one letter. Results are written under
+`results/llava_ov_0.5b/sember_mcq/smoke-fps0.2-kv1024/`; evaluation reports
+overall accuracy, parse rate, per-category accuracy, and predicted-letter
+distribution. Run the full split by removing the video limit:
+
+```bash
+python scripts/run.py dataset=sember_mcq model=llava_ov_0.5b \
+    dataset.max_videos=null run.sample_fps=0.5 run.kv_size=6000 \
+    run.use_history=false
+```
+
+To evaluate only Time Duration, Counting, and Location Trace, use the focused
+profiles. The smoke profile covers all three categories with 22 questions from
+12 videos:
+
+```bash
+python scripts/run.py experiment=sember_mcq_time_count_location_smoke
+```
+
+The full profile evaluates 4,558 questions from 2,752 videos (1,935 Time
+Duration, 1,627 Counting, and 996 Location Trace):
+
+```bash
+python scripts/run.py experiment=sember_mcq_time_count_location
+```
+
+The category filter is applied before `max_videos`, so a limited run selects
+the first N videos containing one of the requested tasks. The resulting MCQ
+metrics file includes the combined accuracy and a separate score for each task.
 
 
 ## 📧 Contact

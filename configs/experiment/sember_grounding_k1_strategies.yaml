@@ -1,0 +1,39 @@
+# @package _global_
+
+defaults:
+  - override /model: llava_ov_7b
+  - override /dataset: sember_grounding
+
+dataset:
+  question_categories:
+    - time_duration
+    - counting_objects_events
+    - location_trace
+  max_videos: 100
+
+run:
+  mode: full
+  num_chunks: 1
+  sample_fps: 0.2
+  kv_size: 4000
+  encode_chunk_size: 16
+  max_new_tokens: 128
+  debug: false
+  use_history: false
+  min_tokens_per_frame: 1
+  frame_summary_strategy: mean
+  frame_summary_temperature: 0.1
+
+hydra:
+  mode: MULTIRUN
+  sweeper:
+    params:
+      run.frame_summary_strategy: mean,top_patch,top_attention_patch,attention_weighted,softmax_score_weighted
+      run.kv_size: 6000
+
+paths:
+  save_dir: results/${model.name}/${dataset.name}/time-count-location-fps${run.sample_fps}-kv${run.kv_size}-k${run.min_tokens_per_frame}-${run.frame_summary_strategy}
+
+runtime:
+  capture_worker_logs: true
+  capture_evaluation_logs: true

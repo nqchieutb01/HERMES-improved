@@ -1,0 +1,6 @@
+name: streamingbench_cr_su_eu
+annotation: /nfs-stor/chieu.nguyen/StreamingBench/streamingbench_realtime_cr_su_eu.json
+streaming: true
+evaluators:
+  - kind: multiple_choice
+    mode: general

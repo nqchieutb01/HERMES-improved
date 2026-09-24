@@ -1,0 +1,19 @@
+# @package _global_
+
+defaults:
+  - override /model: llava_ov_0.5b
+  - override /dataset: streamingbench_subset
+
+run:
+  mode: full
+  num_chunks: 1
+  sample_fps: 0.5
+  kv_size: 1024
+  debug: false
+
+paths:
+  save_dir: results/${model.name}/${dataset.name}/smoke-fps${run.sample_fps}-kv${run.kv_size}
+
+runtime:
+  capture_worker_logs: true
+  capture_evaluation_logs: true

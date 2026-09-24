@@ -1,0 +1,6 @@
+name: egoschema
+annotation: data/egoschema/egoschema.json
+streaming: false
+evaluators:
+  - kind: multiple_choice
+    mode: egoschema

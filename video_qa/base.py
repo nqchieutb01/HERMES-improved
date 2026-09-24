@@ -1,7 +1,6 @@
 import csv
 import warnings
 import random
-import json
 import os
 import math
 import argparse
@@ -19,6 +18,8 @@ import logzero
 from logzero import logger
 
 from inference.llavaov_hermes import load_model as llavaov_hermes_load_model
+from video_qa.adapters import load_annotations
+from video_qa.sampling import frame_end_exclusive, uniform_frame_indices
 
 
 def qwenvl_hermes_load_model(*args, **kwargs):
@@ -29,6 +30,18 @@ def qwenvl_hermes_load_model(*args, **kwargs):
             "Failed to import inference.qwenvl_hermes. "
             "Qwen models require a newer transformers version. "
             "Please use llava models on old transformers, or upgrade for qwen."
+        ) from exc
+    return _load_model(*args, **kwargs)
+
+
+def qwen3vl_hermes_load_model(*args, **kwargs):
+    try:
+        from inference.qwen3vl_hermes import load_model as _load_model
+    except Exception as exc:
+        raise ImportError(
+            "Failed to import inference.qwen3vl_hermes. Qwen3-VL requires "
+            "the dedicated Qwen environment with transformers>=4.57.1; "
+            "do not run it from the LLaVA environment."
         ) from exc
     return _load_model(*args, **kwargs)
 
@@ -56,6 +69,10 @@ MODELS = {
     'qwen2.5_vl_32b': {
         'load_func': qwenvl_hermes_load_model,
         'model_path': 'models/Qwen2.5-VL-32B-Instruct',
+    },
+    'qwen3_vl_8b': {
+        'load_func': qwen3vl_hermes_load_model,
+        'model_path': '/nfs-stor/chieu.nguyen/models/Qwen3-VL-8B-Instruct',
     },
 }
 
@@ -168,6 +185,87 @@ class BaseVQA:
         
         video = np.stack(frames, axis=0)
         return video
+
+    def load_uniform_video(
+        self,
+        video_path,
+        *,
+        num_frames,
+        end_time=None,
+        video_fps=None,
+        duration=None,
+    ):
+        """Decode uniform source frames from time zero through a question time."""
+        if video_path.endswith('.npy'):
+            source = np.load(video_path, mmap_mode='r')
+            total_frames = len(source)
+            source_fps = video_fps
+            if source_fps is None and duration is not None and float(duration) > 0:
+                source_fps = max(1, total_frames - 1) / float(duration)
+            if source_fps is None:
+                raise ValueError(
+                    "video_fps or duration is required for time-bounded uniform "
+                    f"sampling from {video_path}"
+                )
+            end_frame = frame_end_exclusive(
+                total_frames=total_frames,
+                fps=float(source_fps),
+                end_time=end_time,
+            )
+            frame_idx = uniform_frame_indices(
+                total_frames=total_frames,
+                num_frames=num_frames,
+                end_frame_exclusive=end_frame,
+            )
+            self.last_uniform_frame_times = [i / float(source_fps) for i in frame_idx]
+            return np.asarray(source[frame_idx]), frame_idx
+
+        if os.path.isdir(video_path):
+            if video_fps is None:
+                raise ValueError(
+                    f"video_fps must be provided for image-based video: {video_path}"
+                )
+            img_files = sorted(
+                filename
+                for filename in os.listdir(video_path)
+                if filename.lower().endswith(('.jpg', '.jpeg', '.png'))
+            )
+            end_frame = frame_end_exclusive(
+                total_frames=len(img_files),
+                fps=float(video_fps),
+                end_time=end_time,
+            )
+            frame_idx = uniform_frame_indices(
+                total_frames=len(img_files),
+                num_frames=num_frames,
+                end_frame_exclusive=end_frame,
+            )
+            frames = []
+            for index in frame_idx:
+                img_path = os.path.join(video_path, img_files[index])
+                with Image.open(img_path) as image:
+                    frames.append(np.array(image.convert('RGB')))
+            self.last_uniform_frame_times = [i / float(video_fps) for i in frame_idx]
+            return np.stack(frames, axis=0), frame_idx
+
+        reader = VideoReader(video_path, num_threads=1)
+        source_fps = float(reader.get_avg_fps())
+        end_frame = frame_end_exclusive(
+            total_frames=len(reader),
+            fps=source_fps,
+            end_time=end_time,
+        )
+        frame_idx = uniform_frame_indices(
+            total_frames=len(reader),
+            num_frames=num_frames,
+            end_frame_exclusive=end_frame,
+        )
+        if not frame_idx:
+            raise ValueError(
+                f"No frames are available through time {end_time!r} in {video_path}"
+            )
+        self.last_uniform_frame_times = [i / source_fps for i in frame_idx]
+        return reader.get_batch(frame_idx).asnumpy(), frame_idx
     
     def format_mcqa_prompt(self, question, candidates):
         assert len(question) > 0, f"Q: {question}"
@@ -193,20 +291,44 @@ class BaseVQA:
             except:
                 return s
 
-    def video_open_qa(self, question, max_new_tokens=1024, retrieved_indices=None):
+    def video_open_qa(
+        self,
+        question,
+        max_new_tokens=1024,
+        retrieved_indices=None,
+        *,
+        prompt=None,
+        preserve_newlines=False,
+    ):
+        model_query = prompt if prompt is not None else question
         input_text = {
             "question": question,
-            "prompt": self.qa_model.get_prompt(question)
+            "prompt": self.qa_model.get_prompt(model_query)
         }
         pred_answer = self.qa_model.question_answering(
             input_text, max_new_tokens=max_new_tokens,
             repetition_penalty=getattr(self, 'repetition_penalty', 1.1))
         return {
-            'pred_answer': pred_answer.replace('\n', ''),
+            'pred_answer': pred_answer if preserve_newlines else pred_answer.replace('\n', ''),
         }
 
-    def video_close_qa(self, question, candidates, correct_choice, retrieved_indices=None):
-        input_text = self.format_mcqa_prompt(question, candidates)
+    def video_close_qa(
+        self,
+        question,
+        candidates,
+        correct_choice,
+        retrieved_indices=None,
+        *,
+        prompt=None,
+    ):
+        if prompt is None:
+            input_text = self.format_mcqa_prompt(question, candidates)
+        else:
+            input_text = {
+                "question": question,
+                "formatted_question": prompt,
+                "prompt": self.qa_model.get_prompt(prompt),
+            }
         pred_answer = self.qa_model.question_answering(input_text, max_new_tokens=16)
         pred_letter = self.extract_characters_regex(pred_answer)
         return {
@@ -253,11 +375,38 @@ def work(QA_CLASS):
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--sample_fps", type=float, default=1)
+    parser.add_argument(
+        "--frame_sampling",
+        choices=("incremental", "uniform"),
+        default="incremental",
+        help="Incremental FPS stream or fixed-count uniform context per question",
+    )
+    parser.add_argument(
+        "--uniform_num_frames",
+        type=int,
+        default=None,
+        help="Number of source frames per question when --frame_sampling=uniform",
+    )
     parser.add_argument("--num_chunks", type=int, default=1)
     parser.add_argument("--chunk_idx", type=int, default=0)
     parser.add_argument("--save_dir", type=str, required=True)
     parser.add_argument("--anno_path", type=str, required=True)
+    parser.add_argument("--dataset_adapter", type=str, default=None)
+    parser.add_argument("--video_root", type=str, default=None)
+    parser.add_argument("--max_videos", type=int, default=None)
+    parser.add_argument(
+        "--question_categories",
+        nargs="+",
+        default=None,
+        help="Optional S-EMBER question-category IDs to retain",
+    )
     parser.add_argument("--model", type=str, default="llava_ov_7b")
+    parser.add_argument(
+        "--model_path",
+        type=str,
+        default=None,
+        help="Optional checkpoint path overriding the built-in model registry",
+    )
     parser.add_argument("--debug", type=str2bool, nargs='?', const=True, default=True)
     parser.add_argument("--kv_size", type=int)
     parser.add_argument("--encode_chunk_size", type=int, default=16)
@@ -311,6 +460,22 @@ def work(QA_CLASS):
         default=0.1,
         help="Softmax temperature for softmax_score_weighted summaries",
     )
+    parser.add_argument(
+        "--counting_prompt",
+        choices=("official", "count_first"),
+        default="official",
+        help="S-EMBER MCQ prompt for counting questions: letter only or count then letter",
+    )
+    parser.add_argument(
+        "--keep_time_tokens",
+        type=lambda v: {"false": "none", "true": "all"}.get(str(v).lower(), str(v).lower()),
+        choices=("none", "all", "surviving"),
+        default="none",
+        help=(
+            "Qwen3 timestamp/marker tokens: prune normally (none), never prune "
+            "(all), or keep only for groups that still have a visual token (surviving)"
+        ),
+    )
     parser.add_argument("--streaming", type=str2bool, nargs='?', const=True, default=False,
                         help="Streaming (online) mode. If False (default), uses offline mode where should_compact is always True.")
     args = parser.parse_args()
@@ -320,6 +485,10 @@ def work(QA_CLASS):
         parser.error("min_tokens_per_frame must be nonnegative")
     if args.frame_summary_temperature <= 0:
         parser.error("frame_summary_temperature must be positive")
+    if args.frame_sampling == "uniform" and (
+        args.uniform_num_frames is None or args.uniform_num_frames <= 0
+    ):
+        parser.error("uniform_num_frames must be positive for uniform frame sampling")
     if not 0 <= args.recency_weight_decay <= args.recency_weight_start <= 1:
         parser.error("Require 0 <= recency_weight_decay <= recency_weight_start <= 1")
     if args.reindex_margin < 0:
@@ -342,7 +511,11 @@ def work(QA_CLASS):
     logger.info(f'seed: {args.seed}')
 
     # VideoQA model
-    model_path = MODELS[args.model]['model_path']
+    if args.model not in MODELS:
+        parser.error(
+            f"Unknown model {args.model!r}; choose from {sorted(MODELS)}"
+        )
+    model_path = args.model_path or MODELS[args.model]['model_path']
     load_func = MODELS[args.model]['load_func']
     logger.info(f"Loading VideoQA model: {model_path}")
     videoqa_model, videoqa_processor = load_func(
@@ -357,13 +530,21 @@ def work(QA_CLASS):
     videoqa_model.set_frame_summary_strategy(
         args.frame_summary_strategy, args.frame_summary_temperature
     )
+    videoqa_model.keep_time_tokens = args.keep_time_tokens
     videoqa_model.set_min_tokens_per_frame(args.min_tokens_per_frame)
     for name in ('recency_weight_start', 'recency_weight_decay', 'reindex_margin', 'use_history'):
         setattr(videoqa_model, name, getattr(args, name))
     logger.info(f'Effective inference settings: {vars(args)}')
 
-    # Load ground truth file
-    anno = json.load(open(args.anno_path))
+    # Load ground truth file, adapting external benchmark formats when needed.
+    anno = load_annotations(
+        args.anno_path,
+        adapter=args.dataset_adapter,
+        video_root=args.video_root,
+        max_videos=args.max_videos,
+        question_categories=args.question_categories,
+        counting_prompt=args.counting_prompt,
+    )
 
     analyzer = QA_CLASS(
         anno=anno,
@@ -378,5 +559,7 @@ def work(QA_CLASS):
     analyzer.encode_chunk_size = args.encode_chunk_size
     analyzer.max_new_tokens = args.max_new_tokens
     analyzer.repetition_penalty = args.repetition_penalty
+    analyzer.frame_sampling = args.frame_sampling
+    analyzer.uniform_num_frames = args.uniform_num_frames
     analyzer.analyze(debug=args.debug)
     videoqa_model.write_token_trace()

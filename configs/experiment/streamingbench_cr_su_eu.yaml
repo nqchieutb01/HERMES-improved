@@ -1,0 +1,20 @@
+# @package _global_
+
+defaults:
+  - override /model: llava_ov_0.5b
+  - override /dataset: streamingbench_cr_su_eu
+
+run:
+  mode: full
+  num_chunks: 1
+  sample_fps: 0.5
+  kv_size: 4000
+  min_tokens_per_frame: 1
+  token_trace_path: results/${model.name}/${dataset.name}/fps${run.sample_fps}-kv${run.kv_size}/min-k${run.min_tokens_per_frame}/token_retention.csv
+
+paths:
+  save_dir: results/${model.name}/${dataset.name}/fps${run.sample_fps}-kv${run.kv_size}/min-k${run.min_tokens_per_frame}
+
+runtime:
+  capture_worker_logs: true
+  capture_evaluation_logs: true

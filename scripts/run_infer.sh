@@ -1,18 +1,11 @@
-export PYTHONPATH=$(cd "$(dirname "$0")/.." && pwd):$PYTHONPATH
-# The number of processes utilized for parallel evaluation.
-# Normally, set it to the number of GPUs on your machine.
-num_chunks=8
+#!/usr/bin/env bash
+set -euo pipefail
 
-# Supported model: [llava_ov_0.5b, llava_ov_7b, llava_ov_72b, qwen2.5_vl_3b, qwen2.5_vl_7b, qwen2.5_vl_32b]
-model=llava_ov_7b
+repo_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$repo_dir"
+export PYTHONPATH="$repo_dir${PYTHONPATH:+:$PYTHONPATH}"
 
-# Supported dataset: [videomme, mvbench, egoschema, rvs_ego, rvs_movie, ovobench, streamingbench]
-dataset=streamingbench
-
-
-python video_qa/run_infer.py \
-    --num_chunks $num_chunks \
-    --model ${model} \
-    --dataset ${dataset} \
-    --sample_fps 0.5 \
-    --kv_size 6000
+# Compatibility wrapper. Prefer invoking scripts/run.py directly so every
+# setting is visibly expressed as a Hydra override.
+exec "${HERMES_PYTHON:-python}" scripts/run.py \
+    run.num_chunks=8 run.sample_fps=0.5 run.kv_size=6000 "$@"

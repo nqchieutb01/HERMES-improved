@@ -1,0 +1,6 @@
+name: streamingbench_subset
+annotation: data/streamingbench/subset/streamingbench_realtime_subset.json
+streaming: true
+evaluators:
+  - kind: multiple_choice
+    mode: general

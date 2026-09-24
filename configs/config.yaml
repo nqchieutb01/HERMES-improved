@@ -1,0 +1,63 @@
+defaults:
+  - model: llava_ov_7b
+  - dataset: streamingbench
+  - _self_
+  - optional experiment: null
+
+paths:
+  # Null resolves to the repository containing scripts/run.py.
+  repo_root: null
+  output_root: results
+  save_dir: null
+  results_path: null
+
+run:
+  # infer: predictions only; evaluate: metrics only; full: both; validate: checks only
+  mode: full
+  num_chunks: 1
+  sample_fps: 1.0
+  # incremental uses sample_fps; uniform resets per question and uses source frames.
+  frame_sampling: incremental
+  uniform_num_frames: null
+  kv_size: 6000
+  debug: false
+  encode_chunk_size: 16
+  max_new_tokens: 256
+  repetition_penalty: 1.1
+  recency_weight_start: 0.75
+  recency_weight_decay: 0.6
+  reindex_margin: 1024
+  use_history: true
+  min_tokens_per_frame: 0
+  frame_summary_strategy: mean
+  frame_summary_temperature: 0.1
+  # Qwen3 <t seconds> timestamp and vision start/end tokens: false (prune
+  # normally), true (never prune) or surviving (keep while the group has a
+  # visual token).
+  keep_time_tokens: false
+  token_trace_path: null
+  verbose_token_trace: false
+  keep_chunks: true
+  # Optional explicit CUDA device IDs. Null respects the inherited device for one worker.
+  devices: null
+
+evaluation:
+  debug: false
+  num_tasks: 16
+
+runtime:
+  # Empty uses the interpreter that launched this runner.
+  python: null
+  dry_run: false
+  capture_worker_logs: false
+  capture_evaluation_logs: false
+
+hydra:
+  run:
+    dir: .
+  sweep:
+    dir: outputs/hydra
+    subdir: ${hydra.job.override_dirname}
+  job:
+    chdir: false
+  output_subdir: null

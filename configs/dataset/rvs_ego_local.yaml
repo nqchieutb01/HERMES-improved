@@ -1,0 +1,6 @@
+name: rvs_ego
+annotation: /nfs-stor/chieu.nguyen/VStream-QA/vstream-realtime/rvs_ego_hermes.json
+streaming: true
+evaluators:
+  - kind: rvs_validate
+  - kind: rvs_yes_no
