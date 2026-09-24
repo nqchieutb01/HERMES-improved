@@ -4,6 +4,8 @@ adapter: sember_mcq
 video_root: /nfs-stor/chieu.nguyen/s-ember/videos
 max_videos: null
 question_categories: null
+# Prompt for counting questions: official (letter only) or count_first.
+counting_prompt: official
 streaming: true
 evaluators:
   - kind: sember_mcq

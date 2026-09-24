@@ -12,11 +12,25 @@ from typing import Any
 SEMBER_GROUNDING_PROMPT = (
     "After reviewing the video, provide the best answer to the following question. "
     "Answer in 1-2 sentences.\n"
-    "Also provide the time interval (in seconds) where the answer evidence appears in the video.\n\n"
+    "Important: You MUST provide the time interval (in seconds) where the answer evidence appears in the video.\n\n"
     "Use this exact format:\n"
-    "Answer: <your answer>\n"
+    "Answer: <your answer>.\n"
     "Time: [<start_seconds>, <end_seconds>]"
 )
+
+# SEMBER_GROUNDING_PROMPT = (
+#     "After reviewing the video, provide the best answer to the following question. "
+#     "Answer in 1-2 sentences.\n"
+#     "Important: You MUST provide the time interval (in seconds) where the evidence "
+#     "supporting your answer appears in the video.\n\n"
+#     "Use this exact format:\n"
+#     "Time: [<start_seconds>, <end_seconds>]\n"
+#     "Answer: <your answer>.\n\n"
+#     "Example:\n"
+#     "Question: What does the person do after entering the room?\n"
+#     "Time: [12.5, 18.2]\n"
+#     "Answer: The person walks to the table and picks up a book."
+# )
 
 SEMBER_CHOICE_LABELS = ("A", "B", "C", "D", "E")
 
@@ -89,8 +103,16 @@ def sember_grounding_prompt(question: str) -> str:
     return f"{SEMBER_GROUNDING_PROMPT}\n\n{question}"
 
 
-def sember_mcq_prompt(question: str, options: list[str]) -> str:
-    """Return the official S-EMBER five-way MCQ prompt."""
+COUNTING_PROMPT_STYLES = ("official", "count_first")
+
+
+def sember_mcq_prompt(question: str, options: list[str], style: str = "official") -> str:
+    """Return the S-EMBER five-way MCQ prompt.
+
+    ``official`` is the benchmark prompt (letter only). ``count_first`` asks the
+    model to state its count before the letter; the MCQ evaluator reads the
+    letter after ``Answer:``.
+    """
     if len(options) != len(SEMBER_CHOICE_LABELS):
         raise ValueError(f"S-EMBER MCQ requires five options, got {len(options)}")
     labeled = []
@@ -101,6 +123,18 @@ def sember_mcq_prompt(question: str, options: list[str]) -> str:
         else:
             labeled.append(f"{label}. {option}")
     options_text = "\n".join(f"  {option}" for option in labeled)
+    if style == "count_first":
+        return (
+            "After reviewing the video, answer the following multiple-choice question.\n\n"
+            f"Question: {question}\n\n"
+            f"{options_text}\n\n"
+            "First count carefully, then choose the option that matches your count. "
+            "Respond in exactly this format and nothing else:\n"
+            "Count: <number>\n"
+            "Answer: <letter A/B/C/D/E>"
+        )
+    if style != "official":
+        raise ValueError(f"Unknown S-EMBER MCQ prompt style: {style!r}")
     return (
         "After reviewing the video, answer the following multiple-choice question.\n\n"
         f"Question: {question}\n\n"
@@ -251,8 +285,13 @@ def load_sember_mcq(
     video_root: str | Path,
     max_videos: int | None = None,
     question_categories: list[str] | tuple[str, ...] | None = None,
+    counting_prompt: str = "official",
 ) -> list[dict[str, Any]]:
-    """Format S-EMBER MCQ JSONL rows as chronological HERMES conversations."""
+    """Format S-EMBER MCQ JSONL rows as chronological HERMES conversations.
+
+    ``counting_prompt`` selects the prompt style for counting_objects_events
+    questions only; other categories always use the official prompt.
+    """
     annotation_path = Path(annotation_path).expanduser().resolve()
     video_root = Path(video_root).expanduser().resolve()
     if max_videos is not None and max_videos <= 0:
@@ -318,7 +357,13 @@ def load_sember_mcq(
 
         conversation = {
             "question": str(row["question"]),
-            "prompt": sember_mcq_prompt(str(row["question"]), options),
+            "prompt": sember_mcq_prompt(
+                str(row["question"]),
+                options,
+                counting_prompt
+                if question_category == "counting_objects_events"
+                else "official",
+            ),
             "choices": options,
             "answer": options[correct_index],
             "end_time": question_time,
@@ -358,6 +403,7 @@ def load_annotations(
     video_root: str | Path | None = None,
     max_videos: int | None = None,
     question_categories: list[str] | tuple[str, ...] | None = None,
+    counting_prompt: str = "official",
 ) -> list[dict[str, Any]]:
     """Load native HERMES JSON or adapt a supported external dataset."""
     if adapter in (None, "", "native"):
@@ -383,5 +429,6 @@ def load_annotations(
             video_root=video_root,
             max_videos=max_videos,
             question_categories=question_categories,
+            counting_prompt=counting_prompt,
         )
     raise ValueError(f"Unknown dataset adapter: {adapter}")

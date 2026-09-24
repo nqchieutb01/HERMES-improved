@@ -33,6 +33,11 @@ def parse_mcq_choice(response_text: str, num_options: int = 5) -> str | None:
     valid_labels = CHOICE_LABELS[:num_options]
     if text in valid_labels:
         return text
+    # Count-first prompts answer as "Count: <n>\nAnswer: <letter>"; read the
+    # letter after "Answer:" so words like "a" in the reasoning are not taken.
+    answers = re.findall(r"ANSWER\s*[:：]\s*\(?([A-E])\b", text)
+    if answers and answers[-1] in valid_labels:
+        return answers[-1]
     match = re.search(r"\b([A-E])\b", text)
     if match and match.group(1) in valid_labels:
         return match.group(1)

@@ -1,2 +1,8 @@
 name: qwen2.5_vl_7b
 gpus_per_worker: 1
+
+# Qwen uses a newer Transformers stack than LLaVA; workers use this interpreter.
+python: /nfs-stor/chieu.nguyen/venvs/hermes-qwen/bin/python3
+
+# Keep checkpoints off the repository filesystem.
+model_path: /nfs-stor/chieu.nguyen/models/Qwen2.5-VL-7B-Instruct

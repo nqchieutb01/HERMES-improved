@@ -1,3 +1,4 @@
+import inspect
 import re
 import time
 import torch
@@ -6,7 +7,11 @@ from logzero import logger
 from transformers import Qwen2_5_VLForConditionalGeneration, Qwen2_5_VLProcessor, DynamicCache
 from transformers.models.qwen2_5_vl.modeling_qwen2_5_vl import apply_multimodal_rotary_pos_emb
 
-from inference.abstract_hermes import Abstract_Hermes
+from inference.abstract_hermes import (
+    Abstract_Hermes,
+    is_time_token,
+    time_token_group_frame,
+)
 from inference.reindex_3d import (
     get_cache_seq_len,
     contiguous_kv,
@@ -18,10 +23,49 @@ from inference.reindex_3d import (
 )
 
 
+def use_linear_patch_embed(visual):
+    """Run the vision patch embedding as a matmul instead of Conv3d.
+
+    The Conv3d uses kernel == stride over pre-flattened patches, so it is exactly
+    a linear layer with the same weights. PyTorch 2.9's bf16/fp16 Conv3d path is
+    pathologically slow here (~47 s vs ~0.1 ms per 16-frame chunk on an A100).
+    """
+    patch_embed = visual.patch_embed
+    proj = patch_embed.proj
+    assert tuple(proj.kernel_size) == tuple(proj.stride) and not any(proj.padding), \
+        "linear patch embed requires a non-overlapping Conv3d"
+    weight = proj.weight.view(proj.out_channels, -1)
+
+    def forward(hidden_states):
+        hidden_states = hidden_states.view(-1, weight.shape[1]).to(dtype=weight.dtype)
+        return F.linear(hidden_states, weight, proj.bias)
+
+    patch_embed.forward = forward
+
+
+def pad_to_temporal_patch(video_chunk, temporal_patch_size):
+    """Repeat the last frame so a chunk fills at least one temporal patch.
+
+    Qwen video processors reject chunks shorter than ``temporal_patch_size``
+    (e.g. a 1-frame tail before a question's end_time).
+    """
+    missing = temporal_patch_size - video_chunk.shape[0]
+    if missing <= 0:
+        return video_chunk
+    pad = video_chunk[-1:].expand(missing, *video_chunk.shape[1:])
+    return torch.cat([video_chunk, pad], dim=0)
+
+
 import transformers.modeling_flash_attention_utils
 
 if not hasattr(transformers.modeling_flash_attention_utils, "_original_prepare_fa_kwargs"):
     transformers.modeling_flash_attention_utils._original_prepare_fa_kwargs = transformers.modeling_flash_attention_utils.prepare_fa_kwargs_from_position_ids
+    _original_prepare_fa_kwargs = (
+        transformers.modeling_flash_attention_utils._original_prepare_fa_kwargs
+    )
+    _original_prepare_fa_accepts_attention_mask = "attention_mask" in (
+        inspect.signature(_original_prepare_fa_kwargs).parameters
+    )
 
     def _patched_prepare_fa_kwargs(position_ids, attention_mask=None):
         if position_ids is not None and position_ids.dim() == 3:
@@ -34,12 +78,15 @@ if not hasattr(transformers.modeling_flash_attention_utils, "_original_prepare_f
             )
             max_length = seq_len
             return (cu_seq_lens, cu_seq_lens), (max_length, max_length)
-        return transformers.modeling_flash_attention_utils._original_prepare_fa_kwargs(position_ids, attention_mask)
+        if _original_prepare_fa_accepts_attention_mask:
+            return _original_prepare_fa_kwargs(position_ids, attention_mask)
+        return _original_prepare_fa_kwargs(position_ids)
 
     transformers.modeling_flash_attention_utils.prepare_fa_kwargs_from_position_ids = _patched_prepare_fa_kwargs
 
 
-def get_qwen2_5_vl_position_ids(video_grid_thw, seq_len, offset=0, spatial_merge_size=2, vision_config=None, sample_fps=1):
+def get_qwen2_5_vl_position_ids(video_grid_thw, seq_len, offset=0, spatial_merge_size=2, vision_config=None, sample_fps=1,
+                                seconds_per_grid=None):
     t, h, w = video_grid_thw
     llm_grid_t = t
     llm_grid_h = h // spatial_merge_size
@@ -58,7 +105,7 @@ def get_qwen2_5_vl_position_ids(video_grid_thw, seq_len, offset=0, spatial_merge
 
     if vision_config is not None:
         tokens_per_second = vision_config.tokens_per_second
-        second_per_grid_t = 2 / sample_fps
+        second_per_grid_t = 2 / sample_fps if seconds_per_grid is None else seconds_per_grid
         range_tensor = torch.arange(llm_grid_t, dtype=torch.float32).view(-1, 1)
         expanded_range = range_tensor.expand(-1, llm_grid_h * llm_grid_w)
         time_tensor = expanded_range * second_per_grid_t * tokens_per_second
@@ -77,6 +124,21 @@ class QwenVL_Hermes(Qwen2_5_VLForConditionalGeneration, Abstract_Hermes):
     Qwen2.5-VL with HERMES strict-shrink support.
     Uses 3D M-RoPE (Multimodal RoPE) and inter-layer consistency optimization.
     """
+
+    # Source times (seconds) of the frames in the next encode_video_chunk call.
+    # None means frames are evenly spaced at sample_fps (streaming).
+    next_frame_times = None
+
+    def _consume_frame_times(self, num_frames):
+        """Return source times for the next ``num_frames`` frames and reset them."""
+        times = self.next_frame_times
+        self.next_frame_times = None
+        if times is None:
+            first = self.total_processed_frames
+            return [(first + i) / float(self.sample_fps) for i in range(num_frames)]
+        if len(times) != num_frames:
+            raise ValueError(f"got {len(times)} frame times for {num_frames} frames")
+        return [float(t) for t in times]
 
     def __init__(self, config, processor, init_prompt_ids, kv_size, streaming=True, sample_fps=1):
         Abstract_Hermes.__init__(self, processor, init_prompt_ids, kv_size)
@@ -189,6 +251,34 @@ class QwenVL_Hermes(Qwen2_5_VLForConditionalGeneration, Abstract_Hermes):
         pos_3d = grid_pos_ids.unsqueeze(1).expand(3, batch, -1).clone()
         return pos_3d
 
+    def _compute_rotary_cos_sin(self, seq_len, position_ids, dtype, device):
+        """Compute Qwen-family rotary tensors for logical cache positions.
+
+        Qwen3-VL overrides the application methods because it uses interleaved
+        M-RoPE. Keeping these operations behind instance methods lets the
+        cache-shrinking and frame-summary implementation remain shared.
+        """
+        return compute_cos_sin_for_positions(
+            self.language_model, seq_len, position_ids, dtype, device
+        )
+
+    def _apply_rotary_to_qk(self, query_states, key_states, cos, sin):
+        return apply_multimodal_rotary_pos_emb(
+            query_states,
+            key_states,
+            cos,
+            sin,
+            self._mrope_section,
+        )
+
+    def _apply_rotary_delta_to_keys(self, key_states, cos_delta, sin_delta):
+        return apply_rotary_delta_to_keys_only(
+            key_states,
+            cos_delta,
+            sin_delta,
+            self._mrope_section,
+        )
+
     @torch.inference_mode()
     def _shrink_positions_and_rerotate_keys(self, keep_indices_per_layer):
         device = self.device
@@ -246,7 +336,6 @@ class QwenVL_Hermes(Qwen2_5_VLForConditionalGeneration, Abstract_Hermes):
 
         sample_k = self.kv_cache[0][0]
         dtype = sample_k.dtype
-        mrope_section = self._mrope_section
 
         new_kv_cache = []
 
@@ -293,16 +382,18 @@ class QwenVL_Hermes(Qwen2_5_VLForConditionalGeneration, Abstract_Hermes):
                             compact_map = torch.arange(len(unique_vals), device=device) + text_offset
                             new_pos_kept[dim, video_indices_in_kept] = compact_map[inverse_indices].to(new_pos_kept.dtype)
 
-                cos_old, sin_old = compute_cos_sin_for_positions(
-                    self.language_model, len(safe_idx), old_pos_kept, dtype, device
+                cos_old, sin_old = self._compute_rotary_cos_sin(
+                    len(safe_idx), old_pos_kept, dtype, device
                 )
-                cos_new, sin_new = compute_cos_sin_for_positions(
-                    self.language_model, len(safe_idx), new_pos_kept, dtype, device
+                cos_new, sin_new = self._compute_rotary_cos_sin(
+                    len(safe_idx), new_pos_kept, dtype, device
                 )
                 cos_delta, sin_delta = rotary_delta(cos_old, sin_old, cos_new, sin_new)
 
                 try:
-                    k_kept_final = apply_rotary_delta_to_keys_only(k_kept, cos_delta, sin_delta, mrope_section)
+                    k_kept_final = self._apply_rotary_delta_to_keys(
+                        k_kept, cos_delta, sin_delta
+                    )
                 except Exception as e:
                     logger.error(f"apply_rotary_delta failed at layer {layer_idx}: "
                                  f"k_kept={tuple(k_kept.shape)}, cos_delta={tuple(cos_delta.shape)}, err={e}")
@@ -339,15 +430,13 @@ class QwenVL_Hermes(Qwen2_5_VLForConditionalGeneration, Abstract_Hermes):
                 old_pos_source = old_position_ids_cache[layer_idx][:, source_idx]
                 target_pos_source = summary_pos.expand(3, old_pos_source.shape[1])
 
-                cos_old, sin_old = compute_cos_sin_for_positions(
-                    self.language_model,
+                cos_old, sin_old = self._compute_rotary_cos_sin(
                     old_pos_source.shape[1],
                     old_pos_source,
                     dtype,
                     device,
                 )
-                cos_new, sin_new = compute_cos_sin_for_positions(
-                    self.language_model,
+                cos_new, sin_new = self._compute_rotary_cos_sin(
                     target_pos_source.shape[1],
                     target_pos_source,
                     dtype,
@@ -356,8 +445,8 @@ class QwenVL_Hermes(Qwen2_5_VLForConditionalGeneration, Abstract_Hermes):
                 cos_delta, sin_delta = rotary_delta(
                     cos_old, sin_old, cos_new, sin_new
                 )
-                k_source = apply_rotary_delta_to_keys_only(
-                    k_source, cos_delta, sin_delta, mrope_section
+                k_source = self._apply_rotary_delta_to_keys(
+                    k_source, cos_delta, sin_delta
                 )
 
                 pooled_k, pooled_v = self._pool_frame_states(
@@ -424,15 +513,17 @@ class QwenVL_Hermes(Qwen2_5_VLForConditionalGeneration, Abstract_Hermes):
                     summary_pos_tensor = torch.tensor([summary_pos_id], device=device, dtype=torch.float32).repeat(3, 1)
                     target_pos_pruned = summary_pos_tensor.expand(3, old_pos_pruned.shape[1])
 
-                    cos_old, sin_old = compute_cos_sin_for_positions(
-                        self.language_model, old_pos_pruned.shape[1], old_pos_pruned, dtype, device
+                    cos_old, sin_old = self._compute_rotary_cos_sin(
+                        old_pos_pruned.shape[1], old_pos_pruned, dtype, device
                     )
-                    cos_new, sin_new = compute_cos_sin_for_positions(
-                        self.language_model, target_pos_pruned.shape[1], target_pos_pruned, dtype, device
+                    cos_new, sin_new = self._compute_rotary_cos_sin(
+                        target_pos_pruned.shape[1], target_pos_pruned, dtype, device
                     )
                     cos_delta, sin_delta = rotary_delta(cos_old, sin_old, cos_new, sin_new)
 
-                    k_pruned_aligned = apply_rotary_delta_to_keys_only(k_pruned, cos_delta, sin_delta, mrope_section)
+                    k_pruned_aligned = self._apply_rotary_delta_to_keys(
+                        k_pruned, cos_delta, sin_delta
+                    )
                     k_summary_final = k_pruned_aligned.mean(dim=2, keepdim=True)
 
                     k_final = torch.cat([k_kept_final, k_summary_final], dim=2)
@@ -547,7 +638,15 @@ class QwenVL_Hermes(Qwen2_5_VLForConditionalGeneration, Abstract_Hermes):
         if len(video_chunk.shape) == 4 and video_chunk.shape[-1] == 3:
             video_chunk = video_chunk.permute(0, 3, 1, 2)
 
-        video_input = self.processor(text=[""], videos=video_chunk, return_tensors="pt").to(self.device, self.dtype)
+        frame_times = self._consume_frame_times(video_chunk.shape[0])
+        temporal_patch_size = int(getattr(self.config.vision_config, "temporal_patch_size", 2))
+        processor_chunk = pad_to_temporal_patch(video_chunk, temporal_patch_size)
+        video_input = self.processor(text=[""], videos=processor_chunk, return_tensors="pt").to(self.device, self.dtype)
+        # Time covered by one temporal patch, from the real frame spacing.
+        if len(frame_times) > 1:
+            seconds_per_grid = temporal_patch_size * (frame_times[-1] - frame_times[0]) / (len(frame_times) - 1)
+        else:
+            seconds_per_grid = temporal_patch_size / float(self.sample_fps)
         pixel_values_videos = video_input["pixel_values_videos"]
         video_grid_thw = video_input["video_grid_thw"]
         video_features = self.get_video_features(pixel_values_videos, video_grid_thw)[0].unsqueeze(0)
@@ -565,6 +664,7 @@ class QwenVL_Hermes(Qwen2_5_VLForConditionalGeneration, Abstract_Hermes):
             offset=base_offset,
             vision_config=self.config.vision_config,
             sample_fps=self.sample_fps,
+            seconds_per_grid=seconds_per_grid,
         ).to(self.device)
 
         self._layer_position_ids.clear()
@@ -671,8 +771,8 @@ class QwenVL_Hermes(Qwen2_5_VLForConditionalGeneration, Abstract_Hermes):
             dummy_h = torch.zeros((1, q_len, hidden_size), device=device, dtype=hidden_states.dtype)
             cos, sin = rotary_emb(dummy_h, position_ids_3d)
 
-            query_states, key_states = apply_multimodal_rotary_pos_emb(
-                query_states, key_states, cos, sin, self._mrope_section
+            query_states, key_states = self._apply_rotary_to_qk(
+                query_states, key_states, cos, sin
             )
 
             key_states = torch.cat([past_k, key_states], dim=2)
@@ -791,19 +891,70 @@ class QwenVL_Hermes(Qwen2_5_VLForConditionalGeneration, Abstract_Hermes):
                 frame_ids = self._token_frame_ids_per_layer[layer_idx][
                     start_idx:start_idx + score.numel()
                 ]
-            topk_indices_relative, effective_num_keep = (
-                self._select_indices_with_frame_minimum(
-                    score,
-                    frame_ids,
-                    actual_num_keep,
-                    frame_floor_scores=(
-                        layer_attention_scores[layer_idx]
-                        if getattr(self, "frame_summary_strategy", "mean")
-                        == "top_attention_patch"
-                        else None
-                    ),
-                )
+            floor_scores = (
+                layer_attention_scores[layer_idx]
+                if getattr(self, "frame_summary_strategy", "mean")
+                == "top_attention_patch"
+                else None
             )
+            # keep_time_tokens: timestamp/marker tokens are removed from the
+            # attention competition and kept outright ("all"), or kept only for
+            # temporal groups that still have a visual token ("surviving").
+            # Either way they come out of the layer budget.
+            protected = None
+            selection_score = score
+            policy = getattr(self, "keep_time_tokens", "none")
+            if policy != "none":
+                layer_ids = self._token_frame_ids_per_layer[layer_idx][
+                    start_idx:start_idx + score.numel()
+                ].to(device)
+                time_mask = is_time_token(layer_ids)
+                if time_mask.any():
+                    selection_score = score.clone()
+                    selection_score[time_mask] = float("-inf")
+            else:
+                time_mask = None
+            if time_mask is not None and time_mask.any() and (
+                policy == "all" or self.min_tokens_per_frame > 0
+            ):
+                # With a frame floor every frame survives, so "surviving"
+                # keeps every group's text too.
+                protected = torch.nonzero(time_mask).flatten()
+                actual_num_keep = max(actual_num_keep - protected.numel(), 0)
+                topk_indices_relative, effective_num_keep = (
+                    self._select_indices_with_frame_minimum(
+                        selection_score, frame_ids, actual_num_keep,
+                        frame_floor_scores=floor_scores,
+                    )
+                )
+            elif time_mask is not None and time_mask.any():
+                # Two passes: see which groups survive the full budget, then
+                # reselect with their text's share taken out of the budget.
+                patch = int(getattr(self.config.vision_config, "temporal_patch_size", 2))
+                group_frames = time_token_group_frame(layer_ids)
+                budget = actual_num_keep
+                for _ in range(2):
+                    topk_indices_relative, effective_num_keep = (
+                        self._select_indices_with_frame_minimum(
+                            selection_score, frame_ids, budget,
+                            frame_floor_scores=floor_scores,
+                        )
+                    )
+                    kept_ids = layer_ids[topk_indices_relative.to(device)]
+                    kept_frames = torch.unique(kept_ids[kept_ids >= 0])
+                    covers = torch.zeros_like(time_mask)
+                    for offset in range(patch):
+                        covers |= torch.isin(group_frames + offset, kept_frames)
+                    surviving = time_mask & covers
+                    budget = max(actual_num_keep - int(surviving.sum()), 0)
+                protected = torch.nonzero(surviving).flatten()
+            else:
+                topk_indices_relative, effective_num_keep = (
+                    self._select_indices_with_frame_minimum(
+                        selection_score, frame_ids, actual_num_keep,
+                        frame_floor_scores=floor_scores,
+                    )
+                )
             if effective_num_keep > actual_num_keep and self.token_trace_verbose:
                 logger.info(
                     "Layer %d: raised visual budget from %d to %d for "
@@ -812,6 +963,10 @@ class QwenVL_Hermes(Qwen2_5_VLForConditionalGeneration, Abstract_Hermes):
                     actual_num_keep,
                     effective_num_keep,
                     self.min_tokens_per_frame,
+                )
+            if protected is not None and protected.numel():
+                topk_indices_relative = torch.unique(
+                    torch.cat((topk_indices_relative.to(device), protected))
                 )
             topk_indices_absolute = topk_indices_relative + start_idx
             topk_indices_absolute_sorted = torch.sort(topk_indices_absolute)[0]
@@ -1127,6 +1282,7 @@ def load_model(model_path='Qwen/Qwen2.5-VL-7B-Instruct',
         device_map="auto",
         torch_dtype=torch.float16,
     )
+    use_linear_patch_embed(base_model.visual)
 
     model = QwenVL_Hermes.__new__(QwenVL_Hermes)
     model.__dict__ = base_model.__dict__.copy()

@@ -4,6 +4,25 @@ from pathlib import Path
 
 import torch
 
+# Provenance ids for timestamp/marker text inside video input (Qwen3). Like -1
+# (text) and -2 (frame summaries) they are never frames, so frame floors and
+# summaries skip them. The id encodes the first frame of the temporal group the
+# text labels: TIME_TOKEN_TAG_BASE - first_frame (always <= -10).
+TIME_TOKEN_TAG_BASE = -10
+KEEP_TIME_TOKEN_POLICIES = ("none", "all", "surviving")
+
+
+def time_token_tag(first_frame):
+    return TIME_TOKEN_TAG_BASE - int(first_frame)
+
+
+def is_time_token(frame_ids):
+    return frame_ids <= TIME_TOKEN_TAG_BASE
+
+
+def time_token_group_frame(frame_ids):
+    return TIME_TOKEN_TAG_BASE - frame_ids
+
 class Abstract_Hermes:
     kv_cache = None
     FRAME_SUMMARY_STRATEGIES = (
@@ -57,7 +76,11 @@ class Abstract_Hermes:
 
     @property
     def token_provenance_enabled(self):
-        return self.token_trace_enabled or self.min_tokens_per_frame > 0
+        return (
+            self.token_trace_enabled
+            or self.min_tokens_per_frame > 0
+            or getattr(self, "keep_time_tokens", "none") != "none"
+        )
 
     def set_min_tokens_per_frame(self, value):
         value = int(value)
@@ -82,8 +105,8 @@ class Abstract_Hermes:
         self._refresh_frame_summary_mode()
 
     def _refresh_frame_summary_mode(self):
-        # top_patch satisfies k=1 by retaining a real source token. The other
-        # strategies synthesize one pooled token for an otherwise missing frame.
+        # Patch strategies satisfy k=1 by retaining a real source token. The
+        # pooling strategies synthesize one token for an otherwise missing frame.
         self.frame_summary_mode = (
             self.min_tokens_per_frame == 1
             and self.frame_summary_strategy

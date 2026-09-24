@@ -1,0 +1,9 @@
+name: qwen3_vl_8b
+gpus_per_worker: 1
+
+# Qwen uses a newer Transformers stack than LLaVA. The Hydra runner may stay
+# in .venv/hermes; inference workers are launched with this interpreter.
+python: /nfs-stor/chieu.nguyen/venvs/hermes-qwen/bin/python3
+
+# Keep checkpoints off the repository filesystem.
+model_path: /nfs-stor/chieu.nguyen/models/Qwen3-VL-8B-Instruct

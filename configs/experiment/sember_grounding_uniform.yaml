@@ -1,0 +1,41 @@
+# @package _global_
+
+defaults:
+  - override /model: llava_ov_7b
+  - override /dataset: sember_grounding
+
+dataset:
+  question_categories:
+    - time_duration
+    - counting_objects_events
+    - location_trace
+  # Match the current S-EMBER comparison scope.
+  max_videos: 100
+
+run:
+  mode: full
+  num_chunks: 1
+  frame_sampling: uniform
+  uniform_num_frames: 32
+  # Unused by the uniform sampler, but retained for model API compatibility.
+  sample_fps: 1.0
+  kv_size: 6000
+  encode_chunk_size: 16
+  max_new_tokens: 128
+  debug: false
+  use_history: false
+  min_tokens_per_frame: 0
+
+# Sweep values belong here
+hydra:
+  mode: MULTIRUN
+  sweeper:
+    params:
+      run.uniform_num_frames: "64,128"
+
+paths:
+  save_dir: results/${model.name}/${dataset.name}/uniform-n${run.uniform_num_frames}-time-count-location-v100
+
+runtime:
+  capture_worker_logs: true
+  capture_evaluation_logs: true

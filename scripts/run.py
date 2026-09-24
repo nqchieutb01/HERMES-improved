@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import csv
+from numbers import Integral, Real
 import os
 from pathlib import Path
 import subprocess
@@ -17,6 +18,40 @@ from omegaconf import DictConfig, OmegaConf
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 VALID_MODES = {"infer", "evaluate", "full", "validate"}
+VALID_FRAME_SAMPLING = {"incremental", "uniform"}
+VALID_FRAME_SUMMARY_STRATEGIES = {
+    "mean",
+    "top_patch",
+    "top_attention_patch",
+    "attention_weighted",
+    "softmax_score_weighted",
+}
+
+
+def _require_number(name: str, value: Any) -> Real:
+    """Return a numeric config value or raise an actionable validation error."""
+    if isinstance(value, bool) or not isinstance(value, Real):
+        hint = ""
+        if isinstance(value, str) and "," in value:
+            hint = (
+                f" For a sweep, keep one scalar in YAML and pass "
+                f"`-m {name}=value1,value2` on the command line."
+            )
+        raise ValueError(f"{name} must be a number, got {value!r}.{hint}")
+    return value
+
+
+def _require_integer(name: str, value: Any) -> int:
+    """Return an integer config value or raise an actionable validation error."""
+    if isinstance(value, bool) or not isinstance(value, Integral):
+        hint = ""
+        if isinstance(value, str) and "," in value:
+            hint = (
+                f" For a sweep, keep one scalar in YAML and pass "
+                f"`-m {name}=value1,value2` on the command line."
+            )
+        raise ValueError(f"{name} must be an integer, got {value!r}.{hint}")
+    return int(value)
 
 
 def _repo_path(value: str | Path, repo_root: Path) -> Path:
@@ -46,7 +81,7 @@ def _results_path(cfg: DictConfig, save_dir: Path, repo_root: Path) -> Path:
 
 
 def _python(cfg: DictConfig, repo_root: Path) -> str:
-    configured = cfg.runtime.python
+    configured = cfg.runtime.python or cfg.model.get("python")
     if not configured:
         return sys.executable
     path = _repo_path(configured, repo_root)
@@ -59,21 +94,73 @@ def validate_config(cfg: DictConfig) -> None:
         raise ValueError(
             f"run.mode must be one of {sorted(VALID_MODES)}, got {cfg.run.mode!r}"
         )
-    if cfg.run.num_chunks <= 0:
+    num_chunks = _require_integer("run.num_chunks", cfg.run.num_chunks)
+    sample_fps = _require_number("run.sample_fps", cfg.run.sample_fps)
+    kv_size = _require_integer("run.kv_size", cfg.run.kv_size)
+    encode_chunk_size = _require_integer(
+        "run.encode_chunk_size", cfg.run.encode_chunk_size
+    )
+    max_new_tokens = _require_integer(
+        "run.max_new_tokens", cfg.run.max_new_tokens
+    )
+    repetition_penalty = _require_number(
+        "run.repetition_penalty", cfg.run.repetition_penalty
+    )
+    min_tokens_per_frame = _require_integer(
+        "run.min_tokens_per_frame", cfg.run.min_tokens_per_frame
+    )
+    frame_summary_strategy = str(cfg.run.frame_summary_strategy)
+    frame_summary_temperature = _require_number(
+        "run.frame_summary_temperature", cfg.run.frame_summary_temperature
+    )
+    reindex_margin = _require_integer("run.reindex_margin", cfg.run.reindex_margin)
+    recency_weight_decay = _require_number(
+        "run.recency_weight_decay", cfg.run.recency_weight_decay
+    )
+    recency_weight_start = _require_number(
+        "run.recency_weight_start", cfg.run.recency_weight_start
+    )
+    frame_sampling = str(cfg.run.frame_sampling)
+    if frame_sampling not in VALID_FRAME_SAMPLING:
+        raise ValueError(
+            "run.frame_sampling must be one of "
+            f"{sorted(VALID_FRAME_SAMPLING)}, got {frame_sampling!r}"
+        )
+    uniform_num_frames = cfg.run.uniform_num_frames
+    if frame_sampling == "uniform":
+        if uniform_num_frames is None:
+            raise ValueError(
+                "run.uniform_num_frames is required when run.frame_sampling=uniform"
+            )
+        uniform_num_frames = _require_integer(
+            "run.uniform_num_frames", uniform_num_frames
+        )
+        if uniform_num_frames <= 0:
+            raise ValueError("run.uniform_num_frames must be positive")
+
+    if num_chunks <= 0:
         raise ValueError("run.num_chunks must be positive")
-    if cfg.run.sample_fps <= 0:
+    if sample_fps <= 0:
         raise ValueError("run.sample_fps must be positive")
-    if cfg.run.kv_size <= 0:
+    if kv_size <= 0:
         raise ValueError("run.kv_size must be positive")
-    if cfg.run.encode_chunk_size <= 0 or cfg.run.max_new_tokens <= 0:
+    if encode_chunk_size <= 0 or max_new_tokens <= 0:
         raise ValueError("run.encode_chunk_size and run.max_new_tokens must be positive")
-    if cfg.run.repetition_penalty <= 0:
+    if repetition_penalty <= 0:
         raise ValueError("run.repetition_penalty must be positive")
-    if cfg.run.min_tokens_per_frame < 0:
+    if min_tokens_per_frame < 0:
         raise ValueError("run.min_tokens_per_frame must be nonnegative")
-    if cfg.run.reindex_margin < 0:
+    if frame_summary_strategy not in VALID_FRAME_SUMMARY_STRATEGIES:
+        raise ValueError(
+            "run.frame_summary_strategy must be one of "
+            f"{sorted(VALID_FRAME_SUMMARY_STRATEGIES)}, got "
+            f"{frame_summary_strategy!r}"
+        )
+    if frame_summary_temperature <= 0:
+        raise ValueError("run.frame_summary_temperature must be positive")
+    if reindex_margin < 0:
         raise ValueError("run.reindex_margin must be nonnegative")
-    if not 0 <= cfg.run.recency_weight_decay <= cfg.run.recency_weight_start <= 1:
+    if not 0 <= recency_weight_decay <= recency_weight_start <= 1:
         raise ValueError(
             "require 0 <= run.recency_weight_decay <= "
             "run.recency_weight_start <= 1"
@@ -138,6 +225,8 @@ def inference_command(
         str(cfg.model.name),
         "--sample_fps",
         str(cfg.run.sample_fps),
+        "--frame_sampling",
+        str(cfg.run.frame_sampling),
         "--save_dir",
         str(save_dir),
         "--anno_path",
@@ -170,7 +259,20 @@ def inference_command(
         str(bool(cfg.run.verbose_token_trace)).lower(),
         "--min_tokens_per_frame",
         str(cfg.run.min_tokens_per_frame),
+        "--frame_summary_strategy",
+        str(cfg.run.frame_summary_strategy),
+        "--frame_summary_temperature",
+        str(cfg.run.frame_summary_temperature),
+        "--keep_time_tokens",
+        str(cfg.run.get("keep_time_tokens", False)).lower(),
     ]
+    model_path = cfg.model.get("model_path")
+    if model_path:
+        command.extend(
+            ["--model_path", str(_repo_path(model_path, _repo_root(cfg)))]
+        )
+    if cfg.run.uniform_num_frames is not None:
+        command.extend(["--uniform_num_frames", str(cfg.run.uniform_num_frames)])
     adapter = cfg.dataset.get("adapter")
     if adapter:
         command.extend(["--dataset_adapter", str(adapter)])
@@ -180,6 +282,9 @@ def inference_command(
     max_videos = cfg.dataset.get("max_videos")
     if max_videos is not None:
         command.extend(["--max_videos", str(max_videos)])
+    counting_prompt = cfg.dataset.get("counting_prompt")
+    if counting_prompt:
+        command.extend(["--counting_prompt", str(counting_prompt)])
     question_categories = cfg.dataset.get("question_categories")
     if question_categories:
         command.append("--question_categories")
@@ -263,15 +368,22 @@ def run_inference(
             if devices is not None:
                 env["CUDA_VISIBLE_DEVICES"] = devices
             process_kwargs: dict[str, Any] = {}
+            log_path: Path | None = None
             if cfg.runtime.capture_worker_logs:
-                handle = (save_dir / f"inference-{index}.log").open(
-                    "w", encoding="utf-8"
-                )
+                log_path = (save_dir / f"inference-{index}.log").resolve()
+                handle = log_path.open("w", encoding="utf-8")
                 log_handles.append(handle)
                 process_kwargs.update(stdout=handle, stderr=subprocess.STDOUT)
-            processes.append(
-                subprocess.Popen(command, cwd=repo_root, env=env, **process_kwargs)
+            process = subprocess.Popen(
+                command, cwd=repo_root, env=env, **process_kwargs
             )
+            processes.append(process)
+            if log_path is not None:
+                print(
+                    f"Inference worker {index} started (PID {process.pid}). "
+                    f"Progress log: {log_path}",
+                    flush=True,
+                )
 
         failures = []
         for index, process in enumerate(processes):
@@ -289,7 +401,13 @@ def run_inference(
         for handle in log_handles:
             handle.close()
     if failures:
-        raise RuntimeError(f"Inference workers failed (chunk, exit code): {failures}")
+        details = []
+        for index, return_code in failures:
+            detail = f"chunk {index}, exit code {return_code}"
+            if cfg.runtime.capture_worker_logs:
+                detail += f", log: {(save_dir / f'inference-{index}.log').resolve()}"
+            details.append(detail)
+        raise RuntimeError(f"Inference workers failed: {'; '.join(details)}")
     merge_chunks(
         save_dir,
         results_path,

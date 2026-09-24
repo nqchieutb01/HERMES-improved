@@ -30,13 +30,17 @@ pip install -r requirements_llava.txt
 pip install flash-attn --no-build-isolation
 ```
 
-For **Qwen2.5-VL** model inference:
+For **Qwen2.5-VL and Qwen3-VL** model inference, use a separate environment
+from LLaVA. Keep the larger environment on NFS; the Qwen3 model profile uses
+this interpreter by default:
 ```bash
-conda create -n hermes-qwen python=3.12 -y
-conda activate hermes-qwen
-pip install -r requirements_qwen.txt
-pip install flash-attn --no-build-isolation
+python3.12 -m venv /nfs-stor/chieu.nguyen/venvs/hermes-qwen
+/nfs-stor/chieu.nguyen/venvs/hermes-qwen/bin/python3 -m pip install -r requirements_qwen.txt
+/nfs-stor/chieu.nguyen/venvs/hermes-qwen/bin/python3 -m pip install flash-attn --no-build-isolation
 ```
+
+The Hydra driver can still run from the LLaVA environment; `model=qwen3_vl_8b`
+selects the dedicated Qwen interpreter for the inference subprocess.
 
 
 ## 📦 Preparation
@@ -59,6 +63,11 @@ We support the following models (choose one or more):
 | Qwen2.5-VL | Qwen2.5-VL-3B-Instruct | [Qwen/Qwen2.5-VL-3B-Instruct](https://huggingface.co/Qwen/Qwen2.5-VL-3B-Instruct) |
 | Qwen2.5-VL | Qwen2.5-VL-7B-Instruct | [Qwen/Qwen2.5-VL-7B-Instruct](https://huggingface.co/Qwen/Qwen2.5-VL-7B-Instruct) |
 | Qwen2.5-VL | Qwen2.5-VL-32B-Instruct | [Qwen/Qwen2.5-VL-32B-Instruct](https://huggingface.co/Qwen/Qwen2.5-VL-32B-Instruct) |
+| Qwen3-VL | Qwen3-VL-8B-Instruct | [Qwen/Qwen3-VL-8B-Instruct](https://huggingface.co/Qwen/Qwen3-VL-8B-Instruct) |
+
+Store the Qwen3-VL checkpoint outside the repository at
+`/nfs-stor/chieu.nguyen/models/Qwen3-VL-8B-Instruct`, as configured in
+`configs/model/qwen3_vl_8b.yaml`.
 
 
 ### Data Preparation
@@ -137,15 +146,10 @@ HERMES/
 │   ├── abstract_hermes.py
 │   ├── llavaov_hermes.py
 │   ├── qwenvl_hermes.py
+│   ├── qwen3vl_hermes.py
 │   ├── reindex_1d.py
-│   └── reindex_3d.py
-├── models/
-│   ├── llava-onevision-qwen2-0.5b-ov-hf/
-│   ├── llava-onevision-qwen2-7b-ov-hf/
-│   ├── llava-onevision-qwen2-72b-ov-hf/
-│   ├── Qwen2.5-VL-3B-Instruct/
-│   ├── Qwen2.5-VL-7B-Instruct/
-│   └── Qwen2.5-VL-32B-Instruct/
+│   ├── reindex_3d.py
+│   └── reindex_qwen3.py
 ├── scripts/
 │   ├── data/
 │   ├── slurm/
@@ -296,6 +300,68 @@ The model is prompted to return both a short answer and
 `Time: [start_seconds, end_seconds]`. Evaluation reports temporal mIoU,
 R@1 at IoU >= 0.5, parse rate, and per-category results. LLM-based semantic
 answer judging remains a separate optional stage.
+
+To run open-ended temporal grounding only for Time Duration, Counting, and
+Location Trace, use the dedicated full profile:
+
+```bash
+python scripts/run.py experiment=sember_grounding_time_count_location
+```
+
+On Slurm:
+
+```bash
+sbatch scripts/slurm/sember_grounding_time_count_location.sh
+```
+
+Run a Cartesian sweep sequentially within one Slurm allocation by passing
+Hydra's `-m` flag and comma-separated values. Every combination receives a
+separate output directory because the path includes FPS, KV size, and the
+per-frame token floor:
+
+```bash
+sbatch scripts/slurm/sember_grounding_time_count_location.sh \
+    -m \
+    run.sample_fps=0.2,0.5 \
+    run.min_tokens_per_frame=0,1 \
+    run.kv_size=4000,6000
+```
+
+Predictions and grounding metrics are written under
+`results/<model>/sember_grounding/time-count-location-fps<fps>-kv<kv_size>-k<min_tokens_per_frame>/`.
+The generated artifacts include `results.csv`, `sember_grounding_metrics.json`,
+and `sember_grounding_scored.jsonl`.
+
+### Fixed-frame uniform baseline
+
+The uniform baseline resets model state for each question and selects 32 unique
+source frames, spaced uniformly from video time zero through the question
+timestamp. It uses the source video's native FPS and does not run the HERMES
+streaming prediction/compression step. Each output row records the selected
+source-frame indices.
+
+Run the default 100-video Time Duration, Counting, and Location Trace profile:
+
+```bash
+python scripts/run.py experiment=sember_grounding_uniform
+```
+
+On Slurm:
+
+```bash
+sbatch scripts/slurm/sember_grounding_uniform.sh
+```
+
+Change the fixed frame count through Hydra, for example:
+
+```bash
+python scripts/run.py experiment=sember_grounding_uniform \
+    run.uniform_num_frames=16 \
+    paths.save_dir=results/llava_ov_7b/sember_grounding/uniform-n16-time-count-location-v100
+```
+
+Set `dataset.max_videos=null` and use a new output directory to evaluate all
+2,752 videos in the three selected categories.
 
 ### S-EMBER MCQ
 
