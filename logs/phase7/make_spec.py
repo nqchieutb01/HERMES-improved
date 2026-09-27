@@ -35,6 +35,14 @@ ROUNDS = {
         "q3-dup02": ("q3", ("mcq", "grounding"), "dup:0.2", 6000, 0, "attention_weighted", 1.0),
         "q3-dups1x60-sc07": ("q3", ("mcq", "grounding"), "dup:1.0:60,0.2", 6000, 0, "attention_weighted", 0.7),
     },
+    # Combine the two MCQ wins: grid thinning (grid 32:8) and un-blended Qwen pairs (dup). Scale 0.7
+    # keeps each one-frame group at ~336 tokens (a native two-frame group costs ~660).
+    "r8": {
+        "q3-grid32x8d-sc07": ("q3", ("mcq", "grounding"), "grid:32:8:dup", 6000, 0, "attention_weighted", 0.7),
+        "q3-grid32x8d-sc07-kv10700": ("q3", ("mcq", "grounding"), "grid:32:8:dup", 10700, 0, "attention_weighted", 0.7),
+        "q3-grid64x8d-sc07": ("q3", ("mcq", "grounding"), "grid:64:8:dup", 6000, 0, "attention_weighted", 0.7),
+        "q3-dups1x60-sc07-kv10700": ("q3", ("mcq", "grounding"), "dup:1.0:60,0.2", 10700, 0, "attention_weighted", 0.7),
+    },
 }
 
 
@@ -45,7 +53,7 @@ def rate_tag(schedule):
         return "dup" + rate_tag(schedule[4:] if ":" in schedule[4:] else None).replace("fps0.2", "0.2")
     if schedule.startswith("grid:"):
         _, n, smax, *rest = schedule.split(":")
-        return f"grid{n}x{smax}" + ("s" if rest else "")
+        return f"grid{n}x{smax}" + {"spread": "s", "dup": "d"}.get(rest[0], "") if rest else f"grid{n}x{smax}"
     return {"1.0:60,0.2": "s1x60", "1.0:160,0.2": "s1x160"}[schedule]
 
 

@@ -102,11 +102,17 @@ class GridPlan:
 
     @classmethod
     def parse(cls, spec: str) -> "GridPlan":
-        """``"grid:N:smax"`` or ``"grid:N:smax:spread"``, e.g. ``"grid:32:16:spread"``."""
+        """``"grid:N:smax"`` plus an optional pair mode: ``spread`` or ``dup``.
+
+        ``dup`` feeds each grid frame twice (pair gap 0), so a Qwen temporal group holds one
+        moment instead of blending two, e.g. ``"grid:32:8:dup"``.
+        """
         parts = spec.split(":")
-        if len(parts) not in (3, 4) or (len(parts) == 4 and parts[3] != "spread"):
+        if len(parts) not in (3, 4) or (len(parts) == 4 and parts[3] not in ("spread", "dup")):
             raise ValueError(f"bad grid sample_schedule: {spec!r}")
-        return cls(int(parts[1]), float(parts[2]), spread=len(parts) == 4)
+        mode = parts[3] if len(parts) == 4 else None
+        return cls(int(parts[1]), float(parts[2]), spread=mode == "spread",
+                   pair_gap=0.0 if mode == "dup" else 1.0)
 
     def spacing(self, t: float) -> float:
         s = self.g0

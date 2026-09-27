@@ -96,6 +96,13 @@ class GridPlanTest(unittest.TestCase):
         with self.assertRaises(ValueError):
             GridPlan.parse("grid:32:8:wide")
 
+    def test_dup_pairs_repeat_each_grid_frame(self):
+        from video_qa.sampling import GridPlan
+
+        times, anchors = GridPlan.parse("grid:32:8:dup").frame_times(600)
+        self.assertEqual(times[:6], [0.0, 0.0, 2.0, 2.0, 4.0, 4.0])
+        self.assertEqual(anchors[:6], times[:6])
+
 
 if __name__ == "__main__":
     unittest.main()
