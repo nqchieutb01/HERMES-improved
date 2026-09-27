@@ -1,0 +1,124 @@
+% Requires \usepackage{booktabs} and \usepackage{multirow}.
+
+\begin{table*}[t]
+\centering
+\small
+\caption{S-EMBER multiple-choice accuracy (\%) on 300 videos (576 questions; 5 options, chance = 20\%). Streaming = HERMES at 0.2 fps with KV budget in tokens; $k$ = minimum tokens kept per frame ($k{=}1$ uses \texttt{top\_attention\_patch}); Timestamps = which Qwen3 timestamp tokens survive compression (default = compressed like other tokens; surviving = kept for frames with surviving tokens; all = always kept). Uniform = 32 or 64 frames sampled uniformly up to the question, no compression.}
+\label{tab:sember-mcq-v300}
+\begin{tabular}{llrclcccc}
+\toprule
+Model & Mode & KV / frames & $k$ & Timestamps & Overall & Time & Count & Location \\
+\midrule
+\multirow{6}{*}{LLaVA-OV-7B} & Streaming & 4000 & 0 & -- & 28.3 & 34.6 & 19.9 & 29.9 \\
+ & Streaming & 4000 & 1 & -- & 28.5 & 35.1 & 20.4 & 29.2 \\
+ & Streaming & 6000 & 0 & -- & 27.8 & 35.1 & 18.4 & 29.2 \\
+ & Streaming & 6000 & 1 & -- & 28.0 & 35.9 & 18.4 & 28.5 \\
+ & Uniform & 32 fr. & -- & -- & 26.0 & 32.0 & 16.4 & 29.9 \\
+ & Uniform & 64 fr. & -- & -- & 26.0 & 32.5 & 17.9 & 27.1 \\
+\midrule
+\multirow{14}{*}{Qwen3-VL-8B} & Streaming & 4000 & 0 & default & 25.0 & 39.0 & 12.9 & 19.4 \\
+ & Streaming & 4000 & 0 & surviving & 25.0 & 38.5 & 12.4 & 20.8 \\
+ & Streaming & 4000 & 1 & default & 25.7 & 40.7 & 12.9 & 19.4 \\
+ & Streaming & 4000 & 1 & surviving & 25.7 & 39.4 & 12.9 & 21.5 \\
+ & Streaming & 6000 & 0 & default & 26.0 & 40.3 & 13.4 & 20.8 \\
+ & Streaming & 6000 & 0 & surviving & 25.7 & 40.3 & 12.4 & 20.8 \\
+ & Streaming & 6000 & 1 & default & 26.0 & 40.7 & 13.4 & 20.1 \\
+ & Streaming & 6000 & 1 & surviving & 26.0 & 41.1 & 12.4 & 20.8 \\
+ & Streaming & 10700 & 0 & default & 25.7 & 37.7 & 14.9 & 21.5 \\
+ & Streaming & 10700 & 0 & surviving & 26.0 & 38.5 & 14.9 & 21.5 \\
+ & Streaming & 21400 & 0 & default & 25.3 & 37.2 & 13.4 & 22.9 \\
+ & Streaming & 21400 & 0 & surviving & 25.3 & 37.2 & 13.4 & 22.9 \\
+ & Uniform & 32 fr. & -- & -- & 25.0 & 42.4 & 9.0 & 19.4 \\
+ & Uniform & 64 fr. & -- & -- & 25.3 & 41.1 & 11.4 & 19.4 \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+\begin{table*}[t]
+\centering
+\small
+\caption{S-EMBER grounding on 300 videos (475 questions): mean temporal IoU (mIoU, \%) and Recall@1 at IoU 0.5 (R@0.5, \%), overall and mIoU per question type. Settings as in Table~\ref{tab:sember-mcq-v300}; answers up to 128 tokens.}
+\label{tab:sember-grounding-v300}
+\begin{tabular}{llrclcccccc}
+\toprule
+& & & & & \multicolumn{2}{c}{Overall} & \multicolumn{3}{c}{mIoU by type} \\
+\cmidrule(lr){6-7}\cmidrule(lr){8-10}
+Model & Mode & KV / frames & $k$ & Timestamps & mIoU & R@0.5 & Time & Count & Location \\
+\midrule
+\multirow{6}{*}{LLaVA-OV-7B} & Streaming & 4000 & 0 & -- & 7.2 & 2.9 & 6.9 & 9.0 & 4.5 \\
+ & Streaming & 4000 & 1 & -- & 7.8 & 3.6 & 7.0 & 10.0 & 5.1 \\
+ & Streaming & 6000 & 0 & -- & 8.2 & 4.0 & 7.1 & 11.6 & 4.2 \\
+ & Streaming & 6000 & 1 & -- & 8.1 & 3.8 & 7.1 & 11.2 & 4.3 \\
+ & Uniform & 32 fr. & -- & -- & 7.1 & 3.2 & 6.5 & 9.6 & 3.7 \\
+ & Uniform & 64 fr. & -- & -- & 7.8 & 3.6 & 6.7 & 10.8 & 4.2 \\
+\midrule
+\multirow{18}{*}{Qwen3-VL-8B} & Streaming & 4000 & 0 & default & 20.2 & 18.3 & 20.7 & 24.7 & 10.9 \\
+ & Streaming & 4000 & 0 & surviving & 23.9 & 21.9 & 23.8 & 30.4 & 12.2 \\
+ & Streaming & 4000 & 0 & all & 23.9 & 21.9 & 23.1 & 30.6 & 13.1 \\
+ & Streaming & 4000 & 1 & default & 20.4 & 17.9 & 20.7 & 24.6 & 12.3 \\
+ & Streaming & 4000 & 1 & surviving & 24.0 & 21.7 & 23.7 & 30.3 & 13.0 \\
+ & Streaming & 6000 & 0 & default & 22.9 & 22.1 & 22.7 & 29.0 & 12.0 \\
+ & Streaming & 6000 & 0 & surviving & 24.8 & 24.4 & 25.7 & 29.9 & 13.7 \\
+ & Streaming & 6000 & 0 & all & 24.5 & 24.4 & 24.7 & 29.9 & 14.1 \\
+ & Streaming & 6000 & 1 & default & 22.5 & 20.8 & 23.3 & 27.6 & 11.4 \\
+ & Streaming & 6000 & 1 & surviving & 24.6 & 24.6 & 25.1 & 30.2 & 13.6 \\
+ & Streaming & 10700 & 0 & default & 23.5 & 22.9 & 23.2 & 30.2 & 11.9 \\
+ & Streaming & 10700 & 0 & surviving & 23.6 & 22.5 & 23.9 & 29.4 & 12.1 \\
+ & Streaming & 10700 & 0 & all & 23.9 & 22.7 & 24.1 & 30.0 & 12.4 \\
+ & Streaming & 21400 & 0 & default & 23.1 & 22.1 & 24.0 & 28.3 & 11.6 \\
+ & Streaming & 21400 & 0 & surviving & 23.3 & 22.1 & 23.1 & 29.2 & 12.7 \\
+ & Streaming & 21400 & 0 & all & 23.3 & 22.1 & 23.1 & 29.2 & 12.7 \\
+ & Uniform & 32 fr. & -- & -- & 27.5 & 26.7 & 26.6 & 36.3 & 13.0 \\
+ & Uniform & 64 fr. & -- & -- & 26.9 & 25.3 & 26.4 & 33.1 & 16.3 \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+\begin{table}[t]
+\centering
+\small
+\caption{Counting prompt on S-EMBER multiple choice (300 videos; streaming, KV 6000, $k{=}0$). Official = answer with a letter only; Count-first = state the count, then the letter. Only the 201 counting questions change prompt.}
+\label{tab:sember-count-prompt-v300}
+\begin{tabular}{llcc}
+\toprule
+Model & Prompt & Counting & Overall \\
+\midrule
+\multirow{2}{*}{LLaVA-OV-7B} & Official & 18.4 & 27.8 \\
+ & Count-first & 21.9 & 29.0 \\
+\midrule
+\multirow{2}{*}{Qwen3-VL-8B} & Official & 13.4 & 26.0 \\
+ & Count-first & 18.9 & 28.0 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[t]
+\centering
+\small
+\caption{Frame-summary strategies for the per-frame floor $k{=}1$ with LLaVA-OV-7B on the 100-video S-EMBER subset (183 multiple-choice, 159 grounding questions). Streaming = HERMES at 0.2 fps with a KV budget in tokens. When compression would drop every token of a frame, the \emph{patch} strategies keep that frame's single highest-scoring token (by HERMES retention score or by raw attention); the \emph{pool} strategies instead insert one synthetic K/V token pooled over the frame (uniform mean, attention-weighted, or softmax over retention scores). Uniform = 32 or 64 frames sampled uniformly up to the question, no compression. Acc = MCQ accuracy (\%); mIoU = mean temporal IoU (\%); R@0.5 = Recall@1 at IoU $\geq$ 0.5 (\%). Best $k{=}1$ strategy per KV budget in bold.}
+\label{tab:sember-k1-strategies}
+\begin{tabular}{lrclccc}
+\toprule
+& & & & MCQ & \multicolumn{2}{c}{Grounding} \\
+\cmidrule(lr){5-5}\cmidrule(lr){6-7}
+Mode & KV / frames & $k$ & Strategy & Acc & mIoU & R@0.5 \\
+\midrule
+Uniform & 32 fr. & -- & -- & 26.8 & 7.2 & 1.9 \\
+Uniform & 64 fr. & -- & -- & 28.4 & 7.4 & 3.1 \\
+\midrule
+Streaming & 4000 & 0 & -- & 29.5 & 7.3 & 2.5 \\
+Streaming & 4000 & 1 & Top patch (HERMES score) & \textbf{30.1} & 8.3 & 3.1 \\
+Streaming & 4000 & 1 & Top patch (attention) & \textbf{30.1} & \textbf{8.4} & \textbf{3.8} \\
+Streaming & 4000 & 1 & Mean pool & 29.0 & 7.3 & 2.5 \\
+Streaming & 4000 & 1 & Attention-weighted pool & 29.0 & 7.6 & 2.5 \\
+Streaming & 4000 & 1 & Softmax-score pool ($T{=}0.1$) & 29.0 & 7.6 & 2.5 \\
+\midrule
+Streaming & 6000 & 0 & -- & 30.1 & 9.2 & 4.4 \\
+Streaming & 6000 & 1 & Top patch (HERMES score) & \textbf{31.1} & 9.2 & 4.4 \\
+Streaming & 6000 & 1 & Top patch (attention) & 30.6 & 9.2 & 4.4 \\
+Streaming & 6000 & 1 & Mean pool & 30.6 & 9.5 & 4.4 \\
+Streaming & 6000 & 1 & Attention-weighted pool & 30.6 & \textbf{9.6} & \textbf{5.0} \\
+Streaming & 6000 & 1 & Softmax-score pool ($T{=}0.1$) & 30.6 & 9.5 & 4.4 \\
+\bottomrule
+\end{tabular}
+\end{table}

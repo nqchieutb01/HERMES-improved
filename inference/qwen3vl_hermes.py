@@ -270,6 +270,9 @@ class Qwen3VL_Hermes(QwenVL_Hermes):
         ).to(self.device, self.dtype)
         pixel_values_videos = video_input["pixel_values_videos"]
         video_grid_thw = video_input["video_grid_thw"]
+        if self.total_processed_frames == 0:
+            t, h, w = video_grid_thw[0].tolist()
+            logger.info(f"video grid {t}x{h}x{w}: {h * w // 4} visual tokens per temporal group")
         video_feature_groups, deepstack_features = self.get_video_features(
             pixel_values_videos, video_grid_thw
         )

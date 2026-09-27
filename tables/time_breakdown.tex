@@ -1,0 +1,39 @@
+% Requires \usepackage{booktabs} and \usepackage{multirow}.
+\begin{table}[t]
+\centering
+\small
+\caption{Qwen3-VL-8B on S-EMBER (300 videos) by question time, i.e.\ how much video has been streamed when the question is asked. Streaming = HERMES at 0.2 fps (a question at $t$ seconds has seen $t/5$ frames) with a 6k-token KV budget; $k{=}1$ keeps at least one token per frame using \texttt{top\_attention\_patch}, the best $k{=}1$ strategy for Qwen3 at 6k in the 100-video sweep. Both streaming rows keep timestamp tokens of surviving frames. Uniform = 32 or 64 frames sampled uniformly up to the question, no compression. Acc = MCQ accuracy (\%); mIoU = mean temporal IoU (\%); R@0.5 = Recall@1 at IoU $\geq$ 0.5 (\%). Best per interval in bold.}
+\label{tab:sember-time-breakdown}
+\begin{tabular}{llccc}
+\toprule
+& & MCQ & \multicolumn{2}{c}{Grounding} \\
+\cmidrule(lr){3-3}\cmidrule(lr){4-5}
+Question time & Method & Acc & mIoU & R@0.5 \\
+\midrule
+\multirow{4}{*}{0--80 s} & Uniform, 32 frames & \textbf{44.4} & 39.5 & 34.0 \\
+ & Uniform, 64 frames & \textbf{44.4} & \textbf{48.3} & \textbf{54.0} \\
+ & Stream 6k, $k{=}0$ & 28.9 & 29.1 & 28.0 \\
+ & Stream 6k, $k{=}1$ & 28.9 & 29.1 & 28.0 \\
+\midrule
+\multirow{4}{*}{80--160 s} & Uniform, 32 frames & 23.3 & 36.0 & \textbf{35.5} \\
+ & Uniform, 64 frames & \textbf{24.8} & \textbf{37.9} & 34.5 \\
+ & Stream 6k, $k{=}0$ & 20.9 & 31.3 & 30.9 \\
+ & Stream 6k, $k{=}1$ & 20.9 & 31.3 & 30.9 \\
+\midrule
+\multirow{4}{*}{160--320 s} & Uniform, 32 frames & 24.9 & \textbf{25.0} & \textbf{25.0} \\
+ & Uniform, 64 frames & 25.3 & 19.7 & 17.3 \\
+ & Stream 6k, $k{=}0$ & 28.1 & 22.1 & 22.4 \\
+ & Stream 6k, $k{=}1$ & \textbf{28.5} & 21.6 & 22.4 \\
+\midrule
+\multirow{4}{*}{$\geq$320 s} & Uniform, 32 frames & 20.8 & 18.7 & 18.5 \\
+ & Uniform, 64 frames & 20.1 & 19.5 & 17.6 \\
+ & Stream 6k, $k{=}0$ & 24.8 & 21.3 & 20.2 \\
+ & Stream 6k, $k{=}1$ & \textbf{25.5} & \textbf{21.6} & \textbf{21.0} \\
+\midrule[\heavyrulewidth]
+\multirow{4}{*}{All} & Uniform, 32 frames & 25.0 & \textbf{27.5} & \textbf{26.7} \\
+ & Uniform, 64 frames & 25.3 & 26.9 & 25.3 \\
+ & Stream 6k, $k{=}0$ & 25.7 & 24.8 & 24.4 \\
+ & Stream 6k, $k{=}1$ & \textbf{26.0} & 24.6 & 24.6 \\
+\bottomrule
+\end{tabular}
+\end{table}

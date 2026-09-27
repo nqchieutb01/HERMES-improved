@@ -1,3 +1,4 @@
+import bisect
 import math
 import json
 import os
@@ -21,6 +22,11 @@ class HermesVQA(BaseVQA):
     def analyze_a_video(self, video_sample, encode_chunk_size=16):
         encode_chunk_size = getattr(self, 'encode_chunk_size', encode_chunk_size)
         frame_sampling = getattr(self, 'frame_sampling', 'incremental')
+        # Source times of streamed frames when a variable-rate schedule is used; None means
+        # frames are evenly spaced at sample_fps.
+        stream_frame_times = None
+        # GridPlan only: temporal-group start time of each streamed frame, and frames already evicted.
+        stream_anchors, evicted_frames = None, set()
         video_path = video_sample['video_path']
 
         video_fps = video_sample.get('fps', None)
@@ -34,6 +40,13 @@ class HermesVQA(BaseVQA):
                 if video_fps is None:
                     raise ValueError(f"video_fps must be provided for image-based video: {video_path}")
                 video = self.load_video_frames(video_path, video_fps, clip=clip)
+                video_tensor = torch.from_numpy(video)
+            elif getattr(self, 'sample_schedule', None):
+                if clip is not None:
+                    raise ValueError("sample_schedule does not support clipped videos")
+                video, stream_frame_times, stream_anchors = self.load_scheduled_video(
+                    video_path, self.sample_schedule
+                )
                 video_tensor = torch.from_numpy(video)
             else:
                 video = self.load_video(video_path, clip=clip)
@@ -83,7 +96,15 @@ class HermesVQA(BaseVQA):
                         self.qa_model.next_frame_times = self.last_uniform_frame_times[start:stop]
                     self.qa_model.encode_video_chunk(question_video[start:stop])
             else:
-                if 'end_time' in sample:
+                if 'end_time' in sample and stream_frame_times is not None:
+                    end_frame_idx = bisect.bisect_left(stream_frame_times, sample['end_time'])
+                    if (stream_anchors is not None and 0 < end_frame_idx < len(stream_anchors)
+                            and stream_anchors[end_frame_idx] == stream_anchors[end_frame_idx - 1]
+                            and end_frame_idx - 1 >= current_frame_idx):
+                        # Keep Qwen temporal pairs whole: hold back a pair's first frame until
+                        # its partner (at most pair_gap seconds later) has streamed in.
+                        end_frame_idx -= 1
+                elif 'end_time' in sample:
                     end_frame_idx = min(
                         len(video_tensor),
                         math.ceil(sample['end_time'] * self.sample_fps),
@@ -96,11 +117,28 @@ class HermesVQA(BaseVQA):
                     if next_encode_end > current_frame_idx:
                         print(f"Encoding frames {current_frame_idx} to {next_encode_end-1}")
                         video_chunk = video_tensor[current_frame_idx:next_encode_end]
+                        if stream_frame_times is not None and hasattr(self.qa_model, 'next_frame_times'):
+                            self.qa_model.next_frame_times = stream_frame_times[current_frame_idx:next_encode_end]
                         self.qa_model.encode_video_chunk(video_chunk)
                         current_frame_idx = next_encode_end
 
+                        if stream_anchors is not None:
+                            # Thin old frames onto the grid for the current stream time.
+                            now = stream_frame_times[next_encode_end - 1]
+                            evict = [
+                                i for i in range(next_encode_end)
+                                if i not in evicted_frames
+                                and not self.sample_schedule.on_grid(stream_anchors[i], now)
+                            ]
+                            evicted_frames.update(evict)
+                            if evict:
+                                print(f"Grid thinning at {now:.0f}s (spacing {self.sample_schedule.spacing(now):g}s): "
+                                      f"evicting {len(evict)} frames, {next_encode_end - len(evicted_frames)} kept")
+                            self.qa_model.evict_frame_ids = evict or None
+
                         logger.info(f"Triggering question prediction and KV compression")
                         self.qa_model.predict_and_compress()
+                        self.qa_model.evict_frame_ids = None
 
             if 'choices' in sample:
                 choices = sample['choices']

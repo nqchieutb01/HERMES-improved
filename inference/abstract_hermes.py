@@ -80,7 +80,34 @@ class Abstract_Hermes:
             self.token_trace_enabled
             or self.min_tokens_per_frame > 0
             or getattr(self, "keep_time_tokens", "none") != "none"
+            # GridPlan thinning evicts tokens by source frame.
+            or getattr(self, "force_token_provenance", False)
         )
+
+    # Stream frame ids whose tokens must be evicted at the next compression (GridPlan thinning).
+    evict_frame_ids = None
+
+    def _time_mask(self, layer_idx, num_visual, layer_configs, device):
+        if not self.token_provenance_enabled or self._token_frame_ids_per_layer is None:
+            return torch.zeros(num_visual, dtype=torch.bool, device=device)
+        start = layer_configs[layer_idx]['visual_start_idx']
+        ids = self._token_frame_ids_per_layer[layer_idx][start:start + num_visual].to(device)
+        return is_time_token(ids)
+
+    def _evict_masks(self, layer_configs, num_visual_per_layer, device):
+        """Per-layer masks over visual-region tokens (visual and timestamp) of evicted frames."""
+        if not self.evict_frame_ids:
+            return None
+        if not self.token_provenance_enabled or self._token_frame_ids_per_layer is None:
+            raise RuntimeError("frame eviction needs token provenance (keep_time_tokens or k>0)")
+        evict = torch.as_tensor(sorted(self.evict_frame_ids), dtype=torch.long, device=device)
+        masks = []
+        for layer_idx, n in enumerate(num_visual_per_layer):
+            start = layer_configs[layer_idx]['visual_start_idx']
+            ids = self._token_frame_ids_per_layer[layer_idx][start:start + n].to(device)
+            frames = torch.where(is_time_token(ids), time_token_group_frame(ids), ids)
+            masks.append(((ids >= 0) | is_time_token(ids)) & torch.isin(frames, evict))
+        return masks
 
     def set_min_tokens_per_frame(self, value):
         value = int(value)

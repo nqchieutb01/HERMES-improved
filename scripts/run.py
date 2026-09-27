@@ -271,6 +271,10 @@ def inference_command(
         command.extend(
             ["--model_path", str(_repo_path(model_path, _repo_root(cfg)))]
         )
+    if float(cfg.run.get("frame_scale", 1.0)) != 1.0:
+        command.extend(["--frame_scale", str(cfg.run.frame_scale)])
+    if cfg.run.get("sample_schedule"):
+        command.extend(["--sample_schedule", str(cfg.run.sample_schedule)])
     if cfg.run.uniform_num_frames is not None:
         command.extend(["--uniform_num_frames", str(cfg.run.uniform_num_frames)])
     adapter = cfg.dataset.get("adapter")
@@ -282,6 +286,9 @@ def inference_command(
     max_videos = cfg.dataset.get("max_videos")
     if max_videos is not None:
         command.extend(["--max_videos", str(max_videos)])
+    grounding_prompt = cfg.dataset.get("grounding_prompt")
+    if grounding_prompt and grounding_prompt != "official":
+        command.extend(["--grounding_prompt", str(grounding_prompt)])
     counting_prompt = cfg.dataset.get("counting_prompt")
     if counting_prompt:
         command.extend(["--counting_prompt", str(counting_prompt)])

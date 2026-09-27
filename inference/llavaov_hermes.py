@@ -763,6 +763,10 @@ class LlavaOneVision_Hermes(LlavaOnevisionForConditionalGeneration, Abstract_Her
             })
         
         refined_scores = [s.clone() for s in layer_raw_scores]
+        evict_masks = (
+            self._evict_masks(layer_configs, [s.numel() for s in layer_raw_scores], device)
+            if getattr(self, "evict_frame_ids", None) else None
+        )
         
         for i in range(len(refined_scores) - 2, -1, -1):
             current_type = layer_configs[i]['layer_type']
@@ -790,6 +794,14 @@ class LlavaOneVision_Hermes(LlavaOnevisionForConditionalGeneration, Abstract_Her
             else:
                 refined_scores[i] = (1 - gamma) * score_current + gamma * score_next
 
+        if evict_masks is not None:
+            # Evicted frames (GridPlan thinning) lose to every other token, and the budget is
+            # capped so none of their tokens survive.
+            keepable = min(int((~m).sum()) for m in evict_masks)
+            for i, m in enumerate(evict_masks):
+                refined_scores[i][m] = float("-inf")
+                layer_configs[i]['budget'] = min(layer_configs[i]['budget'], keepable)
+
         for layer_idx, score in enumerate(refined_scores):
             config = layer_configs[layer_idx]
             actual_num_keep = config['budget']
@@ -800,6 +812,10 @@ class LlavaOneVision_Hermes(LlavaOnevisionForConditionalGeneration, Abstract_Her
                 frame_ids = self._token_frame_ids_per_layer[layer_idx][
                     start_idx:start_idx + score.numel()
                 ]
+                if evict_masks is not None:
+                    # Evicted frames get no per-frame floor (-1 marks non-visual tokens).
+                    frame_ids = frame_ids.clone()
+                    frame_ids[evict_masks[layer_idx].to(frame_ids.device)] = -1
             topk_indices_relative, effective_num_keep = (
                 self._select_indices_with_frame_minimum(
                     score,
@@ -966,7 +982,7 @@ class LlavaOneVision_Hermes(LlavaOnevisionForConditionalGeneration, Abstract_Her
             num_keep=self.kv_size
         )
         
-        compression_applied = current_k_states_len > self.kv_size
+        compression_applied = current_k_states_len > self.kv_size or bool(getattr(self, "evict_frame_ids", None))
         if compression_applied:
             print(f"Applying KV-Cache compression due to k_states > {self.kv_size}")
             self.apply_kv_cache_pruning_strict(keep_indices_all_layers)

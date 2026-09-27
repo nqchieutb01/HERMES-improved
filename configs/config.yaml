@@ -19,6 +19,10 @@ run:
   # incremental uses sample_fps; uniform resets per question and uses source frames.
   frame_sampling: incremental
   uniform_num_frames: null
+  # Variable-rate incremental sampling, e.g. "1.0:60,0.5:160,0.2" (fps:until_seconds, last open-ended).
+  sample_schedule: null
+  # Decode frames at this fraction of source resolution (1.0 = native); fewer visual tokens per frame.
+  frame_scale: 1.0
   kv_size: 6000
   debug: false
   encode_chunk_size: 16

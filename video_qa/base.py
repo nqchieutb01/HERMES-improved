@@ -19,7 +19,14 @@ from logzero import logger
 
 from inference.llavaov_hermes import load_model as llavaov_hermes_load_model
 from video_qa.adapters import load_annotations
-from video_qa.sampling import frame_end_exclusive, uniform_frame_indices
+from video_qa.sampling import (
+    DupSchedule,
+    GridPlan,
+    frame_end_exclusive,
+    parse_sample_schedule,
+    schedule_frame_times,
+    uniform_frame_indices,
+)
 
 
 def qwenvl_hermes_load_model(*args, **kwargs):
@@ -122,7 +129,7 @@ class BaseVQA:
             video = video[frame_idx]
             return video
         else:
-            vr = VideoReader(video_path, num_threads=1)
+            vr = self._open_reader(video_path)
             fps = round(vr.get_avg_fps())
             total_frames = len(vr)
             
@@ -142,6 +149,36 @@ class BaseVQA:
             video = vr.get_batch(frame_idx).asnumpy()
             return video
     
+    def _open_reader(self, video_path):
+        """VideoReader that decodes at ``frame_scale`` x the source resolution (1.0 = native)."""
+        scale = float(getattr(self, "frame_scale", 1.0))
+        if scale == 1.0:
+            return VideoReader(video_path, num_threads=1)
+        h, w = VideoReader(video_path, num_threads=1)[0].shape[:2]
+        return VideoReader(video_path, num_threads=1,
+                           width=max(32, int(w * scale) // 2 * 2), height=max(32, int(h * scale) // 2 * 2))
+
+    def load_scheduled_video(self, video_path, schedule):
+        """Decode streamed frames for a sample schedule; returns (frames, times, anchors).
+
+        ``schedule`` is a list of (rate, until) stages or a GridPlan. ``anchors`` gives each
+        frame's temporal-group start time for GridPlan thinning (None for rate stages).
+        """
+        reader = self._open_reader(video_path)
+        source_fps = float(reader.get_avg_fps())
+        total = len(reader)
+        if isinstance(schedule, DupSchedule):
+            # Each frame twice in a row: Qwen's temporal patch then pairs a frame with itself
+            # instead of blending two moments seconds apart.
+            times = [t for t in schedule_frame_times(schedule.stages, total / source_fps) for _ in (0, 1)]
+            anchors = None
+        elif isinstance(schedule, GridPlan):
+            times, anchors = schedule.frame_times(total / source_fps)
+        else:
+            times, anchors = schedule_frame_times(schedule, total / source_fps), None
+        frame_idx = [min(total - 1, int(round(t * source_fps))) for t in times]
+        return reader.get_batch(frame_idx).asnumpy(), times, anchors
+
     def load_video_frames(self, video_path, video_fps, clip=None):
         """
         Load video from a directory of image frames (for OVBench image-based videos).
@@ -248,7 +285,7 @@ class BaseVQA:
             self.last_uniform_frame_times = [i / float(video_fps) for i in frame_idx]
             return np.stack(frames, axis=0), frame_idx
 
-        reader = VideoReader(video_path, num_threads=1)
+        reader = self._open_reader(video_path)
         source_fps = float(reader.get_avg_fps())
         end_frame = frame_end_exclusive(
             total_frames=len(reader),
@@ -382,6 +419,20 @@ def work(QA_CLASS):
         help="Incremental FPS stream or fixed-count uniform context per question",
     )
     parser.add_argument(
+        "--frame_scale",
+        type=float,
+        default=1.0,
+        help="Decode video frames at this fraction of the source resolution (fewer visual tokens per frame)",
+    )
+    parser.add_argument(
+        "--sample_schedule",
+        type=str,
+        default=None,
+        help="Variable-rate incremental sampling, e.g. '1.0:60,0.5:160,0.2' "
+        "(fps until seconds, last stage open-ended), or 'grid:N:smax' for dense-early sampling "
+        "with progressive thinning of old frames (see GridPlan); overrides --sample_fps",
+    )
+    parser.add_argument(
         "--uniform_num_frames",
         type=int,
         default=None,
@@ -467,6 +518,12 @@ def work(QA_CLASS):
         help="S-EMBER MCQ prompt for counting questions: letter only or count then letter",
     )
     parser.add_argument(
+        "--grounding_prompt",
+        choices=("official", "full_span"),
+        default="official",
+        help="S-EMBER grounding prompt: official, or also ask for the interval to span the whole event",
+    )
+    parser.add_argument(
         "--keep_time_tokens",
         type=lambda v: {"false": "none", "true": "all"}.get(str(v).lower(), str(v).lower()),
         choices=("none", "all", "surviving"),
@@ -544,6 +601,7 @@ def work(QA_CLASS):
         max_videos=args.max_videos,
         question_categories=args.question_categories,
         counting_prompt=args.counting_prompt,
+        grounding_prompt=args.grounding_prompt,
     )
 
     analyzer = QA_CLASS(
@@ -561,5 +619,17 @@ def work(QA_CLASS):
     analyzer.repetition_penalty = args.repetition_penalty
     analyzer.frame_sampling = args.frame_sampling
     analyzer.uniform_num_frames = args.uniform_num_frames
+    if args.frame_scale <= 0:
+        parser.error("frame_scale must be positive")
+    analyzer.frame_scale = args.frame_scale
+    if not args.sample_schedule:
+        analyzer.sample_schedule = None
+    elif args.sample_schedule.startswith("dup:"):
+        analyzer.sample_schedule = DupSchedule(parse_sample_schedule(args.sample_schedule[len("dup:"):]))
+    elif args.sample_schedule.startswith("grid:"):
+        analyzer.sample_schedule = GridPlan.parse(args.sample_schedule)
+        videoqa_model.force_token_provenance = True
+    else:
+        analyzer.sample_schedule = parse_sample_schedule(args.sample_schedule)
     analyzer.analyze(debug=args.debug)
     videoqa_model.write_token_trace()

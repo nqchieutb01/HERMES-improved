@@ -98,9 +98,21 @@ SEMBER_MCQ_METADATA_FIELDS = (
 )
 
 
-def sember_grounding_prompt(question: str) -> str:
-    """Return the official S-EMBER grounded VideoQA prompt."""
-    return f"{SEMBER_GROUNDING_PROMPT}\n\n{question}"
+GROUNDING_PROMPT_STYLES = ("official", "full_span")
+# Models predict intervals ~3x shorter than the annotated evidence; ask for the whole event span.
+FULL_SPAN_INSTRUCTION = (
+    "The time interval must cover the whole event, from the moment it begins until it has "
+    "completely ended, not a single moment within it."
+)
+
+
+def sember_grounding_prompt(question: str, style: str = "official") -> str:
+    """Return the S-EMBER grounded VideoQA prompt (``official`` or ``full_span``)."""
+    if style == "official":
+        return f"{SEMBER_GROUNDING_PROMPT}\n\n{question}"
+    if style == "full_span":
+        return f"{SEMBER_GROUNDING_PROMPT}\n{FULL_SPAN_INSTRUCTION}\n\n{question}"
+    raise ValueError(f"Unknown S-EMBER grounding prompt style: {style!r}")
 
 
 COUNTING_PROMPT_STYLES = ("official", "count_first")
@@ -189,6 +201,7 @@ def load_sember_grounding(
     video_root: str | Path,
     max_videos: int | None = None,
     question_categories: list[str] | tuple[str, ...] | None = None,
+    grounding_prompt: str = "official",
 ) -> list[dict[str, Any]]:
     """Format S-EMBER JSONL rows as chronological HERMES conversations.
 
@@ -247,7 +260,7 @@ def load_sember_grounding(
 
         conversation = {
             "question": str(row["question"]),
-            "prompt": sember_grounding_prompt(str(row["question"])),
+            "prompt": sember_grounding_prompt(str(row["question"]), grounding_prompt),
             "answer": str(row["answer"]),
             "end_time": question_time,
             "benchmark": "sember_grounding",
@@ -404,6 +417,7 @@ def load_annotations(
     max_videos: int | None = None,
     question_categories: list[str] | tuple[str, ...] | None = None,
     counting_prompt: str = "official",
+    grounding_prompt: str = "official",
 ) -> list[dict[str, Any]]:
     """Load native HERMES JSON or adapt a supported external dataset."""
     if adapter in (None, "", "native"):
@@ -420,6 +434,7 @@ def load_annotations(
             video_root=video_root,
             max_videos=max_videos,
             question_categories=question_categories,
+            grounding_prompt=grounding_prompt,
         )
     if adapter == "sember_mcq":
         if not video_root:

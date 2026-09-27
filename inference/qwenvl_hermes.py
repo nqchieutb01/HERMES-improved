@@ -855,6 +855,10 @@ class QwenVL_Hermes(Qwen2_5_VLForConditionalGeneration, Abstract_Hermes):
             })
 
         refined_scores = [s.clone() for s in layer_raw_scores]
+        evict_masks = (
+            self._evict_masks(layer_configs, [s.numel() for s in layer_raw_scores], device)
+            if getattr(self, "evict_frame_ids", None) else None
+        )
 
         for i in range(len(refined_scores) - 2, -1, -1):
             current_type = layer_configs[i]['layer_type']
@@ -881,6 +885,15 @@ class QwenVL_Hermes(Qwen2_5_VLForConditionalGeneration, Abstract_Hermes):
             else:
                 refined_scores[i] = (1 - gamma) * score_current + gamma * score_next
 
+        if evict_masks is not None:
+            # Evicted frames (GridPlan thinning) lose to every other token, and the budget is
+            # capped so none of their tokens (hence none of their timestamps) survive.
+            keepable = min(int((~m & ~self._time_mask(i, m.numel(), layer_configs, device)).sum())
+                           for i, m in enumerate(evict_masks))
+            for i, m in enumerate(evict_masks):
+                refined_scores[i][m] = float("-inf")
+                layer_configs[i]['budget'] = min(layer_configs[i]['budget'], keepable)
+
         for layer_idx, score in enumerate(refined_scores):
             config = layer_configs[layer_idx]
             actual_num_keep = config['budget']
@@ -891,6 +904,10 @@ class QwenVL_Hermes(Qwen2_5_VLForConditionalGeneration, Abstract_Hermes):
                 frame_ids = self._token_frame_ids_per_layer[layer_idx][
                     start_idx:start_idx + score.numel()
                 ]
+                if evict_masks is not None:
+                    # Evicted frames get no per-frame floor (-1 marks non-visual tokens).
+                    frame_ids = frame_ids.clone()
+                    frame_ids[evict_masks[layer_idx].to(frame_ids.device)] = -1
             floor_scores = (
                 layer_attention_scores[layer_idx]
                 if getattr(self, "frame_summary_strategy", "mean")
@@ -918,8 +935,9 @@ class QwenVL_Hermes(Qwen2_5_VLForConditionalGeneration, Abstract_Hermes):
                 policy == "all" or self.min_tokens_per_frame > 0
             ):
                 # With a frame floor every frame survives, so "surviving"
-                # keeps every group's text too.
-                protected = torch.nonzero(time_mask).flatten()
+                # keeps every group's text too (except groups being evicted).
+                keep_time = time_mask if evict_masks is None else time_mask & ~evict_masks[layer_idx]
+                protected = torch.nonzero(keep_time).flatten()
                 actual_num_keep = max(actual_num_keep - protected.numel(), 0)
                 topk_indices_relative, effective_num_keep = (
                     self._select_indices_with_frame_minimum(
@@ -1099,7 +1117,7 @@ class QwenVL_Hermes(Qwen2_5_VLForConditionalGeneration, Abstract_Hermes):
             num_keep=self.kv_size
         )
 
-        compression_applied = current_k_states_len > self.kv_size
+        compression_applied = current_k_states_len > self.kv_size or bool(getattr(self, "evict_frame_ids", None))
         if compression_applied:
             print(f"Applying KV-Cache compression due to k_states > {self.kv_size}")
             self.apply_kv_cache_pruning_strict(keep_indices_all_layers)

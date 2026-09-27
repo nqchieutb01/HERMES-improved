@@ -1,0 +1,57 @@
+% Requires \usepackage{booktabs} and \usepackage{multirow}.
+
+\begin{table}[t]
+\centering
+\small
+\caption{Overall S-EMBER results on 300 videos (576 multiple-choice, 475 grounding questions). Uniform = 32 or 64 frames sampled uniformly up to the question, no compression. Streaming = HERMES at 0.2 fps with a KV budget in tokens; $k$ = minimum tokens kept per frame, with $k{=}1$ using \texttt{top\_attention\_patch} (the best $k{=}1$ strategy in the 100-video sweep). Qwen3 streaming keeps the timestamp tokens of surviving frames (Table~\ref{tab:sember-qwen3-timestamps-v300}). Acc = MCQ accuracy (\%); mIoU = mean temporal IoU (\%); R@0.5 = Recall@1 at IoU $\geq$ 0.5 (\%). Best per model in bold.}
+\label{tab:sember-overall-v300}
+\begin{tabular}{llrcccc}
+\toprule
+& & & & MCQ & \multicolumn{2}{c}{Grounding} \\
+\cmidrule(lr){5-5}\cmidrule(lr){6-7}
+Model & Mode & KV / frames & $k$ & Acc & mIoU & R@0.5 \\
+\midrule
+\multirow{6}{*}{LLaVA-OV-7B} & Uniform & 32 fr. & -- & 26.0 & 7.1 & 3.2 \\
+ & Uniform & 64 fr. & -- & 26.0 & 7.8 & 3.6 \\
+\cmidrule(lr){2-7}
+ & Streaming & 4000 & 0 & 28.3 & 7.2 & 2.9 \\
+ & Streaming & 4000 & 1 & \textbf{28.5} & 7.8 & 3.6 \\
+ & Streaming & 6000 & 0 & 27.8 & \textbf{8.2} & \textbf{4.0} \\
+ & Streaming & 6000 & 1 & 28.0 & 8.1 & 3.8 \\
+\midrule
+\multirow{8}{*}{Qwen3-VL-8B} & Uniform & 32 fr. & -- & 25.0 & \textbf{27.5} & \textbf{26.7} \\
+ & Uniform & 64 fr. & -- & 25.3 & 26.9 & 25.3 \\
+\cmidrule(lr){2-7}
+ & Streaming & 4000 & 0 & 25.0 & 23.9 & 21.9 \\
+ & Streaming & 4000 & 1 & 25.7 & 24.0 & 21.7 \\
+ & Streaming & 6000 & 0 & 25.7 & 24.8 & 24.4 \\
+ & Streaming & 6000 & 1 & \textbf{26.0} & 24.6 & 24.6 \\
+ & Streaming & 10700 & 0 & \textbf{26.0} & 23.6 & 22.5 \\
+ & Streaming & 21400 & 0 & 25.3 & 23.3 & 22.1 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table*}[t]
+\centering
+\small
+\caption{Qwen3-VL-8B timestamp-token modes on S-EMBER (300 videos), HERMES streaming at 0.2 fps. Qwen3 interleaves a timestamp token group with each frame. Default = timestamp tokens are compressed like any other token; surviving = timestamp tokens are always kept for frames that still have visual tokens in the cache; all = timestamp tokens of every frame are always kept. $k$ = minimum tokens kept per frame ($k{=}1$: \texttt{top\_attention\_patch}). Acc = MCQ accuracy (\%); mIoU = mean temporal IoU (\%); R@0.5 = Recall@1 at IoU $\geq$ 0.5 (\%). -- = not run. Best mode per row and metric in bold.}
+\label{tab:sember-qwen3-timestamps-v300}
+\begin{tabular}{rcccccccccc}
+\toprule
+& & \multicolumn{3}{c}{MCQ Acc} & \multicolumn{3}{c}{Grounding mIoU} & \multicolumn{3}{c}{Grounding R@0.5} \\
+\cmidrule(lr){3-5}\cmidrule(lr){6-8}\cmidrule(lr){9-11}
+KV & $k$ & default & surviving & all & default & surviving & all & default & surviving & all \\
+\midrule
+4000 & 0 & \textbf{25.0} & \textbf{25.0} & -- & 20.2 & \textbf{23.9} & \textbf{23.9} & 18.3 & \textbf{21.9} & \textbf{21.9} \\
+ & 1 & \textbf{25.7} & \textbf{25.7} & -- & 20.4 & \textbf{24.0} & -- & 17.9 & \textbf{21.7} & -- \\
+\midrule
+6000 & 0 & \textbf{26.0} & 25.7 & -- & 22.9 & \textbf{24.8} & 24.5 & 22.1 & \textbf{24.4} & \textbf{24.4} \\
+ & 1 & \textbf{26.0} & \textbf{26.0} & -- & 22.5 & \textbf{24.6} & -- & 20.8 & \textbf{24.6} & -- \\
+\midrule
+10700 & 0 & 25.7 & \textbf{26.0} & -- & 23.5 & 23.6 & \textbf{23.9} & \textbf{22.9} & 22.5 & 22.7 \\
+\midrule
+21400 & 0 & \textbf{25.3} & \textbf{25.3} & -- & 23.1 & \textbf{23.3} & \textbf{23.3} & \textbf{22.1} & \textbf{22.1} & \textbf{22.1} \\
+\bottomrule
+\end{tabular}
+\end{table*}
