@@ -11,7 +11,7 @@ spec: {"slots": [{"partition":..., "qos":..., "max_jobs":...}, ...],
 """
 import csv, json, os, re, shlex, subprocess, sys, time
 
-MAIN = "/l/users/chieu.nguyen/HERMES"
+MAIN = "/home/chieu.nguyen/HERMES"
 RUNNER = f"{MAIN}/.venv/hermes/bin/python3"
 EVAL_PY = "/nfs-stor/chieu.nguyen/venvs/hermes-qwen/bin/python3"
 MAX_ATTEMPTS = 3

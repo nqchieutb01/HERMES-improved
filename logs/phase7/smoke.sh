@@ -1,8 +1,8 @@
 #!/bin/bash
-cd /l/users/chieu.nguyen/HERMES-qwen-time-v3
+cd /home/chieu.nguyen/HERMES
 echo host=$(hostname) start=$(date)
-PY=/l/users/chieu.nguyen/HERMES/.venv/hermes/bin/python3
-R=/l/users/chieu.nguyen/HERMES/results
+PY=/home/chieu.nguyen/HERMES/.venv/hermes/bin/python3
+R=/home/chieu.nguyen/HERMES/results
 common="dataset.max_videos=2 run.num_chunks=1 run.kv_size=6000 run.max_new_tokens=128 run.sample_fps=0.2"
 HERMES_QWEN3_ATTENTION_BACKEND=flash_attention_2 $PY scripts/run.py experiment=sember_grounding_time_count_location \
   model=qwen3_vl_8b $common run.min_tokens_per_frame=0 run.frame_summary_strategy=attention_weighted \

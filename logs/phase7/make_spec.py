@@ -9,8 +9,8 @@ Usage: python3 logs/phase7/make_spec.py <round>... > logs/phase7/<name>.json
 import json
 import sys
 
-CODE = "/l/users/chieu.nguyen/HERMES-qwen-time-v3"
-RESULTS = "/l/users/chieu.nguyen/HERMES/results"
+CODE = "/home/chieu.nguyen/HERMES"
+RESULTS = "/home/chieu.nguyen/HERMES/results"
 SLOTS = [{"partition": "long", "qos": "gpu-debug-qos", "max_jobs": 8},
          {"partition": "cscc-gpu-p", "qos": "cscc-gpu-qos", "max_jobs": 2}]
 MODELS = {"q3": "qwen3_vl_8b", "lv": "llava_ov_7b"}

@@ -14,7 +14,7 @@
 
 set -euo pipefail
 
-repo_dir="${HERMES_ROOT:-${SLURM_SUBMIT_DIR:-/l/users/chieu.nguyen/HERMES}}"
+repo_dir="${HERMES_ROOT:-${SLURM_SUBMIT_DIR:-/home/chieu.nguyen/HERMES}}"
 python_bin="${HERMES_PYTHON:-$repo_dir/.venv/hermes/bin/python3}"
 sample_fps="${SAMPLE_FPS:-0.2}"
 kv_size="${KV_SIZE:-6000}"

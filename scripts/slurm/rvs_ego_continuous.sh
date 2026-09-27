@@ -10,7 +10,7 @@
 #SBATCH --mem=96G
 #SBATCH --time=02:00:00
 set -euo pipefail
-repo_dir="/l/users/chieu.nguyen/HERMES"
+repo_dir="/home/chieu.nguyen/HERMES"
 cd "$repo_dir"
 export PYTHONPATH="$repo_dir${PYTHONPATH:+:$PYTHONPATH}"
 export HF_HOME=/nfs-stor/chieu.nguyen/.cache/huggingface
