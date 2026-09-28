@@ -3,8 +3,9 @@
 Per run: MCQ accuracy of the matching MCQ run (same run name), grounding mIoU and R@0.5, answer accuracy
 (LLM judge, from answer_judgments.jsonl written by judge_grounding.py; and rule-based for duration and
 counting questions), and the joint metric: a question counts only if its answer is correct AND its
-interval has IoU >= 0.5 (GQ@0.5, the official S-EMBER joint metric) or >= 0.3 (GQ@0.3). Acc is the
-judge accuracy with the official S-EMBER judge prompt. Rows are sorted by GQ@0.5.
+interval has IoU >= 0.5 (GQ@0.5, the official S-EMBER joint metric) or >= 0.3 (GQ@0.3). GQ@0.0 has no
+interval requirement: it is the answer accuracy with the official S-EMBER judge prompt. Rows are sorted
+by GQ@0.5.
 Answer correctness comes from the judge when answer_judgments.jsonl exists, otherwise from the rule-based
 check (duration and counting questions only). Run from the repo root: python3 logs/phase11/joint_metrics.py
 """
@@ -68,9 +69,9 @@ def main():
         })
     out.sort(key=lambda d: -d["j5"])
     f = lambda v: "  --" if v is None else f"{v:4.1f}"
-    print(f"{'run':52s} {'MCQ':>5s} {'mIoU':>5s} {'R@.5':>5s} {'Acc':>5s} {'AnsR':>5s} {'GQ@.3':>6s} {'GQ@.5':>6s}  basis")
+    print(f"{'run':52s} {'MCQ':>5s} {'mIoU':>5s} {'R@.5':>5s} {'GQ@.0':>6s} {'AnsR':>5s} {'GQ@.3':>6s} {'GQ@.5':>6s}  basis")
     for d in out:
-        print(f"{d['run'][:52]:52s} {f(d['mcq']):>5s} {f(d['miou']):>5s} {f(d['r05']):>5s} {f(d['judge']):>5s} "
+        print(f"{d['run'][:52]:52s} {f(d['mcq']):>5s} {f(d['miou']):>5s} {f(d['r05']):>5s} {f(d['judge']):>6s} "
               f"{f(d['rule']):>5s} {f(d['j3']):>6s} {f(d['j5']):>6s}  {d['basis']}")
 
 

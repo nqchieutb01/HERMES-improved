@@ -66,7 +66,7 @@ questions asked early in a video.
    is reported only as a diagnostic, never as a method (Section 9.5). Grounding must be judged together
    with answer correctness (Section 9.7).
 8. **Under the official S-EMBER protocol, grounded QA is very hard.** Only 9-16% of open-ended answers
-   are judged correct and GQ@0.5 is 1.5-5.5% for every configuration. Open-ended answer accuracy tracks
+   are judged correct (GQ@0.0 = 9-16%) and GQ@0.5 is 1.5-5.5% for every configuration. Open-ended answer accuracy tracks
    MCQ: the best MCQ configuration also gives the best answer accuracy (15.6%, +3.2 over the baseline).
 
 **The resulting picture:** there is a real trade-off. Multiple-choice QA wants *many frames*, sampled
@@ -735,8 +735,8 @@ Running now, to test the coverage finding at harder budgets and on a second mode
 mIoU and R@0.5 reward an interval even when the answer is wrong (Section 9.5). The S-EMBER paper
 ([arXiv 2607.02689](https://arxiv.org/abs/2607.02689), [code](https://github.com/facebookresearch/S-EMBER))
 therefore also reports answer accuracy and a joint metric:
-- **Acc:** an LLM judge marks the free-text answer CORRECT if it is semantically equivalent to *any one*
-  of the annotators' answers.
+- **GQ@0.0 (answer accuracy):** an LLM judge marks the free-text answer CORRECT if it is semantically
+  equivalent to *any one* of the annotators' answers. No interval requirement.
 - **GQ@0.5 (grounded QA):** a question counts only if the answer is judged correct **and** the interval
   has IoU >= 0.5 with the evidence.
 
@@ -755,7 +755,7 @@ rule accepts and the judge rejects.
 Qwen3-VL-8B, 300 videos (475 grounding / 576 MCQ questions). Differences to the streaming baseline with
 95% paired-bootstrap CIs; one grounding question = 0.21 points.
 
-| Configuration | MCQ | mIoU | R@0.5 | **Acc** | **GQ@0.5** | Acc vs base | GQ@0.5 vs base |
+| Configuration | MCQ | mIoU | R@0.5 | **GQ@0.0** (answer acc.) | **GQ@0.5** | GQ@0.0 vs base | GQ@0.5 vs base |
 |---|---|---|---|---|---|---|---|
 | Uniform 32 (no pruning) | 25.0 | 27.5 | 26.7 | 13.3 | **5.3** | +0.8 [-2.1, +3.6] | +1.7 [-0.6, +4.2] |
 | Uniform 64 (no pruning) | 25.3 | 26.9 | 25.3 | 13.5 | 4.4 | +1.1 [-1.9, +4.0] | +0.8 [-1.3, +2.9] |
@@ -774,13 +774,13 @@ All 70 Qwen3 grounding runs: `python3 logs/phase11/joint_metrics.py`.
 - **Grounded QA is very hard for every configuration.** Only 9-16% of open-ended answers are judged
   correct, and GQ@0.5 is 1.5-5.5%: a correct answer with a well-placed interval is rare. mIoU and R@0.5
   (20-29%) greatly overstate grounding quality.
-- **Answer accuracy follows MCQ, not mIoU.** The configuration with the best MCQ (`dup:1.0:60,0.2`,
-  33.0%) also has the best open-ended accuracy (15.6%, +3.2, CI excludes zero), although its mIoU is the
+- **Answer accuracy (GQ@0.0) follows MCQ, not mIoU.** The configuration with the best MCQ
+  (`dup:1.0:60,0.2`, 33.0%) also has the best open-ended accuracy (15.6%, +3.2, CI excludes zero), although its mIoU is the
   lowest of the streaming runs. Memory changes that let the model see more distinct moments improve
   its answers; interval metrics alone would have hidden this.
 - **GQ@0.5 cannot yet separate the memory configurations** apart from collapse cases: most differences
   are within +-2 points (about 10 questions) and all CIs include zero, except offline HERMES pruning at
-  5%, which clearly hurts both Acc and GQ@0.5. Separating configurations on grounded QA needs either
+  5%, which clearly hurts both GQ@0.0 and GQ@0.5. Separating configurations on grounded QA needs either
   larger gains or more questions (the full benchmark has 9,448 QA pairs).
 - **Coverage-preserving pruning still matters under the official metric:** at 5% of tokens, random and
   stratified keep GQ@0.5 near the baseline (-0.2, -0.6) while HERMES-score pruning collapses (-2.1).
