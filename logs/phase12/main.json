@@ -1,0 +1,261 @@
+{
+ "slots": [
+  {
+   "partition": "long",
+   "qos": "gpu-debug-qos",
+   "max_jobs": 8
+  },
+  {
+   "partition": "cscc-gpu-p",
+   "qos": "cscc-gpu-qos",
+   "max_jobs": 2
+  }
+ ],
+ "runs": [
+  {
+   "name": "g-tl-fps02-kv6000",
+   "code": "/home/chieu.nguyen/HERMES",
+   "chunks": 4,
+   "env": {
+    "HERMES_QWEN3_ATTENTION_BACKEND": "flash_attention_2"
+   },
+   "overrides": [
+    "model=qwen3_vl_8b",
+    "dataset.max_videos=300",
+    "run.keep_time_tokens=surviving",
+    "dataset.grounding_prompt=timeline",
+    "experiment=sember_grounding_time_count_location",
+    "run.sample_fps=0.2",
+    "run.kv_size=6000",
+    "run.min_tokens_per_frame=0",
+    "run.frame_summary_strategy=attention_weighted",
+    "run.max_new_tokens=384",
+    "paths.save_dir=/home/chieu.nguyen/HERMES/results/qwen3_vl_8b/sember_grounding/time-count-location-fps0.2-kv6000-k0-attention_weighted-native-time-keepsurv-timeline-v300"
+   ]
+  },
+  {
+   "name": "g-tl-uni32",
+   "code": "/home/chieu.nguyen/HERMES",
+   "chunks": 4,
+   "env": {
+    "HERMES_QWEN3_ATTENTION_BACKEND": "flash_attention_2"
+   },
+   "overrides": [
+    "model=qwen3_vl_8b",
+    "dataset.max_videos=300",
+    "run.keep_time_tokens=surviving",
+    "dataset.grounding_prompt=timeline",
+    "experiment=sember_grounding_uniform",
+    "run.uniform_num_frames=32",
+    "run.max_new_tokens=384",
+    "paths.save_dir=/home/chieu.nguyen/HERMES/results/qwen3_vl_8b/sember_grounding/uniform-n32-time-count-location-timeline-v300-native-time"
+   ]
+  },
+  {
+   "name": "g-tl-dups1x60-kv10700",
+   "code": "/home/chieu.nguyen/HERMES",
+   "chunks": 4,
+   "env": {
+    "HERMES_QWEN3_ATTENTION_BACKEND": "flash_attention_2"
+   },
+   "overrides": [
+    "model=qwen3_vl_8b",
+    "dataset.max_videos=300",
+    "run.keep_time_tokens=surviving",
+    "dataset.grounding_prompt=timeline",
+    "experiment=sember_grounding_time_count_location",
+    "run.sample_fps=0.2",
+    "run.kv_size=10700",
+    "run.sample_schedule='dup:1.0:60,0.2'",
+    "run.frame_scale=0.7",
+    "run.min_tokens_per_frame=0",
+    "run.frame_summary_strategy=attention_weighted",
+    "run.max_new_tokens=384",
+    "paths.save_dir=/home/chieu.nguyen/HERMES/results/qwen3_vl_8b/sember_grounding/time-count-location-dups1x60-kv10700-k0-attention_weighted-native-time-keepsurv-scale0.7-timeline-v300"
+   ]
+  },
+  {
+   "name": "g-off-hermes-0.2",
+   "code": "/home/chieu.nguyen/HERMES",
+   "chunks": 4,
+   "env": {
+    "HERMES_QWEN3_ATTENTION_BACKEND": "flash_attention_2"
+   },
+   "overrides": [
+    "model=qwen3_vl_8b",
+    "dataset.max_videos=300",
+    "run.keep_time_tokens=surviving",
+    "experiment=sember_grounding_uniform",
+    "run.uniform_num_frames=64",
+    "run.offline_keep_ratio=0.2",
+    "run.prune_score=hermes",
+    "run.max_new_tokens=128",
+    "paths.save_dir=/home/chieu.nguyen/HERMES/results/qwen3_vl_8b/sember_grounding/uniform-n64-time-count-location-offline-hermes-keep0.2-v300-native-time"
+   ]
+  },
+  {
+   "name": "g-off-random-0.2",
+   "code": "/home/chieu.nguyen/HERMES",
+   "chunks": 4,
+   "env": {
+    "HERMES_QWEN3_ATTENTION_BACKEND": "flash_attention_2"
+   },
+   "overrides": [
+    "model=qwen3_vl_8b",
+    "dataset.max_videos=300",
+    "run.keep_time_tokens=surviving",
+    "experiment=sember_grounding_uniform",
+    "run.uniform_num_frames=64",
+    "run.offline_keep_ratio=0.2",
+    "run.prune_score=random",
+    "run.max_new_tokens=128",
+    "paths.save_dir=/home/chieu.nguyen/HERMES/results/qwen3_vl_8b/sember_grounding/uniform-n64-time-count-location-offline-random-keep0.2-v300-native-time"
+   ]
+  },
+  {
+   "name": "g-off-stratified-0.2",
+   "code": "/home/chieu.nguyen/HERMES",
+   "chunks": 4,
+   "env": {
+    "HERMES_QWEN3_ATTENTION_BACKEND": "flash_attention_2"
+   },
+   "overrides": [
+    "model=qwen3_vl_8b",
+    "dataset.max_videos=300",
+    "run.keep_time_tokens=surviving",
+    "experiment=sember_grounding_uniform",
+    "run.uniform_num_frames=64",
+    "run.offline_keep_ratio=0.2",
+    "run.prune_score=stratified",
+    "run.max_new_tokens=128",
+    "paths.save_dir=/home/chieu.nguyen/HERMES/results/qwen3_vl_8b/sember_grounding/uniform-n64-time-count-location-offline-stratified-keep0.2-v300-native-time"
+   ]
+  },
+  {
+   "name": "g-off-stratified-0.5",
+   "code": "/home/chieu.nguyen/HERMES",
+   "chunks": 4,
+   "env": {
+    "HERMES_QWEN3_ATTENTION_BACKEND": "flash_attention_2"
+   },
+   "overrides": [
+    "model=qwen3_vl_8b",
+    "dataset.max_videos=300",
+    "run.keep_time_tokens=surviving",
+    "experiment=sember_grounding_uniform",
+    "run.uniform_num_frames=64",
+    "run.offline_keep_ratio=0.5",
+    "run.prune_score=stratified",
+    "run.max_new_tokens=128",
+    "paths.save_dir=/home/chieu.nguyen/HERMES/results/qwen3_vl_8b/sember_grounding/uniform-n64-time-count-location-offline-stratified-keep0.5-v300-native-time"
+   ]
+  },
+  {
+   "name": "g-off-pool-sc0.45",
+   "code": "/home/chieu.nguyen/HERMES",
+   "chunks": 4,
+   "env": {
+    "HERMES_QWEN3_ATTENTION_BACKEND": "flash_attention_2"
+   },
+   "overrides": [
+    "model=qwen3_vl_8b",
+    "dataset.max_videos=300",
+    "run.keep_time_tokens=surviving",
+    "experiment=sember_grounding_uniform",
+    "run.uniform_num_frames=64",
+    "run.frame_scale=0.45",
+    "run.max_new_tokens=128",
+    "paths.save_dir=/home/chieu.nguyen/HERMES/results/qwen3_vl_8b/sember_grounding/uniform-n64-time-count-location-scale0.45-v300-native-time"
+   ]
+  },
+  {
+   "name": "m-off-hermes-0.2",
+   "code": "/home/chieu.nguyen/HERMES",
+   "chunks": 3,
+   "env": {
+    "HERMES_QWEN3_ATTENTION_BACKEND": "flash_attention_2"
+   },
+   "overrides": [
+    "model=qwen3_vl_8b",
+    "dataset.max_videos=300",
+    "run.keep_time_tokens=surviving",
+    "experiment=sember_mcq_uniform",
+    "run.uniform_num_frames=64",
+    "run.offline_keep_ratio=0.2",
+    "run.prune_score=hermes",
+    "paths.save_dir=/home/chieu.nguyen/HERMES/results/qwen3_vl_8b/sember_mcq/uniform-n64-time-count-location-offline-hermes-keep0.2-v300-native-time"
+   ]
+  },
+  {
+   "name": "m-off-random-0.2",
+   "code": "/home/chieu.nguyen/HERMES",
+   "chunks": 3,
+   "env": {
+    "HERMES_QWEN3_ATTENTION_BACKEND": "flash_attention_2"
+   },
+   "overrides": [
+    "model=qwen3_vl_8b",
+    "dataset.max_videos=300",
+    "run.keep_time_tokens=surviving",
+    "experiment=sember_mcq_uniform",
+    "run.uniform_num_frames=64",
+    "run.offline_keep_ratio=0.2",
+    "run.prune_score=random",
+    "paths.save_dir=/home/chieu.nguyen/HERMES/results/qwen3_vl_8b/sember_mcq/uniform-n64-time-count-location-offline-random-keep0.2-v300-native-time"
+   ]
+  },
+  {
+   "name": "m-off-stratified-0.2",
+   "code": "/home/chieu.nguyen/HERMES",
+   "chunks": 3,
+   "env": {
+    "HERMES_QWEN3_ATTENTION_BACKEND": "flash_attention_2"
+   },
+   "overrides": [
+    "model=qwen3_vl_8b",
+    "dataset.max_videos=300",
+    "run.keep_time_tokens=surviving",
+    "experiment=sember_mcq_uniform",
+    "run.uniform_num_frames=64",
+    "run.offline_keep_ratio=0.2",
+    "run.prune_score=stratified",
+    "paths.save_dir=/home/chieu.nguyen/HERMES/results/qwen3_vl_8b/sember_mcq/uniform-n64-time-count-location-offline-stratified-keep0.2-v300-native-time"
+   ]
+  },
+  {
+   "name": "m-off-stratified-0.5",
+   "code": "/home/chieu.nguyen/HERMES",
+   "chunks": 3,
+   "env": {
+    "HERMES_QWEN3_ATTENTION_BACKEND": "flash_attention_2"
+   },
+   "overrides": [
+    "model=qwen3_vl_8b",
+    "dataset.max_videos=300",
+    "run.keep_time_tokens=surviving",
+    "experiment=sember_mcq_uniform",
+    "run.uniform_num_frames=64",
+    "run.offline_keep_ratio=0.5",
+    "run.prune_score=stratified",
+    "paths.save_dir=/home/chieu.nguyen/HERMES/results/qwen3_vl_8b/sember_mcq/uniform-n64-time-count-location-offline-stratified-keep0.5-v300-native-time"
+   ]
+  },
+  {
+   "name": "m-off-pool-sc0.45",
+   "code": "/home/chieu.nguyen/HERMES",
+   "chunks": 3,
+   "env": {
+    "HERMES_QWEN3_ATTENTION_BACKEND": "flash_attention_2"
+   },
+   "overrides": [
+    "model=qwen3_vl_8b",
+    "dataset.max_videos=300",
+    "run.keep_time_tokens=surviving",
+    "experiment=sember_mcq_uniform",
+    "run.uniform_num_frames=64",
+    "run.frame_scale=0.45",
+    "paths.save_dir=/home/chieu.nguyen/HERMES/results/qwen3_vl_8b/sember_mcq/uniform-n64-time-count-location-scale0.45-v300-native-time"
+   ]
+  }
+ ]
+}

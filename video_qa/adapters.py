@@ -98,7 +98,7 @@ SEMBER_MCQ_METADATA_FIELDS = (
 )
 
 
-GROUNDING_PROMPT_STYLES = ("official", "full_span")
+GROUNDING_PROMPT_STYLES = ("official", "full_span", "timeline")
 # Models predict intervals ~3x shorter than the annotated evidence; ask for the whole event span.
 FULL_SPAN_INSTRUCTION = (
     "The time interval must cover the whole event, from the moment it begins until it has "
@@ -106,12 +106,33 @@ FULL_SPAN_INSTRUCTION = (
 )
 
 
+# Models answer durations and counts with canned values ("10 seconds") instead of using the timestamps
+# they see; ask them to list the relevant moments first and derive the answer and interval from them.
+TIMELINE_PROMPT = (
+    "After reviewing the video, answer the following question.\n"
+    "Step 1: list up to 8 moments when the relevant object, action or event is visible, using the "
+    "timestamps shown in the video, one per line starting with \"Seen:\".\n"
+    "Step 2: work out the answer from those moments: for a duration, use the time between the first and "
+    "last relevant moment; for a count, count the distinct occurrences.\n"
+    "Step 3: give the answer on a line starting with \"Answer:\", then the time interval from the first to "
+    "the last relevant moment on a line starting with \"Time:\".\n\n"
+    "Example of the format (for a different question, \"How long was the door open?\"):\n"
+    "Seen: 40.5 seconds, the door is opened\n"
+    "Seen: 62.5 seconds, the door is still open\n"
+    "Seen: 95.0 seconds, the door is closed\n"
+    "Answer: The door was open for about 55 seconds.\n"
+    "Time: [40.5, 95.0]"
+)
+
+
 def sember_grounding_prompt(question: str, style: str = "official") -> str:
-    """Return the S-EMBER grounded VideoQA prompt (``official`` or ``full_span``)."""
+    """Return the S-EMBER grounded VideoQA prompt (``official``, ``full_span`` or ``timeline``)."""
     if style == "official":
         return f"{SEMBER_GROUNDING_PROMPT}\n\n{question}"
     if style == "full_span":
         return f"{SEMBER_GROUNDING_PROMPT}\n{FULL_SPAN_INSTRUCTION}\n\n{question}"
+    if style == "timeline":
+        return f"{TIMELINE_PROMPT}\n\n{question}"
     raise ValueError(f"Unknown S-EMBER grounding prompt style: {style!r}")
 
 

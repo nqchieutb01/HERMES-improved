@@ -537,9 +537,10 @@ def work(QA_CLASS):
     )
     parser.add_argument(
         "--grounding_prompt",
-        choices=("official", "full_span"),
+        choices=("official", "full_span", "timeline"),
         default="official",
-        help="S-EMBER grounding prompt: official, or also ask for the interval to span the whole event",
+        help="S-EMBER grounding prompt: official; full_span (ask for the whole event span); or timeline "
+        "(list the relevant timestamped moments first, then derive the answer and interval)",
     )
     parser.add_argument(
         "--keep_time_tokens",
