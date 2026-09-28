@@ -59,14 +59,20 @@ questions asked early in a video.
    Randomly dropping 90% of visual tokens costs only 0.8 mIoU, but attention-based selection (HERMES
    score) concentrates tokens on few frames and collapses at aggressive budgets (14.8 mIoU at 5%).
    Selection that keeps an equal share of every frame ("stratified") is robust.
-7. **Retrieval-based boundary refinement (M3) is the best grounding fix.** A tiny per-frame embedding
-   index kept outside the KV cache lets each predicted interval grow to the full extent of its event.
-   It beats a fixed x4 widening in every setting, taking streaming grounding from 24.8 to **36.9 mIoU**
-   (37.5 R@0.5), above uniform sampling with the fixed x4 correction (33.3-35.7 mIoU).
+7. **The model reasons from one 10-second token group, so its interval *and* its answer are too
+   narrow.** 20% of streaming intervals are exactly 10 s (one Qwen group at 0.2 fps) and 41% of
+   duration questions are answered "10 seconds". Post-processing that widens intervals (fixed x4, or
+   retrieval-based refinement "M3") raises mIoU by up to 12 points but leaves the answers wrong, so it
+   is reported only as a diagnostic, never as a method (Section 9.5). Grounding must be judged together
+   with answer correctness (Section 9.7).
+8. **Under the official S-EMBER protocol, grounded QA is very hard.** Only 9-16% of open-ended answers
+   are judged correct and GQ@0.5 is 1.5-5.5% for every configuration. Open-ended answer accuracy tracks
+   MCQ: the best MCQ configuration also gives the best answer accuracy (15.6%, +3.2 over the baseline).
 
 **The resulting picture:** there is a real trade-off. Multiple-choice QA wants *many frames*, sampled
 densely where the video is new. Grounding wants *temporal coverage and detailed frames* and, above all,
-better interval prediction, which a retrieval index outside the pruned memory can provide.
+better interval prediction; improvements must come from what the model sees and reasons over, not
+from post-processing its output.
 
 ---
 
@@ -145,7 +151,7 @@ is: **which frames should enter that bounded memory, and in what form?**
 | `grid N:S:dup` | Grid sampler where each grid frame is fed twice (one moment per Qwen token group) |
 | `keep r` (offline) | Offline pruning: after encoding uniform 64 frames, keep a fraction r of visual tokens |
 | HERMES / random / recent / stratified score | Which tokens pruning keeps: highest HERMES attention score; random; most recent; or an equal share of every frame, choosing each frame's highest-scoring tokens |
-| M3 | Retrieval-based boundary refinement of predicted intervals (Section 9.5) |
+| M3 | Retrieval-based boundary refinement of predicted intervals; post-processing, used only as a diagnostic (Section 9.5) |
 
 Results are written as **MCQ accuracy / grounding mIoU / grounding R@0.5**, all in %.
 
@@ -661,11 +667,21 @@ Grounding by how much of the evidence survived (0.2 fps, 6k):
 not from pruning. The bias is strongest for time and counting questions (ratio 0.4-0.5), whose evidence
 is long (43-77 s); location questions (12 s evidence) are less affected.
 
-### 9.5 Fixing interval extent: calibration and retrieval-based refinement (M3)
+### 9.5 Interval-extent corrections: a diagnostic, not a method
 
-**Why:** interval length is the largest grounding error for every method (Section 7.2), and prompting
-cannot fix it (7.5). We compare three training-free corrections, all evaluated with 2-fold
-cross-validation by video (fit on half of the videos, test on the other half, swap).
+> **Important:** the corrections in this section only post-process the predicted interval. They raise
+> grounding scores **without changing the model's answer**, which is often wrong. Example (video
+> `1064720965773119_start_0.0_end_378.277.mp4`, asked at 350 s): *"How long did I have the faucet on
+> before turning it off the first time?"* The model answers **"10 seconds"** with interval [23.5, 34.0];
+> the truth is about five minutes, [19, 331]. Refinement widens the interval to [23, 329] (IoU 0.03 to
+> 0.98), yet the answer stays wrong and now contradicts the interval. We therefore use these numbers
+> only to measure **how much of the grounding error is interval extent**, and do not propose them as
+> a method. Real improvements must change what the model perceives, so answers and intervals improve
+> together (see 9.7 for answer-aware evaluation).
+
+**Why measure it:** interval length is the largest grounding error for every method (Section 7.2), and
+prompting cannot fix it (7.5). Three corrections were evaluated with 2-fold cross-validation by video
+(fit on half of the videos, test on the other half, swap).
 
 **Designs:**
 1. **Fixed x4:** stretch every predicted interval 4x around its centre (no fitting).
@@ -694,16 +710,18 @@ grounding intervals.
 | Stream 0.2 fps, 4k | 23.9 / 21.9 | 34.5 / 33.5 | 34.2 / 30.9 | **36.1 / 35.6** | 35.9 / 35.4 |
 | Stream grid 16:16, 6k | 25.0 / 21.7 | 35.7 / 34.5 | 35.7 / 34.5 | **37.7 / 34.9** | 37.2 / 34.7 |
 
-**Findings:**
-- **M3 beats the fixed x4 widening in every setting**, by 1.4-5.9 mIoU with the 1 fps index and
-  0.7-5.1 mIoU with an index at the stream's own rate (0.2 fps). The largest gain is where pruning hurt
-  most (offline HERMES 10%: 23.3 to 35.9).
-- **Streaming with M3 (36.9 mIoU / 37.5 R@0.5 at 6k) beats uniform sampling with the fixed correction**
-  (33.3-35.7 mIoU), so a pruned memory plus a small index recovers and exceeds unpruned grounding.
-- The index is cheap: one 4096-d half-precision vector per frame (8 KB), about 1 MB for 10 minutes at
-  0.2 fps, compared with a 6k-token KV cache.
-- Caveat: the fitted gap often sits at the edge of the search range (40-60 s), so M3 behaves partly like
-  an adaptive widening; a sharper similarity signal (e.g. query-aware or finer features) is future work.
+**What the numbers say (as a diagnostic):**
+- **Interval extent accounts for 7-12 mIoU** in every setting: widening alone lifts streaming at 6k from
+  24.8 to 33.8 (x4) or 36.9 (M3).
+- **This headroom does not mean the model understood the event.** On the 87 questions where the
+  prediction covers at most 35% of a long event, IoU rises from 0.16 to 0.58 after refinement, but the
+  answers are unchanged, and for duration and counting questions they are mostly wrong ("10 seconds",
+  "2 times" when the truth is minutes or 10 times).
+- **Root cause:** the model points at a single temporal token group. At 0.2 fps a Qwen group spans two
+  frames 5 s apart, i.e. 10 s: 20% of streaming intervals are exactly 10 s long (10% with uniform 64),
+  and 78 of 191 duration questions are answered "10 seconds". The model reports the granularity it
+  sees in memory instead of the event's real extent, and its answer is built from that one moment.
+- Detailed cases (video paths, raw outputs, annotator intervals): `logs/phase10/m3_cases.txt`.
 
 ### 9.6 In progress (phase 10)
 
@@ -711,6 +729,64 @@ Running now, to test the coverage finding at harder budgets and on a second mode
 - Qwen3 offline pruning at 5% (random and stratified; HERMES done, above) and MCQ at 5%.
 - Qwen3 streaming at KV 2k, HERMES vs stratified.
 - Qwen2.5-VL-7B offline (uniform 64): no pruning, HERMES 25% / 10%, random 10%, stratified 25% / 10%.
+
+### 9.7 Evaluation with the official S-EMBER protocol
+
+mIoU and R@0.5 reward an interval even when the answer is wrong (Section 9.5). The S-EMBER paper
+([arXiv 2607.02689](https://arxiv.org/abs/2607.02689), [code](https://github.com/facebookresearch/S-EMBER))
+therefore also reports answer accuracy and a joint metric:
+- **Acc:** an LLM judge marks the free-text answer CORRECT if it is semantically equivalent to *any one*
+  of the annotators' answers.
+- **GQ@0.5 (grounded QA):** a question counts only if the answer is judged correct **and** the interval
+  has IoU >= 0.5 with the evidence.
+
+**Our implementation** (`logs/phase11/judge_grounding.py`): the official judge prompt, gold list and
+verdict parsing, copied unchanged from the released script (`logs/phase11/official/sember_official_judge.py`).
+The only difference is the judge model: the official script calls Gemini (`gemini-3.1-flash`), which
+needs an API key and sends the data to an external service; we use a local Qwen3.8-27B-FP8 (vLLM,
+temperature 0). The judge sees the model's answer text without its "Time:" interval. Absolute numbers
+may therefore differ from the paper's; comparisons between our configurations use the same judge.
+The paper's clean/overall accuracy and hallucination rate are not reproducible from the released code.
+
+Sanity check: on duration and counting questions the judge agrees with a deterministic rule-based check
+(`logs/phase11/rule_answer.py`) on 82% of questions; almost all disagreements are answers the lenient
+rule accepts and the judge rejects.
+
+Qwen3-VL-8B, 300 videos (475 grounding / 576 MCQ questions). Differences to the streaming baseline with
+95% paired-bootstrap CIs; one grounding question = 0.21 points.
+
+| Configuration | MCQ | mIoU | R@0.5 | **Acc** | **GQ@0.5** | Acc vs base | GQ@0.5 vs base |
+|---|---|---|---|---|---|---|---|
+| Uniform 32 (no pruning) | 25.0 | 27.5 | 26.7 | 13.3 | **5.3** | +0.8 [-2.1, +3.6] | +1.7 [-0.6, +4.2] |
+| Uniform 64 (no pruning) | 25.3 | 26.9 | 25.3 | 13.5 | 4.4 | +1.1 [-1.9, +4.0] | +0.8 [-1.3, +2.9] |
+| **Stream 0.2 fps, 6k (baseline)** | 25.7 | 24.8 | 24.4 | 12.4 | 3.6 | – | – |
+| Stream 0.2 fps, 4k | 25.0 | 23.9 | 21.9 | 11.8 | 3.8 | | |
+| Stream grid 32:8, 10.7k | 31.4 | 23.2 | 21.9 | 12.4 | 4.4 | +0.0 [-2.5, +2.5] | +0.8 [-1.3, +2.9] |
+| Stream `dup:0.2`, scale 0.7, 6k | 28.6 | 23.0 | 20.4 | 14.1 | 3.4 | +1.7 [-0.8, +4.2] | -0.2 [-2.1, +1.5] |
+| **Stream `dup:1.0:60,0.2`, scale 0.7, 10.7k** | **33.0** | 18.8 | 17.5 | **15.6** | 2.9 | **+3.2 [+0.2, +6.1]** | -0.6 [-2.7, +1.5] |
+| Offline uniform 64, HERMES 5% | 20.1 | 14.8 | 13.3 | 8.8 | 1.5 | -3.6 [-6.3, -1.1] | -2.1 [-4.0, -0.4] |
+| Offline uniform 64, random 5% | 26.7 | 25.3 | 22.9 | 10.7 | 3.4 | -1.7 [-4.2, +1.1] | -0.2 [-2.3, +1.7] |
+| Offline uniform 64, stratified 5% | 25.9 | 25.4 | 24.6 | 9.7 | 2.9 | -2.7 [-5.5, -0.2] | -0.6 [-2.7, +1.3] |
+
+All 70 Qwen3 grounding runs: `python3 logs/phase11/joint_metrics.py`.
+
+**Findings:**
+- **Grounded QA is very hard for every configuration.** Only 9-16% of open-ended answers are judged
+  correct, and GQ@0.5 is 1.5-5.5%: a correct answer with a well-placed interval is rare. mIoU and R@0.5
+  (20-29%) greatly overstate grounding quality.
+- **Answer accuracy follows MCQ, not mIoU.** The configuration with the best MCQ (`dup:1.0:60,0.2`,
+  33.0%) also has the best open-ended accuracy (15.6%, +3.2, CI excludes zero), although its mIoU is the
+  lowest of the streaming runs. Memory changes that let the model see more distinct moments improve
+  its answers; interval metrics alone would have hidden this.
+- **GQ@0.5 cannot yet separate the memory configurations** apart from collapse cases: most differences
+  are within +-2 points (about 10 questions) and all CIs include zero, except offline HERMES pruning at
+  5%, which clearly hurts both Acc and GQ@0.5. Separating configurations on grounded QA needs either
+  larger gains or more questions (the full benchmark has 9,448 QA pairs).
+- **Coverage-preserving pruning still matters under the official metric:** at 5% of tokens, random and
+  stratified keep GQ@0.5 near the baseline (-0.2, -0.6) while HERMES-score pruning collapses (-2.1).
+- The weak link is that correct answers rarely come with correct intervals, and wrong answers are the
+  majority. Improving grounded QA requires the model to both understand and localize the whole event,
+  which is where future memory designs should be judged.
 
 ---
 
@@ -778,15 +854,20 @@ and interval-correction results (M3) in Section 9.5.
 6. **Token pruning hurts grounding through lost temporal coverage.** Attention-based selection
    concentrates tokens on few frames; coverage-preserving (stratified) selection is robust, and random
    dropping of 90% of tokens costs under 1 mIoU. Event boundaries are not what gets lost.
-7. **A small retrieval index outside the pruned memory fixes interval extent (M3)**, beating a fixed
-   widening everywhere and lifting streaming grounding from 24.8 to 36.9 mIoU.
+7. **Interval extent is the largest grounding error, but post-processing is not a fix.** Widening
+   intervals (fixed x4 or M3) adds 7-12 mIoU while answers stay wrong. The model reasons from one
+   10-second token group; methods must change what it sees and reasons over, and grounding must be
+   scored together with answer correctness.
 
 ### Open questions and next steps
 
-- **Sharpen M3.** Its fitted gap often hits the search limit; query-aware similarity (text-to-frame) or
-  finer features could locate event edges more precisely. Also test M3 on Qwen2.5-VL.
-- **Coverage-aware pruning as a method.** Combine stratified selection with M3 and report
-  grounding-vs-budget curves against published pruning methods.
+- **Answer-aware grounding evaluation** (in progress, 9.7): score answer correctness for every
+  grounding run and report a joint metric (answer correct and interval overlapping the evidence).
+- **Fix the one-group reasoning at its source.** Test whether the model echoes the token-group span
+  (vary group spacing with 0.5 fps or `dup:` groups), then change what the model sees (memory
+  contents, group granularity, token selection) so answers and intervals cover the whole event.
+- **Coverage-aware pruning as a method.** Stratified selection keeps grounding at 5% of tokens; report
+  answer-aware grounding and MCQ versus budget against published pruning methods.
 - **Separate memories for separate tasks.** Since MCQ and grounding want different memory contents,
   test a hybrid: a dense, un-blended content memory next to a sparse, detailed "timeline" memory.
 - **Check generality beyond S-EMBER.** The repository already has StreamingBench scripts; the best
@@ -810,7 +891,8 @@ and interval-correction results (M3) in Section 9.5.
 | Grounding prompt styles | `video_qa/adapters.py` (`sember_grounding_prompt`) |
 | Offline pruning, pruning scores (hermes / random / recent / stratified) | `video_qa/hermes_vqa.py` (uniform branch), `inference/qwenvl_hermes.py` (`prune_kv_cache_by_attention`, `_rank_within_frames`) |
 | Retention snapshots | `inference/abstract_hermes.py` (`retention_snapshot`), `video_qa/hermes_vqa.py` |
-| Frame embedding index and boundary refinement (M3) | `logs/phase10/dump_frame_embeddings.py`, `logs/phase10/boundary_refine.py` |
+| Frame embedding index and boundary refinement (M3, diagnostic only) | `logs/phase10/dump_frame_embeddings.py`, `logs/phase10/boundary_refine.py` |
+| Answer correctness for grounding (rule-based and LLM judge) | `logs/phase11/rule_answer.py`, `logs/phase11/judge_grounding.py` |
 | Unit tests for schedules and the grid planner | `tests/test_sampling.py` |
 
 ### Configuration options (Hydra)

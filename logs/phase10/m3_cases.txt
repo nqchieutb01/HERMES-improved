@@ -1,0 +1,121 @@
+Setting: Qwen3-VL-8B, HERMES streaming 0.2 fps, KV 6k, surviving timestamps (run: results/qwen3_vl_8b/sember_grounding/time-count-location-fps0.2-kv6000-k0-attention_weighted-native-time-keepsurv-v300)
+M3: 1 fps frame index; tau/gap fitted on the other half of the videos: fold0 (0.5, 40), fold1 (0.7, 60)
+
+=== Case 1: M3 helps ===
+video        : /nfs-stor/chieu.nguyen/s-ember/videos/1064720965773119_start_0.0_end_378.277.mp4  (exists: True, length 378 s, Kitchen Dish Washing Session)
+question id  : af0daf12a9fb1a94f22cf6eba2c38b24497a4724d20d33d997bc8ffdfe7c410d
+category     : time_duration   asked at 350 s   (memory recency 331.0 s)
+question     : How long did I have the faucet on before turning it off the first time?
+model output : 'Answer: I had the faucet on for 10 seconds before turning it off the first time.\nTime: [23.5, 34.0]'
+gold answer  : You had the faucet running for about five minutes and ten seconds before turning it off for the first time.
+  annotator  : [19.0, 331.0] You had the faucet running for about five minutes and ten seconds before turning it off for the first time.  (Group C: optimize for contextually helpful details)
+  annotator  : [20.0, 349.0] You had the faucet on for about five minutes and twenty-nine seconds before turning it off the first time.  (Group B: balanced, “average-detail” answer)
+  annotator  : [20.0, 331.0] Approximately 5 minutes and 9 seconds.  (Group A: optimize for efficiency)
+gold interval: [19.0, 331.0]  (312 s)
+predicted    : [23.5, 34.0]  (10 s)  IoU 0.03
+after M3     : [23.0, 329.0]  (306 s)  IoU 0.98   (tau, gap) = (0.7, 60)
+view gold clip: ffplay -ss 14 -t 322 /nfs-stor/chieu.nguyen/s-ember/videos/1064720965773119_start_0.0_end_378.277.mp4
+
+=== Case 2: M3 helps ===
+video        : /nfs-stor/chieu.nguyen/s-ember/videos/1059324829383600_start_0.0_end_600.191.mp4  (exists: True, length 600 s, Coffee Station Demonstration)
+question id  : 4E5C5F4BAC088B15704AD6BB650BC9026EE72F87B56E23318B30911EFE8FD65A
+category     : counting_objects_events   asked at 70 s   (memory recency 70.0 s)
+question     : How many times have I turned to look at the woman on my right so far?
+model output : 'Answer: 2 times.\nTime: [47.5, 53.0]'
+gold answer  : You have turned to look at the woman on your right 10 times so far.
+  annotator  : [0.0, 70.0] You have turned to look at the woman on your right 10 times so far.  (Group C: optimize for contextually helpful details)
+  annotator  : [1.0, 70.0] 10 times.  (Group A: optimize for efficiency)
+  annotator  : [0.0, 70.0] You have looked at the woman 10 times so far.  (Group B: balanced, “average-detail” answer)
+gold interval: [0.0, 70.0]  (70 s)
+predicted    : [47.5, 53.0]  (6 s)  IoU 0.08
+after M3     : [0.0, 66.0]  (66 s)  IoU 0.94   (tau, gap) = (0.7, 60)
+view gold clip: ffplay -ss 0 -t 80 /nfs-stor/chieu.nguyen/s-ember/videos/1059324829383600_start_0.0_end_600.191.mp4
+
+=== Case 3: M3 helps ===
+video        : /nfs-stor/chieu.nguyen/s-ember/videos/1050933950528193_start_0.0_end_600.08.mp4  (exists: True, length 600 s, Clothes Organizing Session)
+question id  : BF0E02F33F8BE3E88760040A40F1E431E454A858DEF299E165C37A9915D950E1
+category     : time_duration   asked at 88 s   (memory recency 84.0 s)
+question     : How long did I have the drawer open before I took out the black hoodie?
+model output : 'Answer: The drawer was open for approximately 10 seconds before the black hoodie was taken out.\nTime: [2.5, 12.5]'
+gold answer  : About 1 minute 23 seconds.
+  annotator  : [4.0, 88.0] About 1 minute 23 seconds.  (Group A: optimize for efficiency)
+  annotator  : [4.0, 88.0] You had the drawer open for about 1 minute and 22 seconds before you removed the black hoodie.  (Group B: balanced, “average-detail” answer)
+gold interval: [4.0, 88.0]  (84 s)
+predicted    : [2.5, 12.5]  (10 s)  IoU 0.10
+after M3     : [0.0, 88.0]  (88 s)  IoU 0.95   (tau, gap) = (0.5, 40)
+view gold clip: ffplay -ss 0 -t 94 /nfs-stor/chieu.nguyen/s-ember/videos/1050933950528193_start_0.0_end_600.08.mp4
+
+=== Case 4: M3 helps ===
+video        : /nfs-stor/chieu.nguyen/s-ember/videos/1124962206170376_start_0.0_end_388.094.mp4  (exists: True, length 388 s, Wardrobe Organization)
+question id  : be08199e5e04d8eb4a285df9a46ce9f78c48935c59871e8c5a8fe8b32ef45e65
+category     : counting_objects_events   asked at 171 s   (memory recency 171.0 s)
+question     : How many items have I hung by this point?
+model output : 'Answer: 5 items.\nTime: [160, 170]'
+gold answer  : Seven items.
+  annotator  : [0.0, 171.0] Seven items.  (Group B: balanced, “average-detail” answer)
+  annotator  : [11.0, 171.0] You have hung 7 pieces of clothing, most of which were cardigans.  (Group C: optimize for contextually helpful details)
+  annotator  : [0.0, 171.0] 7.  (Group A: optimize for efficiency)
+gold interval: [0.0, 171.0]  (171 s)
+predicted    : [160.0, 170.0]  (10 s)  IoU 0.06
+after M3     : [16.0, 171.0]  (155 s)  IoU 0.91   (tau, gap) = (0.5, 40)
+view gold clip: ffplay -ss 0 -t 181 /nfs-stor/chieu.nguyen/s-ember/videos/1124962206170376_start_0.0_end_388.094.mp4
+
+=== Case 5: M3 helps ===
+video        : /nfs-stor/chieu.nguyen/s-ember/videos/1001802305461155_start_0.0_end_599.978.mp4  (exists: True, length 600 s, Manga And Anime Store Browsing)
+question id  : 652109A273B750E3E534978CBF79351FAB5F5A7D7BE0D9B9A2BA00089615C3C7
+category     : location_trace   asked at 566 s   (memory recency 143.0 s)
+question     : Where did I see a cover with the title Sportiva written on it?
+model output : 'Answer: On a book cover displayed in the store.\nTime: [432.5, 442.5]'
+gold answer  : On the bookshelf labeled Anime Art Books.
+  annotator  : [423.0, 473.0] On the bookshelf labeled Anime Art Books.  (Group A: optimize for efficiency)
+  annotator  : [419.0, 478.0] In the Anime Art Book section, numbered D02-02, there were some books with "Sportiva" written on the covers. They were on the top shelf toward the left side of the rack.  (Group C: optimize for contextually helpful details)
+gold interval: [423.0, 473.0]  (50 s)
+predicted    : [432.5, 442.5]  (10 s)  IoU 0.20
+after M3     : [428.0, 497.0]  (69 s)  IoU 0.61   (tau, gap) = (0.7, 60)
+view gold clip: ffplay -ss 418 -t 60 /nfs-stor/chieu.nguyen/s-ember/videos/1001802305461155_start_0.0_end_599.978.mp4
+
+=== Case 6: M3 helps ===
+video        : /nfs-stor/chieu.nguyen/s-ember/videos/1193236635806968_start_0.0_end_599.997.mp4  (exists: True, length 600 s, Closet Organizing Session)
+question id  : E11C525A6B09E24FE6BB9619E1A6A3DB4218B64B7B664F0B8072A1381F47196E
+category     : location_trace   asked at 314 s   (memory recency 307.0 s)
+question     : Where did I first see the dog before it was in the closet?
+model output : 'Answer: On the bed.\nTime: [12.5, 22.5]'
+gold answer  : You first saw the dog on the white blanket on the mattress in the bedroom.
+  annotator  : [7.0, 224.0] You first saw the dog on the white blanket on the mattress in the bedroom.  (Group C: optimize for contextually helpful details)
+  annotator  : [21.0, 29.0] On the air mattress.  (Group A: optimize for efficiency)
+  annotator  : [7.0, 300.0] You first saw the dog laying on a white blanket on your bed.  (Group B: balanced, “average-detail” answer)
+gold interval: [7.0, 224.0]  (217 s)
+predicted    : [12.5, 22.5]  (10 s)  IoU 0.05
+after M3     : [7.0, 45.0]  (38 s)  IoU 0.18   (tau, gap) = (0.7, 60)
+view gold clip: ffplay -ss 2 -t 227 /nfs-stor/chieu.nguyen/s-ember/videos/1193236635806968_start_0.0_end_599.997.mp4
+
+=== Case 7: M3 hurts ===
+video        : /nfs-stor/chieu.nguyen/s-ember/videos/1062216499023237_start_0.0_end_320.433.mp4  (exists: True, length 320 s, Browsing Fitness DVDs)
+question id  : 8de63cdc40e17406e3bbcfdc86829c681ef74b53b1c40ba2d7a8a5f736bc442d
+category     : time_duration   asked at 105 s   (memory recency 33.0 s)
+question     : How long was I holding the Jillian Michaels DVD?
+model output : 'Answer: I was holding the Jillian Michaels DVD for 10 seconds.\nTime: [78.5, 88.5]'
+gold answer  : You held the DVD for approximately 15 seconds while looking at the front cover and the back cover.
+  annotator  : [72.0, 105.0] You held the DVD for approximately 15 seconds while looking at the front cover and the back cover.  (Group C: optimize for contextually helpful details)
+  annotator  : [70.0, 95.0] You held the Jillian Michaels DVD for twenty-two seconds.  (Group B: balanced, “average-detail” answer)
+  annotator  : [73.0, 92.0] 17 seconds.  (Group A: optimize for efficiency)
+gold interval: [72.0, 105.0]  (33 s)
+predicted    : [78.5, 88.5]  (10 s)  IoU 0.30
+after M3     : [6.0, 89.0]  (83 s)  IoU 0.17   (tau, gap) = (0.5, 40)
+view gold clip: ffplay -ss 67 -t 43 /nfs-stor/chieu.nguyen/s-ember/videos/1062216499023237_start_0.0_end_320.433.mp4
+
+=== Case 8: M3 hurts ===
+video        : /nfs-stor/chieu.nguyen/s-ember/videos/1028607528755073_start_0.0_end_305.962.mp4  (exists: True, length 306 s, Street Vlogging Walk)
+question id  : adb790b3180bd5669d3b7e618e01bf38aee0fab7bb62aed43894192a07c9d493
+category     : time_duration   asked at 182 s   (memory recency 158.0 s)
+question     : How long did it take me to get to East 43rd Street after passing the first police car?
+model output : 'Answer: It took approximately 10 seconds to reach East 43rd Street after passing the first police car.\nTime: [58.2, 68.2]'
+gold answer  : It took you about 38 seconds after passing the first police car to reach East 43rd Street, which was perpendicular to the direction you were walking.
+  annotator  : [24.0, 67.0] It took you about 38 seconds after passing the first police car to reach East 43rd Street, which was perpendicular to the direction you were walking.  (Group C: optimize for contextually helpful details)
+  annotator  : [23.0, 64.0] Approximately 35 seconds.  (Group A: optimize for efficiency)
+  annotator  : [27.0, 63.0] It took you 36 seconds to get to East 43rd Street after you passed the first police car.  (Group B: balanced, “average-detail” answer)
+gold interval: [24.0, 67.0]  (43 s)
+predicted    : [58.2, 68.2]  (10 s)  IoU 0.20
+after M3     : [58.2, 149.0]  (91 s)  IoU 0.07   (tau, gap) = (0.7, 60)
+view gold clip: ffplay -ss 19 -t 53 /nfs-stor/chieu.nguyen/s-ember/videos/1028607528755073_start_0.0_end_305.962.mp4
+
