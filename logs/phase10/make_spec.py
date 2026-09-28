@@ -44,8 +44,10 @@ def runs():
         out += [offline("q3", task, s, 0.05) for s in ("hermes", "random", "stratified")]
         out += [stream("q3", task, s, 2000) for s in ("hermes", "stratified")]
         out += [offline("q25", task, None, None)]
-        out += [offline("q25", task, s, r) for s, r in (("hermes", 0.25), ("hermes", 0.1), ("random", 0.1),
-                                                       ("stratified", 0.25), ("stratified", 0.1))]
+        # Qwen2.5-VL grounding is at the floor without timestamp text (4.9 mIoU unpruned): prune MCQ only.
+        if task == "mcq":
+            out += [offline("q25", task, s, r) for s, r in (("hermes", 0.25), ("hermes", 0.1), ("random", 0.1),
+                                                           ("stratified", 0.25), ("stratified", 0.1))]
     return out
 
 

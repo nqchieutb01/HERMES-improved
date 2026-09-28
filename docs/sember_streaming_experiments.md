@@ -593,7 +593,7 @@ Spatial pooling (lower decode resolution) is included at roughly matched token c
 | 50% | 26.9 / 28.4 / 26.7 | 26.0 / 28.6 / 26.9 | – | 26.2 / 25.7 / 24.0 (scale 0.7) |
 | 25% | 26.2 / 25.9 / 24.0 | 26.7 / 27.2 / 25.3 | 26.0 / 27.0 / 25.9 | 27.3 / 20.8 / 18.7 (scale 0.5) |
 | 10% | **21.5** / **23.3** / 23.2 | 27.4 / 26.1 / 23.6 | 26.7 / 25.9 / 24.2 | 25.0 / 21.8 / 20.8 (scale 0.35) |
-| 5% | pending / **14.8** / 13.3 | pending | pending | – |
+| 5% | **20.1** / **14.8** / 13.3 | 26.7 / 25.3 / 22.9 | 25.9 / 25.4 / 24.6 | – |
 
 (MCQ / mIoU / R@0.5, %.) Keeping only the most recent 25% of tokens gives 23.1 / 18.5 / 16.4.
 
@@ -601,7 +601,8 @@ Spatial pooling (lower decode resolution) is included at roughly matched token c
 - **Grounding does not break first.** Randomly dropping 90% of tokens costs only 0.8 mIoU and does not
   change MCQ: video tokens are highly redundant.
 - **Attention-based selection is the problem.** At 10%, the HERMES score is worse than random on both
-  tasks (-2.8 mIoU, -5.9 MCQ), and at 5% grounding collapses to 14.8 mIoU. Attention concentrates the
+  tasks (-2.8 mIoU, -5.9 MCQ), and at 5% it collapses (MCQ 20.1, mIoU 14.8) while random and stratified
+  stay near the unpruned level (25.3-25.4 mIoU with 95% of tokens dropped). Attention concentrates the
   budget on a few frames and loses temporal coverage. Keeping only recent tokens is catastrophic,
   confirming that coverage over time is what matters.
 - **Stratified selection is as robust as random**, and principled: it guarantees coverage while still
@@ -617,10 +618,11 @@ Spatial pooling (lower decode resolution) is included at roughly matched token c
 | Stratified | 6k | 24.3 | 24.6 | 23.2 |
 | HERMES score | 4k | 25.0 | 23.9 | 21.9 |
 | Stratified | 4k | 24.8 | **24.6** | **22.7** |
-| HERMES score / stratified | 2k | pending | pending | pending |
+| HERMES score | 2k | 24.5 | 22.5 | 19.8 |
+| Stratified | 2k | 24.3 | 22.7 | 19.2 |
 
-**Finding:** in streaming, stratified selection helps grounding when the budget is tight (4k: +0.7
-mIoU, +0.8 R@0.5) and is neutral at 6k, at a small MCQ cost. The gap is smaller than offline because
+**Finding:** in streaming, the choice of score matters little: stratified helps grounding slightly at
+4k (+0.7 mIoU, +0.8 R@0.5) and is neutral at 6k and 2k, at a small MCQ cost. The gap is smaller than offline because
 streaming compresses incrementally, so every frame is still represented when it arrives.
 
 ### 9.3 What survives pruning? (phase 9, A2)
@@ -723,12 +725,24 @@ grounding intervals.
   sees in memory instead of the event's real extent, and its answer is built from that one moment.
 - Detailed cases (video paths, raw outputs, annotator intervals): `logs/phase10/m3_cases.txt`.
 
-### 9.6 In progress (phase 10)
+### 9.6 Does coverage-preserving pruning transfer to another model? (phase 10, Qwen2.5-VL-7B)
 
-Running now, to test the coverage finding at harder budgets and on a second model:
-- Qwen3 offline pruning at 5% (random and stratified; HERMES done, above) and MCQ at 5%.
-- Qwen3 streaming at KV 2k, HERMES vs stratified.
-- Qwen2.5-VL-7B offline (uniform 64): no pruning, HERMES 25% / 10%, random 10%, stratified 25% / 10%.
+**Design:** Qwen2.5-VL-7B, uniform 64 frames, offline pruning (MCQ only: Qwen2.5-VL has no text
+timestamps and its grounding is near the floor, 4.9 mIoU with no pruning, like LLaVA).
+
+| Keep | HERMES score | Random | Stratified |
+|---|---|---|---|
+| 100% (no pruning) | 25.0 | | |
+| 25% | 26.6 | – | 25.0 |
+| 10% | **20.8** | **21.0** | **25.9** |
+
+(MCQ accuracy, %.)
+
+**Finding:** on Qwen2.5-VL, at 10% of tokens *both* attention-based and random selection collapse
+(about -4 points), while stratified selection keeps the unpruned accuracy. Attention alone loses
+temporal coverage; random alone keeps coverage but not the informative tokens within each frame.
+**Stratified selection (an equal share of every frame, filled with that frame's most salient tokens) is
+the only score robust on both models.**
 
 ### 9.7 Evaluation with the official S-EMBER protocol
 
@@ -883,9 +897,10 @@ and interval-correction results (M3) in Section 9.5.
 5. **Grounding behaves differently from MCQ.** It prefers fewer, detailed frames, and its dominant error
    (intervals 3-4x too short) is a model bias shared by all methods, with or without pruning, and
    resists prompting.
-6. **Token pruning hurts grounding through lost temporal coverage.** Attention-based selection
-   concentrates tokens on few frames; coverage-preserving (stratified) selection is robust, and random
-   dropping of 90% of tokens costs under 1 mIoU. Event boundaries are not what gets lost.
+6. **Token pruning hurts through lost temporal coverage.** Attention-based selection concentrates tokens
+   on few frames and collapses at aggressive budgets (Qwen3 at 5%, Qwen2.5-VL at 10%). Stratified
+   selection (equal share per frame, most salient tokens within each) is the only score robust on both
+   models. Event boundaries are not what gets lost.
 7. **Interval extent is the largest grounding error, but post-processing is not a fix.** Widening
    intervals (fixed x4 or M3) adds 7-12 mIoU while answers stay wrong. The model reasons from one
    10-second token group; methods must change what it sees and reasons over, and grounding must be
