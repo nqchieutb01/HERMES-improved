@@ -271,6 +271,12 @@ def inference_command(
         command.extend(
             ["--model_path", str(_repo_path(model_path, _repo_root(cfg)))]
         )
+    if float(cfg.run.get("offline_keep_ratio", 1.0)) != 1.0:
+        command.extend(["--offline_keep_ratio", str(cfg.run.offline_keep_ratio)])
+    if cfg.run.get("prune_score", "hermes") != "hermes":
+        command.extend(["--prune_score", str(cfg.run.prune_score)])
+    if cfg.run.get("retention_snapshot"):
+        command.extend(["--retention_snapshot", "true"])
     if float(cfg.run.get("frame_scale", 1.0)) != 1.0:
         command.extend(["--frame_scale", str(cfg.run.frame_scale)])
     if cfg.run.get("sample_schedule"):

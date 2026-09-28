@@ -710,6 +710,24 @@ class QwenVL_Hermes(Qwen2_5_VLForConditionalGeneration, Abstract_Hermes):
         torch.cuda.empty_cache()
 
     @torch.inference_mode()
+    def _rank_within_frames(self, score, start_idx, layer_idx):
+        """Score in [0, 1] = 1 - (rank of the token within its frame) / (tokens in that frame).
+
+        The HERMES score only breaks ties, so selection spreads over frames in proportion to their
+        size, keeping each frame's most salient tokens. Tokens without a frame (text) keep their score.
+        """
+        if self._token_frame_ids_per_layer is None:
+            raise RuntimeError("stratified pruning needs token provenance")
+        ids = self._token_frame_ids_per_layer[layer_idx][start_idx:start_idx + score.numel()].to(score.device)
+        out = score.clone().float()
+        for frame in torch.unique(ids[ids >= 0]).tolist():
+            idx = torch.nonzero(ids == frame).flatten()
+            order = torch.argsort(score[idx].float(), descending=True)
+            ranks = torch.empty_like(order)
+            ranks[order] = torch.arange(order.numel(), device=order.device)
+            out[idx] = 1.0 - ranks.float() / max(order.numel(), 1) + 1e-3 * score[idx].float()
+        return out.to(score.dtype)
+
     def apply_kv_cache_pruning_strict(self, keep_indices_all_layers):
         if self.kv_cache is None:
             logger.warning("No KV-Cache to prune")
@@ -884,6 +902,22 @@ class QwenVL_Hermes(Qwen2_5_VLForConditionalGeneration, Abstract_Hermes):
                 refined_scores[i] = (1 - gamma) * score_current + gamma * score_next_interp
             else:
                 refined_scores[i] = (1 - gamma) * score_current + gamma * score_next
+
+        score_mode = getattr(self, "prune_score", "hermes")
+        if score_mode == "random":
+            gen = torch.Generator(device="cpu").manual_seed(2024 + self.total_processed_frames)
+            refined_scores = [torch.rand(s.shape, generator=gen).to(s.device, s.dtype) for s in refined_scores]
+        elif score_mode == "recent":
+            refined_scores = [torch.linspace(0, 1, s.numel(), device=s.device, dtype=s.dtype) for s in refined_scores]
+        elif score_mode == "stratified":
+            # Coverage-preserving saliency: rank tokens within their source frame, so a top-k keeps
+            # about the same share of every frame, choosing each frame's most salient tokens.
+            refined_scores = [
+                self._rank_within_frames(s, layer_configs[i]["visual_start_idx"], i)
+                for i, s in enumerate(refined_scores)
+            ]
+        elif score_mode != "hermes":
+            raise ValueError(f"unknown prune_score {score_mode!r}")
 
         if evict_masks is not None:
             # Evicted frames (GridPlan thinning) lose to every other token, and the budget is

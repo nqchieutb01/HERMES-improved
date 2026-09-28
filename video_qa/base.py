@@ -419,6 +419,24 @@ def work(QA_CLASS):
         help="Incremental FPS stream or fixed-count uniform context per question",
     )
     parser.add_argument(
+        "--offline_keep_ratio",
+        type=float,
+        default=1.0,
+        help="Uniform sampling only: prune once after encoding, keeping this fraction of visual tokens",
+    )
+    parser.add_argument(
+        "--prune_score",
+        choices=("hermes", "random", "recent", "stratified"),
+        default="hermes",
+        help="Token score used by compression: HERMES attention+recency, random, or most recent",
+    )
+    parser.add_argument(
+        "--retention_snapshot",
+        type=str2bool,
+        default=False,
+        help="Write per-question token retention per frame to retention-<chunk>.jsonl (streaming only)",
+    )
+    parser.add_argument(
         "--frame_scale",
         type=float,
         default=1.0,
@@ -622,6 +640,15 @@ def work(QA_CLASS):
     if args.frame_scale <= 0:
         parser.error("frame_scale must be positive")
     analyzer.frame_scale = args.frame_scale
+    analyzer.retention_snapshot = args.retention_snapshot
+    if not 0 < args.offline_keep_ratio <= 1:
+        parser.error("offline_keep_ratio must be in (0, 1]")
+    analyzer.offline_keep_ratio = args.offline_keep_ratio
+    videoqa_model.prune_score = args.prune_score
+    if args.prune_score == "stratified":
+        videoqa_model.force_token_provenance = True
+    if args.retention_snapshot:
+        videoqa_model.force_token_provenance = True
     if not args.sample_schedule:
         analyzer.sample_schedule = None
     elif args.sample_schedule.startswith("dup:"):

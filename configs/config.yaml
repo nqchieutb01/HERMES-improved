@@ -23,6 +23,12 @@ run:
   sample_schedule: null
   # Decode frames at this fraction of source resolution (1.0 = native); fewer visual tokens per frame.
   frame_scale: 1.0
+  # Log per-question token retention per streamed frame (retention-<chunk>.jsonl).
+  retention_snapshot: false
+  # Offline pruning (uniform sampling): keep this fraction of visual tokens after encoding.
+  offline_keep_ratio: 1.0
+  # Compression token score: hermes (attention + recency), random, or recent.
+  prune_score: hermes
   kv_size: 6000
   debug: false
   encode_chunk_size: 16

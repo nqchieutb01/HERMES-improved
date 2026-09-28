@@ -95,6 +95,17 @@ class HermesVQA(BaseVQA):
                     if hasattr(self.qa_model, 'next_frame_times'):
                         self.qa_model.next_frame_times = self.last_uniform_frame_times[start:stop]
                     self.qa_model.encode_video_chunk(question_video[start:stop])
+                keep_ratio = float(getattr(self, 'offline_keep_ratio', 1.0))
+                if keep_ratio < 1.0:
+                    # Offline token pruning: one compression pass over all encoded frames,
+                    # keeping keep_ratio of the visual tokens (the budget counts visual tokens).
+                    lengths = self.qa_model._get_cache_seq_len_per_layer()
+                    visual = max(lengths) - self.qa_model.visual_start_idx
+                    full_budget = self.qa_model.kv_size
+                    self.qa_model.kv_size = max(1, int(keep_ratio * visual))
+                    print(f"Offline pruning: keeping {self.qa_model.kv_size} of {visual} visual tokens")
+                    self.qa_model.predict_and_compress()
+                    self.qa_model.kv_size = full_budget
             else:
                 if 'end_time' in sample and stream_frame_times is not None:
                     end_frame_idx = bisect.bisect_left(stream_frame_times, sample['end_time'])
@@ -139,6 +150,13 @@ class HermesVQA(BaseVQA):
                         logger.info(f"Triggering question prediction and KV compression")
                         self.qa_model.predict_and_compress()
                         self.qa_model.evict_frame_ids = None
+
+            # Memory at question time: tokens kept per streamed frame (for retention analysis).
+            snapshot = (
+                self.qa_model.retention_snapshot()
+                if getattr(self, 'retention_snapshot', False) and frame_sampling == 'incremental'
+                else None
+            )
 
             if 'choices' in sample:
                 choices = sample['choices']
@@ -210,6 +228,20 @@ class HermesVQA(BaseVQA):
                 record_entry['answers_json'] = json.dumps(
                     sample.get('answers', []), ensure_ascii=False
                 )
+
+            if snapshot is not None:
+                times = (
+                    stream_frame_times[:current_frame_idx] if stream_frame_times is not None
+                    else [i / float(self.sample_fps) for i in range(current_frame_idx)]
+                )
+                with open(os.path.join(self.save_dir, f"retention-{self.chunk_idx}.jsonl"), "a") as out:
+                    out.write(json.dumps({
+                        "video_id": video_sample['video_id'],
+                        "question_id": sample.get('question_id'),
+                        "question_time": sample.get('question_time', sample.get('end_time')),
+                        "frame_times": times,
+                        **snapshot,
+                    }) + "\n")
 
             if selected_frame_indices is not None:
                 record_entry['frame_sampling'] = 'uniform'

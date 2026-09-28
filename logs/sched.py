@@ -197,12 +197,20 @@ while True:
                 continue
             c["slot"]["running"] -= 1
             csv_path = f"{run['save_dir']}/{run['chunks']}_{c['idx']}.csv"
+            if not os.path.exists(csv_path):
+                # NFS can cache a stale directory listing on the login node; give it a moment and
+                # re-list before treating a finished chunk as failed.
+                time.sleep(15)
+                os.listdir(run["save_dir"])
             if os.path.exists(csv_path) and os.path.getsize(csv_path) > 0:
                 c["state"] = "done"
                 log(f"done {run['name']} chunk {c['idx']}")
             else:
                 tail = open(f"{run['save_dir']}/inference-{c['idx']}.log", errors="ignore").read()[-600:]
-                if "job submit limit" in tail or "Unable to allocate resources" in tail:
+                if "timeout waiting for task launch" in tail or "aborted before step completely launched" in tail:
+                    # The node never started the task: not the chunk's fault, so it costs no attempt.
+                    c["attempts"] -= 1
+                elif "job submit limit" in tail or "Unable to allocate resources" in tail:
                     # Slurm refused the submission: not the chunk's fault.
                     c["attempts"] -= 1
                     c["slot"]["cooldown_until"] = time.time() + SUBMIT_LIMIT_COOLDOWN

@@ -145,6 +145,28 @@ class Abstract_Hermes:
         self._token_frame_ids_per_layer = None
         self._token_frame_summary_scores_per_layer = None
         self._frame_summary_specs_per_layer = None
+        self._encoded_tokens_per_frame = {}
+
+    def retention_snapshot(self):
+        """Per-frame token retention in the current cache, averaged over layers.
+
+        Returns ``{"encoded": {frame: tokens}, "kept": {frame: mean kept visual tokens},
+        "time_kept": {group_first_frame: mean kept timestamp tokens}}``; None when provenance is off.
+        """
+        if not self.token_provenance_enabled or self._token_frame_ids_per_layer is None:
+            return None
+        num_layers = len(self._token_frame_ids_per_layer)
+        kept, time_kept = Counter(), Counter()
+        for ids in self._token_frame_ids_per_layer:
+            visual = ids[ids >= 0]
+            kept.update(Counter(visual.tolist()))
+            time_ids = ids[is_time_token(ids)]
+            time_kept.update(Counter(time_token_group_frame(time_ids).tolist()))
+        return {
+            "encoded": dict(getattr(self, "_encoded_tokens_per_frame", {})),
+            "kept": {f: round(n / num_layers, 2) for f, n in sorted(kept.items())},
+            "time_kept": {f: round(n / num_layers, 2) for f, n in sorted(time_kept.items())},
+        }
 
     def _initialize_token_frame_ids(self, cache_lengths):
         """Initialize provenance for the text-only cache (-1 means text)."""
@@ -166,6 +188,11 @@ class Abstract_Hermes:
         frame_ids = torch.as_tensor(frame_ids, dtype=torch.long, device="cpu")
         if self._token_frame_ids_per_layer is None:
             raise RuntimeError("Token-frame provenance was not initialized")
+        encoded = getattr(self, "_encoded_tokens_per_frame", None)
+        if encoded is None:
+            encoded = self._encoded_tokens_per_frame = {}
+        for frame, n in Counter(frame_ids[frame_ids >= 0].tolist()).items():
+            encoded[frame] = encoded.get(frame, 0) + n
         self._token_frame_ids_per_layer = [
             torch.cat((ids, frame_ids), dim=0)
             for ids in self._token_frame_ids_per_layer
