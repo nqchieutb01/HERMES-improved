@@ -6,7 +6,7 @@ what it found, and how each result shaped the next step. It is written for reade
 followed the project day to day.
 
 All experiments, code and analysis scripts live in this repository (see
-[Reproducing the results](#10-reproducing-the-results)).
+[Reproducing the results](#12-reproducing-the-results)).
 
 ---
 
@@ -19,9 +19,11 @@ All experiments, code and analysis scripts live in this repository (see
 5. [Chapter 2: Where does streaming lose?](#5-chapter-2-where-does-streaming-lose)
 6. [Chapter 3: Changing how frames are sampled (rounds 1-4)](#6-chapter-3-changing-how-frames-are-sampled-rounds-14)
 7. [Chapter 4: Explaining the gains and the losses (phase 7)](#7-chapter-4-explaining-the-gains-and-the-losses-phase-7)
-8. [All results in one table](#8-all-results-in-one-table)
-9. [Conclusions and open questions](#9-conclusions-and-open-questions)
-10. [Reproducing the results](#10-reproducing-the-results)
+8. [Chapter 5: Combining the MCQ wins (round 8)](#8-chapter-5-combining-the-mcq-wins-round-8)
+9. [Chapter 6: Temporal grounding under token pruning (phases 9-10)](#9-chapter-6-temporal-grounding-under-token-pruning-phases-910)
+10. [All results in one table](#10-all-results-in-one-table)
+11. [Conclusions and open questions](#11-conclusions-and-open-questions)
+12. [Reproducing the results](#12-reproducing-the-results)
 
 ---
 
@@ -39,8 +41,9 @@ questions asked early in a video.
    has seen 12 frames while uniform sampling has 32-64. Streaming loses by 10-19 points there and wins
    after about 5 minutes.
 2. **Sampling densely early fixes multiple-choice QA.** Early-dense schedules and a new
-   *grid-thinned* sampler raise Qwen3 MCQ accuracy from **25.7% to 31.4-31.9%**, about 6 points above
-   both the streaming baseline and uniform sampling (95% CI of the gain: +2.4 to +9.0). This costs about
+   *grid-thinned* sampler raise Qwen3 MCQ accuracy from **25.7% to 31.4-33.0%**, 6-8 points above
+   both the streaming baseline and uniform sampling. The best configuration (`dup:1.0:60,0.2` at 0.7x
+   resolution, KV 10.7k) reaches **33.0%** (+7.3, 95% CI +3.6 to +10.8). Grid 32:8 gets 31.4% for about
    1.3x the baseline's GPU time.
 3. **Part of the gain comes from a Qwen-specific effect.** Qwen3 merges every two consecutive frames
    into one set of tokens. At 0.2 fps those two frames are 5 s apart, so every token group blends two
@@ -49,13 +52,21 @@ questions asked early in a video.
 4. **Grounding does not improve.** No streaming variant beats the 0.2 fps baseline on temporal
    grounding. Grounding gets worse as more frames share the budget, and it needs detailed frames.
 5. **Grounding's largest error is interval length, not memory.** Every method, including uniform
-   sampling, predicts intervals 3-4x shorter than the annotated evidence. Correcting lengths after the
-   fact adds 7-10 mIoU to every method, far more than any memory change. Asking for full-length
-   intervals in the prompt does not work.
+   sampling, predicts intervals 3-4x shorter than the annotated evidence. This is a model bias, present
+   with or without pruning. Correcting lengths after the fact adds 7-10 mIoU to every method, far more
+   than any memory change. Asking for full-length intervals in the prompt does not work.
+6. **Under token pruning, grounding suffers from lost temporal coverage, not lost boundaries.**
+   Randomly dropping 90% of visual tokens costs only 0.8 mIoU, but attention-based selection (HERMES
+   score) concentrates tokens on few frames and collapses at aggressive budgets (14.8 mIoU at 5%).
+   Selection that keeps an equal share of every frame ("stratified") is robust.
+7. **Retrieval-based boundary refinement (M3) is the best grounding fix.** A tiny per-frame embedding
+   index kept outside the KV cache lets each predicted interval grow to the full extent of its event.
+   It beats a fixed x4 widening in every setting, taking streaming grounding from 24.8 to **36.9 mIoU**
+   (37.5 R@0.5), above uniform sampling with the fixed x4 correction (33.3-35.7 mIoU).
 
 **The resulting picture:** there is a real trade-off. Multiple-choice QA wants *many frames*, sampled
-densely where the video is new. Grounding wants *fewer, detailed frames* and, above all, better
-interval prediction.
+densely where the video is new. Grounding wants *temporal coverage and detailed frames* and, above all,
+better interval prediction, which a retrieval index outside the pruned memory can provide.
 
 ---
 
@@ -131,6 +142,10 @@ is: **which frames should enter that bounded memory, and in what form?**
 | `dup:<schedule>` | Each sampled frame is fed twice in a row, so a Qwen token group holds one moment (Section 7.6) |
 | `scale 0.7`, `0.5` | Frames decoded at 0.7x or 0.5x resolution (about 1/2 or 1/4 of the tokens) |
 | `full_span` | Grounding prompt that also asks for the interval to cover the whole event |
+| `grid N:S:dup` | Grid sampler where each grid frame is fed twice (one moment per Qwen token group) |
+| `keep r` (offline) | Offline pruning: after encoding uniform 64 frames, keep a fraction r of visual tokens |
+| HERMES / random / recent / stratified score | Which tokens pruning keeps: highest HERMES attention score; random; most recent; or an equal share of every frame, choosing each frame's highest-scoring tokens |
+| M3 | Retrieval-based boundary refinement of predicted intervals (Section 9.5) |
 
 Results are written as **MCQ accuracy / grounding mIoU / grounding R@0.5**, all in %.
 
@@ -514,7 +529,192 @@ same as the baseline**, and scale 0.7 alone was shown to be harmless (7.3).
 
 ---
 
-## 8. All results in one table
+## 8. Chapter 5: Combining the MCQ wins (round 8)
+
+**Why:** the two best MCQ ideas were separate: grid thinning (grid 32:8, 31.4% at 10.7k) and
+un-blended frame pairs (`dup:1.0:60,0.2`, 31.9% at 6k). If their gains add up, one configuration
+should exceed both.
+
+**Design:** a new grid mode `grid:N:S:dup` feeds each grid frame twice, so every Qwen token group holds
+one moment. All runs use 0.7x resolution, so a one-frame group costs about 336 tokens. Grid 64:8:dup
+doubles the number of groups, to keep as many *distinct* moments as grid 32:8 (which puts two different
+frames in each group).
+
+| Config | KV | MCQ | mIoU | R@0.5 |
+|---|---|---|---|---|
+| Baseline 0.2 fps | 6k | 25.7 | 24.8 | 24.4 |
+| grid 32:8 (reference) | 10.7k | 31.4 | 23.2 | 21.9 |
+| `dup:1.0:60,0.2`, scale 0.7 (reference) | 6k | 31.9 | 18.7 | 16.6 |
+| grid 32:8:dup, scale 0.7 | 6k | 27.8 | 20.9 | 18.7 |
+| grid 32:8:dup, scale 0.7 | 10.7k | 29.2 | 21.7 | 20.4 |
+| grid 64:8:dup, scale 0.7 | 6k | 29.9 | 20.9 | 20.8 |
+| **`dup:1.0:60,0.2`, scale 0.7** | **10.7k** | **33.0** | 18.8 | 17.5 |
+
+**Findings:**
+- **The gains do not add up.** Grid thinning with un-blended pairs is worse than either idea alone. With
+  one frame per group, 32 groups hold only 32 distinct moments instead of 64. Doubling the groups
+  (grid 64:8:dup) recovers most of the loss (29.9%), confirming that **the number of distinct moments
+  seen drives MCQ**.
+- **Best MCQ overall: `dup:1.0:60,0.2` at 0.7x and KV 10.7k, 33.0%** (+7.3 over the baseline, 95% CI
+  +3.6 to +10.8; about 8 points above uniform 64). It is the best configuration in every question-time
+  bucket (51.1 / 31.0 / 32.0 / 30.9% from early to late).
+- Grounding stays low for all these configurations (18.8-21.7 mIoU): the MCQ/grounding trade-off
+  remains.
+
+---
+
+## 9. Chapter 6: Temporal grounding under token pruning (phases 9-10)
+
+The rest of the project targets one goal: **improve temporal grounding when visual tokens are pruned**,
+both in streaming memory (HERMES) and in offline pruning (keep a fraction of tokens after encoding
+uniformly sampled frames). All methods are training-free. We first diagnosed *why* pruning hurts
+grounding (9.1-9.4), then designed a fix for the largest error (9.5).
+
+### 9.1 Offline pruning: does grounding break first? (phase 9, A1)
+
+**Why:** pruning papers usually report QA accuracy only. If grounding degrades much faster than QA,
+that is a key motivation; the choice of *which* tokens to keep may also matter more for grounding.
+
+**Design:** Qwen3, uniform 64 frames (about 21.4k visual tokens), one pruning pass right after encoding
+(`run.offline_keep_ratio`), keeping 50 / 25 / 10 / 5% of visual tokens. Pruning scores
+(`run.prune_score`): HERMES (attention to predicted questions plus recency), random, recent (keep the
+latest tokens), and stratified (equal share of every frame, highest-scoring tokens within each frame).
+Spatial pooling (lower decode resolution) is included at roughly matched token cost.
+
+| Keep | HERMES score | Random | Stratified | Spatial pooling (matched cost) |
+|---|---|---|---|---|
+| 100% (no pruning) | 25.3 / 26.9 / 25.3 | | | |
+| 50% | 26.9 / 28.4 / 26.7 | 26.0 / 28.6 / 26.9 | – | 26.2 / 25.7 / 24.0 (scale 0.7) |
+| 25% | 26.2 / 25.9 / 24.0 | 26.7 / 27.2 / 25.3 | 26.0 / 27.0 / 25.9 | 27.3 / 20.8 / 18.7 (scale 0.5) |
+| 10% | **21.5** / **23.3** / 23.2 | 27.4 / 26.1 / 23.6 | 26.7 / 25.9 / 24.2 | 25.0 / 21.8 / 20.8 (scale 0.35) |
+| 5% | pending / **14.8** / 13.3 | pending | pending | – |
+
+(MCQ / mIoU / R@0.5, %.) Keeping only the most recent 25% of tokens gives 23.1 / 18.5 / 16.4.
+
+**Findings:**
+- **Grounding does not break first.** Randomly dropping 90% of tokens costs only 0.8 mIoU and does not
+  change MCQ: video tokens are highly redundant.
+- **Attention-based selection is the problem.** At 10%, the HERMES score is worse than random on both
+  tasks (-2.8 mIoU, -5.9 MCQ), and at 5% grounding collapses to 14.8 mIoU. Attention concentrates the
+  budget on a few frames and loses temporal coverage. Keeping only recent tokens is catastrophic,
+  confirming that coverage over time is what matters.
+- **Stratified selection is as robust as random**, and principled: it guarantees coverage while still
+  choosing the most salient tokens inside each frame.
+- **Lower resolution hurts grounding far more than dropping tokens** at the same budget (20.8 vs 27.2
+  mIoU at 25%), while MCQ does not care.
+
+### 9.2 Streaming pruning with stratified selection (phases 9-10)
+
+| Config (0.2 fps) | KV | MCQ | mIoU | R@0.5 |
+|---|---|---|---|---|
+| HERMES score (baseline) | 6k | 25.7 | 24.8 | 24.4 |
+| Stratified | 6k | 24.3 | 24.6 | 23.2 |
+| HERMES score | 4k | 25.0 | 23.9 | 21.9 |
+| Stratified | 4k | 24.8 | **24.6** | **22.7** |
+| HERMES score / stratified | 2k | pending | pending | pending |
+
+**Finding:** in streaming, stratified selection helps grounding when the budget is tight (4k: +0.7
+mIoU, +0.8 R@0.5) and is neutral at 6k, at a small MCQ cost. The gap is smaller than offline because
+streaming compresses incrementally, so every frame is still represented when it arrives.
+
+### 9.3 What survives pruning? (phase 9, A2)
+
+**Why:** a natural hypothesis is that attention-based pruning keeps the salient *peak* of an event and
+drops its *boundaries*, which would explain short intervals.
+
+**Design:** a new option `run.retention_snapshot` logs, for every question, how many tokens each streamed
+frame still has in the cache when the question is answered, and whether its timestamp survived. Frames
+inside the annotated interval are "evidence"; the first and last are "edges".
+
+| Config | Keep rate: background | evidence | edge | interior | Evidence timestamps kept |
+|---|---|---|---|---|---|
+| 0.2 fps, 6k | 50.3% | 54.0% | 58.8% | 50.8% | 94.9% |
+| 0.2 fps, 4k | 37.3% | 38.8% | 44.8% | 35.4% | 94.9% |
+| grid 32:8, 6k | 19.0% | 30.3% | 39.4% | 28.1% | 78.9% |
+
+Grounding by how much of the evidence survived (0.2 fps, 6k):
+
+| Evidence retention | Questions | mIoU | R@0.5 | Predicted / gold length |
+|---|---|---|---|---|
+| Lowest third | 159 | 19.7 | 18.2 | 0.38 |
+| Middle third | 158 | 27.5 | 29.7 | 0.52 |
+| Top third | 158 | 27.1 | 25.3 | 0.56 |
+
+**Findings:**
+- **Boundaries are not lost**: edge frames keep *more* tokens than interior frames, and evidence frames
+  keep about as much as background. The "keeps peaks, drops boundaries" hypothesis is rejected.
+- **How much evidence survives matters**: questions with the least evidence retained lose 8 mIoU and get
+  shorter predictions.
+- Timestamps of evidence frames survive 95% of the time with fixed-rate streaming, but only 79% with grid
+  thinning.
+
+### 9.4 Too-short intervals are a model bias (phase 9, A3)
+
+| Run | Median predicted length | Median gold length | Median ratio | Shorter than half the gold |
+|---|---|---|---|---|
+| Uniform 64 (no pruning) | 14.3 s | 43 s | 0.50 | 49% |
+| Stream 0.2 fps, 6k | 12.5 s | 43 s | 0.50 | 47% |
+| Stream 0.2 fps, 4k | 12.5 s | 43 s | 0.50 | 49% |
+| Stream 0.2 fps, 21.4k | 12.5 s | 41 s | 0.48 | 50% |
+
+**Finding:** the length ratio is the same with and without pruning. Short intervals come from the model,
+not from pruning. The bias is strongest for time and counting questions (ratio 0.4-0.5), whose evidence
+is long (43-77 s); location questions (12 s evidence) are less affected.
+
+### 9.5 Fixing interval extent: calibration and retrieval-based refinement (M3)
+
+**Why:** interval length is the largest grounding error for every method (Section 7.2), and prompting
+cannot fix it (7.5). We compare three training-free corrections, all evaluated with 2-fold
+cross-validation by video (fit on half of the videos, test on the other half, swap).
+
+**Designs:**
+1. **Fixed x4:** stretch every predicted interval 4x around its centre (no fitting).
+2. **Fitted scale:** the same, with the scale fitted on the training half.
+3. **M3, retrieval-based boundary refinement:**
+   - A per-frame embedding index is kept *outside* the KV cache, so pruning never touches it: each frame
+     is fed alone to Qwen3's vision encoder and its visual tokens are mean-pooled (one 4096-d vector per
+     frame; `logs/phase10/dump_frame_embeddings.py`).
+   - After the model answers `[s, e]`, only frames up to the question time are used (streaming-legal),
+     centred by subtracting their mean embedding.
+   - The evidence profile is the mean embedding of frames inside `[s, e]`. Each boundary grows outward
+     while neighbouring frames stay similar to it (cosine at least tau times the evidence frames'
+     own mean cosine), tolerating gaps of up to `gap` seconds.
+   - tau and gap are fitted on the training half.
+
+Grounding (mIoU / R@0.5, all 475 questions). MCQ is unaffected: these corrections only post-process
+grounding intervals.
+
+| Setting | Raw | Fixed x4 | Fitted scale | M3, 1 fps index | M3, 0.2 fps index |
+|---|---|---|---|---|---|
+| Uniform 32 (no pruning) | 27.5 / 26.7 | 35.7 / 33.5 | 35.6 / 32.4 | **38.9 / 36.8** | 37.1 / 35.2 |
+| Uniform 64 (no pruning) | 26.9 / 25.3 | 33.3 / 32.0 | 33.4 / 31.6 | **36.7 / 35.2** | 35.9 / 34.1 |
+| Offline stratified 25% | 27.0 / 25.9 | 34.0 / 30.3 | 34.1 / 32.2 | **38.1 / 35.8** | 37.1 / 35.6 |
+| Offline HERMES 10% | 23.3 / 23.2 | 30.0 / 26.1 | 30.5 / 26.5 | **35.9 / 33.3** | 35.1 / 33.7 |
+| Stream 0.2 fps, 6k | 24.8 / 24.4 | 33.8 / 33.1 | 33.8 / 29.9 | **36.9 / 37.5** | 36.5 / 34.3 |
+| Stream 0.2 fps, 4k | 23.9 / 21.9 | 34.5 / 33.5 | 34.2 / 30.9 | **36.1 / 35.6** | 35.9 / 35.4 |
+| Stream grid 16:16, 6k | 25.0 / 21.7 | 35.7 / 34.5 | 35.7 / 34.5 | **37.7 / 34.9** | 37.2 / 34.7 |
+
+**Findings:**
+- **M3 beats the fixed x4 widening in every setting**, by 1.4-5.9 mIoU with the 1 fps index and
+  0.7-5.1 mIoU with an index at the stream's own rate (0.2 fps). The largest gain is where pruning hurt
+  most (offline HERMES 10%: 23.3 to 35.9).
+- **Streaming with M3 (36.9 mIoU / 37.5 R@0.5 at 6k) beats uniform sampling with the fixed correction**
+  (33.3-35.7 mIoU), so a pruned memory plus a small index recovers and exceeds unpruned grounding.
+- The index is cheap: one 4096-d half-precision vector per frame (8 KB), about 1 MB for 10 minutes at
+  0.2 fps, compared with a 6k-token KV cache.
+- Caveat: the fitted gap often sits at the edge of the search range (40-60 s), so M3 behaves partly like
+  an adaptive widening; a sharper similarity signal (e.g. query-aware or finer features) is future work.
+
+### 9.6 In progress (phase 10)
+
+Running now, to test the coverage finding at harder budgets and on a second model:
+- Qwen3 offline pruning at 5% (random and stratified; HERMES done, above) and MCQ at 5%.
+- Qwen3 streaming at KV 2k, HERMES vs stratified.
+- Qwen2.5-VL-7B offline (uniform 64): no pruning, HERMES 25% / 10%, random 10%, stratified 25% / 10%.
+
+---
+
+## 10. All results in one table
 
 Qwen3-VL-8B, 300 videos, surviving timestamps for streaming. Format: MCQ / mIoU / R@0.5 (%). The last
 column is the MCQ difference from the baseline with its 95% bootstrap CI.
@@ -545,14 +745,21 @@ column is the MCQ difference from the baseline with its 95% bootstrap CI.
 | grid 64:16 | 6k | 30.4 / 21.2 / 20.6 | 46.7 / 43.0 / 48.0 | 28.7 / 32.8 / 30.0 | 30.0 / 16.7 / 16.8 | 27.5 / 8.9 / 6.7 | +4.7 [+1.4, +8.0] |
 | `dup:0.2`, scale 0.7 | 6k | 28.6 / 23.0 / 20.4 | 31.1 / 40.1 / 38.0 | 25.6 / 31.6 / 29.1 | 28.5 / 18.3 / 15.8 | 30.9 / 15.5 / 12.6 | – |
 | `dup:0.2` | 6k | 25.9 / 23.0 / 19.4 | 35.6 / 41.9 / 34.0 | 24.8 / 32.1 / 27.3 | 25.3 / 17.9 / 14.8 | 24.8 / 14.9 / 13.4 | – |
-| **`dup:1.0:60,0.2`, scale 0.7** | 6k | **31.9** / 18.7 / 16.6 | 48.9 / 45.9 / 52.0 | 32.6 / 27.5 / 24.5 | 29.6 / 11.8 / 8.2 | 30.2 / 10.6 / 8.4 | – |
+| `dup:1.0:60,0.2`, scale 0.7 | 6k | 31.9 / 18.7 / 16.6 | 48.9 / 45.9 / 52.0 | 32.6 / 27.5 / 24.5 | 29.6 / 11.8 / 8.2 | 30.2 / 10.6 / 8.4 | – |
+| **`dup:1.0:60,0.2`, scale 0.7** | 10.7k | **33.0** / 18.8 / 17.5 | 51.1 / 44.2 / 50.0 | 31.0 / 29.5 / 28.2 | 32.0 / 10.8 / 8.2 | 30.9 / 11.5 / 9.2 | +7.3 [+3.6, +10.8] |
+| grid 32:8:dup, scale 0.7 | 6k | 27.8 / 20.9 / 18.7 | 48.9 / 35.5 / 34.0 | 24.8 / 31.8 / 29.1 | 25.3 / 15.2 / 11.7 | 28.2 / 14.0 / 14.3 | – |
+| grid 32:8:dup, scale 0.7 | 10.7k | 29.2 / 21.7 / 20.4 | 48.9 / 40.2 / 44.0 | 27.9 / 36.7 / 37.3 | 25.7 / 13.5 / 9.7 | 30.2 / 13.5 / 12.6 | – |
+| grid 64:8:dup, scale 0.7 | 6k | 29.9 / 20.9 / 20.8 | 51.1 / 35.4 / 34.0 | 24.0 / 33.4 / 35.5 | 29.2 / 14.3 / 13.8 | 29.5 / 14.0 / 13.4 | – |
+| Stratified pruning | 6k | 24.3 / 24.6 / 23.2 | | | | | |
+| Stratified pruning | 4k | 24.8 / 24.6 / 22.7 | | | | | |
 
 Grounding with the `full_span` prompt: 0.2 fps 24.6 / 23.2, uniform 32 28.0 / 26.5, grid 16:16
-24.4 / 21.3, grid 32:8 at 10.7k 23.1 / 21.1 (mIoU / R@0.5).
+24.4 / 21.3, grid 32:8 at 10.7k 23.1 / 21.1 (mIoU / R@0.5). Offline pruning results are in Section 9.1
+and interval-correction results (M3) in Section 9.5.
 
 ---
 
-## 9. Conclusions and open questions
+## 11. Conclusions and open questions
 
 ### What we learned
 
@@ -566,13 +773,20 @@ Grounding with the `full_span` prompt: 0.2 fps 24.6 / 23.2, uniform 32 28.0 / 26
    two moments seconds apart. Keeping groups to one moment helps at equal cost. This is a general
    caveat for streaming with any model that uses temporal patches.
 5. **Grounding behaves differently from MCQ.** It prefers fewer, detailed frames, and its dominant error
-   (intervals 3-4x too short) is shared by all methods and resists prompting.
+   (intervals 3-4x too short) is a model bias shared by all methods, with or without pruning, and
+   resists prompting.
+6. **Token pruning hurts grounding through lost temporal coverage.** Attention-based selection
+   concentrates tokens on few frames; coverage-preserving (stratified) selection is robust, and random
+   dropping of 90% of tokens costs under 1 mIoU. Event boundaries are not what gets lost.
+7. **A small retrieval index outside the pruned memory fixes interval extent (M3)**, beating a fixed
+   widening everywhere and lifting streaming grounding from 24.8 to 36.9 mIoU.
 
 ### Open questions and next steps
 
-- **Fix interval length for grounding.** Calibration shows 7-10 mIoU of headroom for every method.
-  Options: learned or rule-based length correction, constrained decoding of intervals, or fine-tuning
-  on interval length.
+- **Sharpen M3.** Its fitted gap often hits the search limit; query-aware similarity (text-to-frame) or
+  finer features could locate event edges more precisely. Also test M3 on Qwen2.5-VL.
+- **Coverage-aware pruning as a method.** Combine stratified selection with M3 and report
+  grounding-vs-budget curves against published pruning methods.
 - **Separate memories for separate tasks.** Since MCQ and grounding want different memory contents,
   test a hybrid: a dense, un-blended content memory next to a sparse, detailed "timeline" memory.
 - **Check generality beyond S-EMBER.** The repository already has StreamingBench scripts; the best
@@ -583,7 +797,7 @@ Grounding with the `full_span` prompt: 0.2 fps 24.6 / 23.2, uniform 32 28.0 / 26
 
 ---
 
-## 10. Reproducing the results
+## 12. Reproducing the results
 
 ### Code
 
@@ -594,13 +808,19 @@ Grounding with the `full_span` prompt: 0.2 fps 24.6 / 23.2, uniform 32 28.0 / 26
 | Streaming loop, grid thinning, keeping pairs whole | `video_qa/hermes_vqa.py` |
 | Evicting frames during compression | `inference/abstract_hermes.py` (`_evict_masks`), used in `inference/qwenvl_hermes.py` and `inference/llavaov_hermes.py` |
 | Grounding prompt styles | `video_qa/adapters.py` (`sember_grounding_prompt`) |
+| Offline pruning, pruning scores (hermes / random / recent / stratified) | `video_qa/hermes_vqa.py` (uniform branch), `inference/qwenvl_hermes.py` (`prune_kv_cache_by_attention`, `_rank_within_frames`) |
+| Retention snapshots | `inference/abstract_hermes.py` (`retention_snapshot`), `video_qa/hermes_vqa.py` |
+| Frame embedding index and boundary refinement (M3) | `logs/phase10/dump_frame_embeddings.py`, `logs/phase10/boundary_refine.py` |
 | Unit tests for schedules and the grid planner | `tests/test_sampling.py` |
 
 ### Configuration options (Hydra)
 
 | Option | Example | Default |
 |---|---|---|
-| `run.sample_schedule` | `'1.0:60,0.2'`, `'grid:32:8'`, `'grid:32:8:spread'`, `'dup:0.2'` | `null` (constant `run.sample_fps`) |
+| `run.sample_schedule` | `'1.0:60,0.2'`, `'grid:32:8'`, `'grid:32:8:spread'`, `'grid:32:8:dup'`, `'dup:0.2'` | `null` (constant `run.sample_fps`) |
+| `run.offline_keep_ratio` | `0.25` (uniform sampling only) | `1.0` (no pruning) |
+| `run.prune_score` | `random`, `recent`, `stratified` | `hermes` |
+| `run.retention_snapshot` | `true` | `false` |
 | `run.frame_scale` | `0.7` | `1.0` |
 | `dataset.grounding_prompt` | `full_span` | `official` |
 | `run.kv_size`, `run.min_tokens_per_frame`, `run.keep_time_tokens` | `6000`, `0`, `surviving` | see `configs/config.yaml` |
@@ -621,17 +841,22 @@ python scripts/run.py experiment=sember_mcq_time_count_location model=qwen3_vl_8
 - `logs/sched.py <spec.json>` runs a list of configurations. It splits each run into video chunks that
   fit the 3-hour debug limit, fills both GPU partitions, retries failed chunks, skips nodes with
   hardware errors, and scores each run when all its chunks finish.
-- Specs are generated by `logs/phase6/make_spec.py` (rounds 1-4) and `logs/phase7/make_spec.py`
-  (phase 7), e.g. `python3 logs/phase7/make_spec.py r7a r7b r7c > logs/phase7/main.json`.
+- Specs are generated by `logs/phase6/make_spec.py` (rounds 1-4), `logs/phase7/make_spec.py` (phase 7
+  and round 8), `logs/phase9/make_spec.py` and `logs/phase10/make_spec.py` (token pruning), e.g.
+  `python3 logs/phase7/make_spec.py r7a r7b r7c > logs/phase7/main.json`.
 
 ### Analysis scripts (no GPU)
 
 | Script | Output |
 |---|---|
 | `logs/grounding_breakdown.py` | Chapter 2 analysis: grounding by question time, video length, compression state; interval biases |
-| `logs/phase6/analyze.py` | Section 8 table: per-bucket scores and bootstrap CIs against the baseline |
+| `logs/phase6/analyze.py` | Section 10 table: per-bucket scores and bootstrap CIs against the baseline |
 | `logs/phase7/cost.py` | Section 7.1: GPU time, frames encoded, time to first token |
 | `logs/phase7/calibrate.py` | Section 7.2: cross-validated interval calibration |
+| `logs/phase8/calibration_method.py` | Section 9.5: fixed and fitted interval corrections |
+| `logs/phase9/retention_analysis.py` | Section 9.3: token retention of evidence frames |
+| `logs/phase9/extent_bias.py` | Section 9.4: interval-length bias with and without pruning |
+| `logs/phase10/boundary_refine.py` | Section 9.5: M3 retrieval-based boundary refinement (needs numpy) |
 | `tables/*.py` | LaTeX tables for the paper (`tables/*.tex`) |
 
 Results are stored under `results/<model>/<sember_mcq|sember_grounding>/<run name>/`, with the run
