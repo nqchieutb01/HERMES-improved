@@ -788,6 +788,38 @@ All 70 Qwen3 grounding runs: `python3 logs/phase11/joint_metrics.py`.
   majority. Improving grounded QA requires the model to both understand and localize the whole event,
   which is where future memory designs should be judged.
 
+### 9.8 Does the model echo its memory's token-group spacing? (no GPU)
+
+**Why:** most wrong grounding answers name a short slice of a long event (often exactly 10 s, one Qwen
+token group at 0.2 fps) and state a wrong duration. If the model simply reports the time step it sees in
+memory, changing the group spacing would change both its intervals and its answers, making memory
+granularity the lever for grounded QA.
+
+**Design:** Qwen3 stamps each two-frame group with the pair's mean time, so the gap between neighbouring
+timestamps depends on sampling: 0.2 fps 10 s, 1 fps 2 s, `dup:0.2` 5 s (one frame per group), uniform N
+frames 2 x t / N. Existing runs are compared on predicted interval length, stated durations (duration
+questions) and whether interval endpoints land on a group timestamp (`logs/phase11/group_echo.py`).
+
+| Config | Group spacing | Most common predicted lengths | Most common stated durations | Endpoints on a timestamp (chance) |
+|---|---|---|---|---|
+| 0.2 fps, 6k | 10 s | 10 s (94), 12 s (38), 11 s (20) | 10 s (54), 90 s (31) | 30% (10%) |
+| 1 fps, 6k | 2 s | 10 s (45), 4 s (31), 12 s (24) | 90 s (34), 10 s (28) | 32% (52%) |
+| `dup:0.2`, 6k | 5 s | 10 s (80), 5 s (52), 15 s (39) | 10 s (35), 90 s (34) | 66% (10%) |
+| Uniform 32 / 64 | 3-28 s | 10 s in almost every spacing bin | 10 s, 90 s | – |
+
+**Findings:**
+- **Interval position is partly copied from visible timestamps:** with sparse stamps, endpoints land on a
+  group timestamp 3-6.5x more often than chance (66% with 5 s integer stamps).
+- **Interval length and stated durations are defaults, not read from memory:** 10 s is the most common
+  length in every configuration, even with 2 s or 28 s spacing, and stated durations cluster on "10
+  seconds" and "90 seconds" everywhere. The model falls back to canned values when it has not tracked
+  the event.
+- **So memory granularity is not the lever for grounded QA.** Changing the group spacing moves where the
+  endpoints land but not the default lengths or the wrong durations. The answers are wrong because the
+  model guesses instead of reasoning over the timeline; improving grounded QA needs the model to use the
+  timestamps it already sees (e.g. enumerate when the event is visible, then derive duration or count),
+  which changes the answer itself rather than post-processing it.
+
 ---
 
 ## 10. All results in one table
