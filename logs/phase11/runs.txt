@@ -74,3 +74,5 @@ qwen3_vl_8b/sember_grounding/time-count-location-dups1x60-kv10700-k0-attention_w
 qwen3_vl_8b/sember_grounding/uniform-n64-time-count-location-offline-hermes-keep0.2-v300-native-time
 qwen3_vl_8b/sember_grounding/uniform-n64-time-count-location-offline-random-keep0.2-v300-native-time
 qwen3_vl_8b/sember_grounding/uniform-n64-time-count-location-offline-stratified-keep0.5-v300-native-time
+qwen3_vl_8b/sember_grounding/uniform-n64-time-count-location-offline-stratified-keep0.2-v300-native-time
+qwen3_vl_8b/sember_grounding/uniform-n64-time-count-location-scale0.45-v300-native-time

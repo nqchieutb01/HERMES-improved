@@ -1,0 +1,54 @@
+% CVPR two-column: spans both columns. Requires \usepackage{booktabs} and \usepackage{multirow}.
+\begin{table*}[t]
+\centering
+\setlength{\tabcolsep}{8pt}
+\caption{\textbf{Performance by question time} with Qwen3-VL-8B on S-EMBER (300 videos). Question time is how much video has been streamed when the question is asked. \emph{Uniform}: 32 or 64 frames sampled uniformly up to the question and encoded without compression. \emph{HERMES}: frames stream at 0.2\,fps (a question at $t$ seconds has seen $t/5$ frames) into a KV cache compressed to a 6k- or 4k-token budget; timestamp tokens of frames that still have visual tokens are kept; $k$: minimum tokens kept per frame ($k{=}1$ keeps each frame's highest-attention token). \emph{Open-ended}: Acc.\ is answer accuracy judged with the official S-EMBER judge prompt; mIoU and R@0.5 measure temporal grounding; GQ@0.5 counts an answer only if it is judged correct and its interval has IoU $\geq 0.5$. MCQ: 5-way multiple-choice accuracy. All numbers in \%. Best per question-time interval in bold.}
+\label{tab:question-time}
+\begin{tabular}{llccccc}
+\toprule
+& & \multicolumn{4}{c}{Open-ended} & \\
+\cmidrule(lr){3-6}
+Question time & Method & Acc. & mIoU & R@0.5 & GQ@0.5 & MCQ \\
+\midrule
+\multirow{6}{*}{0--80\,s} & Uniform, 32 frames & \textbf{22.0} & 39.5 & 34.0 & \textbf{16.0} & \textbf{44.4} \\
+ & Uniform, 64 frames & 18.0 & \textbf{48.3} & \textbf{54.0} & \textbf{16.0} & \textbf{44.4} \\
+\cmidrule(lr){2-7}
+ & HERMES 6k, $k{=}0$ & 10.0 & 29.1 & 28.0 & 8.0 & 28.9 \\
+ & HERMES 6k, $k{=}1$ & 10.0 & 29.1 & 28.0 & 8.0 & 28.9 \\
+ & HERMES 4k, $k{=}0$ & 10.0 & 28.7 & 26.0 & 8.0 & 31.1 \\
+ & HERMES 4k, $k{=}1$ & 10.0 & 28.7 & 26.0 & 8.0 & 31.1 \\
+\midrule
+\multirow{6}{*}{80--160\,s} & Uniform, 32 frames & \textbf{13.6} & 36.0 & \textbf{35.5} & \textbf{6.4} & 23.3 \\
+ & Uniform, 64 frames & 12.7 & \textbf{37.9} & 34.5 & 4.5 & \textbf{24.8} \\
+\cmidrule(lr){2-7}
+ & HERMES 6k, $k{=}0$ & 12.7 & 31.3 & 30.9 & 4.5 & 20.9 \\
+ & HERMES 6k, $k{=}1$ & 12.7 & 31.3 & 30.9 & 4.5 & 20.9 \\
+ & HERMES 4k, $k{=}0$ & 12.7 & 30.7 & 28.2 & 4.5 & 20.2 \\
+ & HERMES 4k, $k{=}1$ & 12.7 & 30.6 & 28.2 & 4.5 & 20.2 \\
+\midrule
+\multirow{6}{*}{160--320\,s} & Uniform, 32 frames & 13.8 & \textbf{25.0} & \textbf{25.0} & \textbf{4.1} & 24.9 \\
+ & Uniform, 64 frames & \textbf{15.3} & 19.7 & 17.3 & \textbf{4.1} & 25.3 \\
+\cmidrule(lr){2-7}
+ & HERMES 6k, $k{=}0$ & \textbf{15.3} & 22.1 & 22.4 & 3.1 & 28.1 \\
+ & HERMES 6k, $k{=}1$ & 14.3 & 21.6 & 22.4 & 3.1 & \textbf{28.5} \\
+ & HERMES 4k, $k{=}0$ & 14.3 & 21.6 & 20.4 & 3.6 & 25.7 \\
+ & HERMES 4k, $k{=}1$ & 13.8 & 21.8 & 19.9 & 3.6 & 27.3 \\
+\midrule
+\multirow{6}{*}{$\geq$320\,s} & Uniform, 32 frames & 8.4 & 18.7 & 18.5 & \textbf{1.7} & 20.8 \\
+ & Uniform, 64 frames & \textbf{9.2} & 19.5 & 17.6 & 0.0 & 20.1 \\
+\cmidrule(lr){2-7}
+ & HERMES 6k, $k{=}0$ & 8.4 & 21.3 & 20.2 & \textbf{1.7} & 24.8 \\
+ & HERMES 6k, $k{=}1$ & \textbf{9.2} & \textbf{21.6} & \textbf{21.0} & \textbf{1.7} & 25.5 \\
+ & HERMES 4k, $k{=}0$ & 7.6 & 19.5 & 16.8 & \textbf{1.7} & \textbf{26.2} \\
+ & HERMES 4k, $k{=}1$ & 8.4 & 19.6 & 16.8 & \textbf{1.7} & \textbf{26.2} \\
+\midrule[\heavyrulewidth]
+\multirow{6}{*}{All} & Uniform, 32 frames & 13.3 & \textbf{27.5} & \textbf{26.7} & \textbf{5.3} & 25.0 \\
+ & Uniform, 64 frames & \textbf{13.5} & 26.9 & 25.3 & 4.4 & 25.3 \\
+\cmidrule(lr){2-7}
+ & HERMES 6k, $k{=}0$ & 12.4 & 24.8 & 24.4 & 3.6 & 25.7 \\
+ & HERMES 6k, $k{=}1$ & 12.2 & 24.6 & 24.6 & 3.6 & \textbf{26.0} \\
+ & HERMES 4k, $k{=}0$ & 11.8 & 23.9 & 21.9 & 3.8 & 25.0 \\
+ & HERMES 4k, $k{=}1$ & 11.8 & 24.0 & 21.7 & 3.8 & 25.7 \\
+\bottomrule
+\end{tabular}
+\end{table*}
