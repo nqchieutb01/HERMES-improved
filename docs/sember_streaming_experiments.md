@@ -65,6 +65,9 @@ questions asked early in a video.
    retrieval-based refinement "M3") raises mIoU by up to 12 points but leaves the answers wrong, so it
    is reported only as a diagnostic, never as a method (Section 9.5). Grounding must be judged together
    with answer correctness (Section 9.7).
+9. **Reasoning over the timeline improves grounded QA.** A prompt that makes the model list timestamped
+   moments before answering raises answer accuracy (13.3 to 18.9% with uniform sampling) and GQ@0.5
+   (5.3 to 8.8%; streaming `dup:1.0:60,0.2`: 2.9 to 6.7%), by fixing the answer rather than the output.
 8. **Under the official S-EMBER protocol, grounded QA is very hard.** Only 9-16% of open-ended answers
    are judged correct (GQ@0.0 = 9-16%) and GQ@0.5 is 1.5-5.5% for every configuration. Open-ended answer accuracy tracks
    MCQ: the best MCQ configuration also gives the best answer accuracy (15.6%, +3.2 over the baseline).
@@ -833,6 +836,46 @@ questions) and whether interval endpoints land on a group timestamp (`logs/phase
   model guesses instead of reasoning over the timeline; improving grounded QA needs the model to use the
   timestamps it already sees (e.g. enumerate when the event is visible, then derive duration or count),
   which changes the answer itself rather than post-processing it.
+
+### 9.9 Timeline-reasoning prompt: fixing the answer, not the output (phase 12)
+
+**Why:** Section 9.8 showed the model answers durations and intervals with canned values ("10 s",
+"90 s") instead of using the timestamps it sees. Unlike post-processing (9.5), a prompt that makes the
+model reason over the timeline changes the answer itself, and the official judge scores it.
+
+**Design:** `dataset.grounding_prompt=timeline` asks the model to (1) list up to 8 moments when the
+relevant object or event is visible, using the timestamps shown in the video, one per line starting
+with "Seen:"; (2) derive the duration from the first and last moment, or count distinct occurrences;
+(3) answer, then give the interval from the first to the last moment. A worked example on an unrelated
+question fixes the format (without it the model copied placeholders and produced runaway lists).
+Answers stay in the official "Answer: ... / Time: [s, e]" format; up to 384 new tokens. Scored with the
+official S-EMBER judge prompt (Section 9.7).
+
+| Configuration | Prompt | Acc. | mIoU | R@0.5 | GQ@0.3 | GQ@0.5 | Acc. by type (time / count / location) |
+|---|---|---|---|---|---|---|---|
+| Stream 0.2 fps, 6k | official | 12.4 | 24.8 | 24.4 | 4.0 | 3.6 | 10.5 / 13.6 / 14.0 |
+| | timeline | 14.3 | 22.6 | 21.1 | 7.6 | 4.8 | 14.1 / 13.6 / 16.0 |
+| Uniform 32 | official | 13.3 | 27.5 | 26.7 | 6.5 | 5.3 | 8.9 / 16.3 / 16.0 |
+| | timeline | **18.9** | 25.4 | 23.4 | **11.2** | **8.8** | **25.7** / 15.8 / 12.0 |
+| Stream `dup:1.0:60,0.2`, scale 0.7, 10.7k | official | 15.6 | 18.8 | 17.5 | 4.2 | 2.9 | 8.9 / 16.8 / 26.0 |
+| | timeline | 17.1 | 22.3 | 22.5 | 7.4 | **6.7** | 14.7 / 18.5 / 19.0 |
+
+Timeline minus official (95% paired-bootstrap CI): uniform 32 Acc. +5.7 [+1.9, +9.7], GQ@0.5 +3.6
+[+0.4, +6.5]; `dup:1.0:60,0.2` GQ@0.5 +3.8 [+1.3, +6.3], Acc. +1.5 [-2.3, +5.3]; streaming baseline Acc.
++1.9 [-1.9, +5.5], GQ@0.5 +1.3 [-1.1, +3.8].
+
+**Findings:**
+- **Reasoning over the timeline fixes answers, not just intervals.** With uniform sampling, answer
+  accuracy rises from 13.3 to 18.9% and grounded QA (GQ@0.5) from 5.3 to 8.8%; duration answers almost
+  triple (8.9 to 25.7%). The canned "10 seconds" answers disappear (stated durations spread out).
+- **mIoU can fall while grounded QA rises:** intervals now come with correct answers more often, which
+  is what GQ measures. This is the opposite of post-processing, which raised mIoU with wrong answers.
+- **Streaming benefits less.** The model can only reason over timestamps that are still in memory:
+  compressed streaming memory keeps fewer timestamped moments than uniform sampling's 32 fresh frames,
+  and the gain is smaller and not significant at 0.2 fps. The denser, un-blended streaming memory
+  (`dup:1.0:60,0.2`) gets a significant GQ@0.5 gain (+3.8), the best streaming grounded-QA result so far.
+- **Counting barely changes**, and location answers drop for two configurations (listing moments may
+  distract from naming the place). A category-aware prompt is a natural follow-up.
 
 ---
 
