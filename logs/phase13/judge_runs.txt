@@ -1,0 +1,14 @@
+qwen3_vl_8b/sember_grounding/time-count-location-fps0.2-kv4000-k0-attention_weighted-native-time-keepsurv-timeline-v300
+qwen3_vl_8b/sember_grounding/time-count-location-fps0.2-kv4000-k1-top_attention_patch-native-time-keepsurv-timeline-v300
+qwen3_vl_8b/sember_grounding/time-count-location-fps0.2-kv4000-k0-attention_weighted-native-time-keepall-timeline-v300
+qwen3_vl_8b/sember_grounding/time-count-location-fps0.2-kv6000-k1-top_attention_patch-native-time-keepsurv-timeline-v300
+qwen3_vl_8b/sember_grounding/time-count-location-fps0.2-kv6000-k0-attention_weighted-native-time-keepall-timeline-v300
+qwen3_vl_8b/sember_grounding/time-count-location-fps0.2-kv10700-k0-attention_weighted-native-time-keepall-timeline-v300
+qwen3_vl_8b/sember_grounding/uniform-n64-time-count-location-timeline-v300-native-time
+qwen3_vl_8b/sember_grounding/uniform-n64-time-count-location-offline-hermes-keep0.1-timeline-v300-native-time
+qwen3_vl_8b/sember_grounding/uniform-n64-time-count-location-offline-stratified-keep0.1-timeline-v300-native-time
+qwen3_vl_8b/sember_grounding/uniform-n64-time-count-location-offline-hermes-keep0.05-timeline-v300-native-time
+qwen3_vl_8b/sember_grounding/uniform-n64-time-count-location-offline-stratified-keep0.05-timeline-v300-native-time
+qwen2.5_vl_7b/sember_grounding/uniform-n64-time-count-location-timeline-v300-native-time
+qwen2.5_vl_7b/sember_grounding/uniform-n64-time-count-location-offline-stratified-keep0.1-timeline-v300-native-time
+qwen2.5_vl_7b/sember_grounding/uniform-n64-time-count-location-v300-native-time
