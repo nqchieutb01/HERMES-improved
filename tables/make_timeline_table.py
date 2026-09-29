@@ -1,0 +1,120 @@
+"""CVPR two-column LaTeX table: timeline-reasoning prompt vs the official S-EMBER grounding prompt.
+
+Each row is one memory configuration run twice on S-EMBER grounding (475 questions, 300 videos): once with
+the official prompt and once with the timeline prompt. Columns: answer accuracy (official S-EMBER judge
+prompt), mIoU and R@0.5, each as official / timeline / change. Changes are coloured by sign and bold when
+the 95% paired bootstrap CI over questions excludes zero. Needs answer_judgments.jsonl for every run.
+Writes tables/timeline_prompt.tex. Run from the repo root: python3 tables/make_timeline_table.py
+"""
+import os
+import sys
+
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "logs", "phase13"))
+from compare import boot, per_question  # noqa: E402
+
+Q3 = "qwen3_vl_8b/sember_grounding/"
+Q25 = "qwen2.5_vl_7b/sember_grounding/"
+S = "time-count-location-fps0.2-kv{}-k{}-{}-native-time-keep{}{}-v300"
+U = "uniform-n{}-time-count-location-{}{}v300-native-time"
+
+
+def stream(kv, k, keep):
+    strat = "top_attention_patch" if k else "attention_weighted"
+    return lambda tl: Q3 + S.format(kv, k, strat, keep, "-timeline" if tl else "")
+
+
+def uniform(model, n, prune=""):
+    return lambda tl: model + U.format(n, prune + "-" if prune else "", "timeline-" if tl else "")
+
+
+# (group label, [(row cells, path builder)]); row cells fill the three leading columns.
+GROUPS = [
+    ("Qwen3-VL-8B, streaming (HERMES, 0.2\\,fps)", [
+        (("4k", "0", "Kept if frame survives"), stream(4000, 0, "surv")),
+        (("4k", "1", "Kept if frame survives"), stream(4000, 1, "surv")),
+        (("4k", "0", "Always kept"), stream(4000, 0, "all")),
+        (("6k", "0", "Kept if frame survives"), stream(6000, 0, "surv")),
+        (("6k", "1", "Kept if frame survives"), stream(6000, 1, "surv")),
+        (("6k", "0", "Always kept"), stream(6000, 0, "all")),
+        (("10.7k", "0", "Always kept"), stream(10700, 0, "all")),
+    ]),
+    ("Qwen3-VL-8B, offline (uniform frames, one pruning pass)", [
+        (("32 frames", "100\\%", "None"), uniform(Q3, 32)),
+        (("64 frames", "100\\%", "None"), uniform(Q3, 64)),
+        (("64 frames", "10\\%", "HERMES"), uniform(Q3, 64, "offline-hermes-keep0.1")),
+        (("64 frames", "10\\%", "Stratified"), uniform(Q3, 64, "offline-stratified-keep0.1")),
+        (("64 frames", "5\\%", "HERMES"), uniform(Q3, 64, "offline-hermes-keep0.05")),
+        (("64 frames", "5\\%", "Stratified"), uniform(Q3, 64, "offline-stratified-keep0.05")),
+    ]),
+    ("Qwen2.5-VL-7B, offline (uniform frames, one pruning pass)", [
+        (("64 frames", "100\\%", "None"), uniform(Q25, 64)),
+        (("64 frames", "10\\%", "Stratified"), uniform(Q25, 64, "offline-stratified-keep0.1")),
+    ]),
+]
+METRICS = [("acc", "Acc."), ("miou", "mIoU"), ("r05", "R@0.5")]
+HEADS = {0: ("KV budget", "$k$", "Timestamps"), 1: ("Frames", "Keep", "Pruning"), 2: ("Frames", "Keep", "Pruning")}
+
+
+def cells(path):
+    t, b = per_question(path(True)), per_question(path(False))
+    qs = sorted(set(t) & set(b))
+    out = []
+    for key, _ in METRICS:
+        tv = [100 * float(t[q][key]) for q in qs]
+        bv = [100 * float(b[q][key]) for q in qs]
+        diffs = [x - y for x, y in zip(tv, bv)]
+        d = sum(diffs) / len(qs)
+        lo, hi = boot(diffs)
+        delta = f"{d:+.1f}".replace("-", "$-$")
+        delta = rf"\textbf{{{delta}}}" if lo > 0 or hi < 0 else delta
+        colour = "gain" if d > 0 else "loss" if d < 0 else "same"
+        out += [f"{sum(bv) / len(qs):.1f}", f"{sum(tv) / len(qs):.1f}", rf"\{colour}{{{delta}}}"]
+    return out
+
+
+def main():
+    lines = [
+        r"% CVPR two-column: spans both columns. Requires in the preamble:",
+        r"%   \usepackage{booktabs}  \usepackage{multirow}  \usepackage[table]{xcolor}",
+        r"%   \definecolor{gaincol}{RGB}{0,120,60}  \definecolor{losscol}{RGB}{190,30,30}",
+        r"%   \newcommand{\gain}[1]{\cellcolor{gaincol!12}\textcolor{gaincol}{#1}}",
+        r"%   \newcommand{\loss}[1]{\cellcolor{losscol!12}\textcolor{losscol}{#1}}",
+        r"%   \newcommand{\same}[1]{#1}",
+        r"\begin{table*}[t]", r"\centering", r"\setlength{\tabcolsep}{4.5pt}",
+        r"\caption{\textbf{Timeline-reasoning prompt vs.\ the official S-EMBER prompt} on S-EMBER grounded "
+        r"VideoQA (475 questions, 300 videos). Each row runs one memory configuration twice, changing only the "
+        r"prompt. \emph{Official}: the benchmark prompt (answer and interval directly). \emph{Timeline}: the model "
+        r"first lists up to 8 timestamped moments where the evidence is visible, derives the answer from them, and "
+        r"gives the interval from the first to the last moment. $\Delta$ = Timeline $-$ Official, green for a gain "
+        r"and red for a loss; bold when the 95\% paired bootstrap confidence interval over questions excludes zero. "
+        r"Acc.: answer accuracy judged with the official S-EMBER judge prompt; mIoU and R@0.5: temporal grounding. "
+        r"\emph{Streaming}: $k$ is the minimum number of tokens kept per frame; \emph{Timestamps}: whether a "
+        r"frame's timestamp tokens are kept while its visual tokens survive, or always. \emph{Offline}: one pruning "
+        r"pass after encoding keeps the given share of visual tokens; \emph{Stratified} keeps an equal share of "
+        r"every frame. All numbers in \%.}",
+        r"\label{tab:timeline-prompt}",
+        r"\begin{tabular}{lll" + "ccc" * len(METRICS) + "}",
+        r"\toprule",
+        r"& & & " + " & ".join(rf"\multicolumn{{3}}{{c}}{{{name}}}" for _, name in METRICS) + r" \\",
+        " ".join(rf"\cmidrule(lr){{{4 + 3 * i}-{6 + 3 * i}}}" for i in range(len(METRICS))),
+        r"& & & " + " & ".join(["Official", "Timeline", r"$\Delta$"] * len(METRICS)) + r" \\",
+    ]
+    for gi, (label, rows) in enumerate(GROUPS):
+        lines.append(r"\midrule")
+        lines.append(rf"\multicolumn{{{3 + 3 * len(METRICS)}}}{{l}}{{\textbf{{{label}}}}} \\")
+        lines.append(" & ".join(rf"\textit{{{h}}}" for h in HEADS[gi]) + " &" * (3 * len(METRICS)) + r" \\")
+        prev = None
+        for lead, path in rows:
+            shown = list(lead)
+            if prev and lead[0] == prev[0]:
+                shown[0] = ""
+            prev = lead
+            lines.append(" & ".join(shown + cells(path)) + r" \\")
+    lines += [r"\bottomrule", r"\end{tabular}", r"\end{table*}"]
+    tex = "\n".join(lines) + "\n"
+    open("tables/timeline_prompt.tex", "w").write(tex)
+    print(tex)
+
+
+if __name__ == "__main__":
+    main()
