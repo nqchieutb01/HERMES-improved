@@ -27,16 +27,15 @@ def uniform(model, n, prune=""):
     return lambda tl: model + U.format(n, prune + "-" if prune else "", "timeline-" if tl else "")
 
 
-# (group label, [(row cells, path builder)]); row cells fill the three leading columns.
+# (group label, [(row cells, path builder)]); row cells fill the three leading columns (two cells: the
+# second spans columns 2-3).
 GROUPS = [
     ("Qwen3-VL-8B, streaming (HERMES, 0.2\\,fps)", [
-        (("4k", "0", "Kept if frame survives"), stream(4000, 0, "surv")),
-        (("4k", "1", "Kept if frame survives"), stream(4000, 1, "surv")),
-        (("4k", "0", "Always kept"), stream(4000, 0, "all")),
-        (("6k", "0", "Kept if frame survives"), stream(6000, 0, "surv")),
-        (("6k", "1", "Kept if frame survives"), stream(6000, 1, "surv")),
-        (("6k", "0", "Always kept"), stream(6000, 0, "all")),
-        (("10.7k", "0", "Always kept"), stream(10700, 0, "all")),
+        (("4k", "Kept if frame survives"), stream(4000, 0, "surv")),
+        (("4k", "Always kept"), stream(4000, 0, "all")),
+        (("6k", "Kept if frame survives"), stream(6000, 0, "surv")),
+        (("6k", "Always kept"), stream(6000, 0, "all")),
+        (("10.7k", "Always kept"), stream(10700, 0, "all")),
     ]),
     ("Qwen3-VL-8B, offline (uniform frames, one pruning pass)", [
         (("32 frames", "100\\%", "None"), uniform(Q3, 32)),
@@ -52,7 +51,7 @@ GROUPS = [
     ]),
 ]
 METRICS = [("acc", "Acc."), ("miou", "mIoU"), ("r05", "R@0.5")]
-HEADS = {0: ("KV budget", "$k$", "Timestamps"), 1: ("Frames", "Keep", "Pruning"), 2: ("Frames", "Keep", "Pruning")}
+HEADS = {0: ("KV budget", "Timestamps"), 1: ("Frames", "Keep", "Pruning"), 2: ("Frames", "Keep", "Pruning")}
 
 
 def cells(path):
@@ -72,6 +71,11 @@ def cells(path):
     return out
 
 
+def lead_cells(lead):
+    """Three leading columns; a two-item lead spans its second item over columns 2-3."""
+    return list(lead) if len(lead) == 3 else [lead[0], rf"\multicolumn{{2}}{{l}}{{{lead[1]}}}"]
+
+
 def main():
     lines = [
         r"% CVPR two-column: spans both columns. Requires in the preamble:",
@@ -88,7 +92,7 @@ def main():
         r"gives the interval from the first to the last moment. $\Delta$ = Timeline $-$ Official, green for a gain "
         r"and red for a loss; bold when the 95\% paired bootstrap confidence interval over questions excludes zero. "
         r"Acc.: answer accuracy judged with the official S-EMBER judge prompt; mIoU and R@0.5: temporal grounding. "
-        r"\emph{Streaming}: $k$ is the minimum number of tokens kept per frame; \emph{Timestamps}: whether a "
+        r"\emph{Streaming}: HERMES KV compression with no per-frame token floor; \emph{Timestamps}: whether a "
         r"frame's timestamp tokens are kept while its visual tokens survive, or always. \emph{Offline}: one pruning "
         r"pass after encoding keeps the given share of visual tokens; \emph{Stratified} keeps an equal share of "
         r"every frame. All numbers in \%.}",
@@ -102,14 +106,15 @@ def main():
     for gi, (label, rows) in enumerate(GROUPS):
         lines.append(r"\midrule")
         lines.append(rf"\multicolumn{{{3 + 3 * len(METRICS)}}}{{l}}{{\textbf{{{label}}}}} \\")
-        lines.append(" & ".join(rf"\textit{{{h}}}" for h in HEADS[gi]) + " &" * (3 * len(METRICS)) + r" \\")
+        lines.append(" & ".join(lead_cells([rf"\textit{{{h}}}" for h in HEADS[gi]])) + " &" * (3 * len(METRICS))
+                     + r" \\")
         prev = None
         for lead, path in rows:
             shown = list(lead)
             if prev and lead[0] == prev[0]:
                 shown[0] = ""
             prev = lead
-            lines.append(" & ".join(shown + cells(path)) + r" \\")
+            lines.append(" & ".join(lead_cells(shown) + cells(path)) + r" \\")
     lines += [r"\bottomrule", r"\end{tabular}", r"\end{table*}"]
     tex = "\n".join(lines) + "\n"
     open("tables/timeline_prompt.tex", "w").write(tex)

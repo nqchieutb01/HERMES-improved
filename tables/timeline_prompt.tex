@@ -7,7 +7,7 @@
 \begin{table*}[t]
 \centering
 \setlength{\tabcolsep}{4.5pt}
-\caption{\textbf{Timeline-reasoning prompt vs.\ the official S-EMBER prompt} on S-EMBER grounded VideoQA (475 questions, 300 videos). Each row runs one memory configuration twice, changing only the prompt. \emph{Official}: the benchmark prompt (answer and interval directly). \emph{Timeline}: the model first lists up to 8 timestamped moments where the evidence is visible, derives the answer from them, and gives the interval from the first to the last moment. $\Delta$ = Timeline $-$ Official, green for a gain and red for a loss; bold when the 95\% paired bootstrap confidence interval over questions excludes zero. Acc.: answer accuracy judged with the official S-EMBER judge prompt; mIoU and R@0.5: temporal grounding. \emph{Streaming}: $k$ is the minimum number of tokens kept per frame; \emph{Timestamps}: whether a frame's timestamp tokens are kept while its visual tokens survive, or always. \emph{Offline}: one pruning pass after encoding keeps the given share of visual tokens; \emph{Stratified} keeps an equal share of every frame. All numbers in \%.}
+\caption{\textbf{Timeline-reasoning prompt vs.\ the official S-EMBER prompt} on S-EMBER grounded VideoQA (475 questions, 300 videos). Each row runs one memory configuration twice, changing only the prompt. \emph{Official}: the benchmark prompt (answer and interval directly). \emph{Timeline}: the model first lists up to 8 timestamped moments where the evidence is visible, derives the answer from them, and gives the interval from the first to the last moment. $\Delta$ = Timeline $-$ Official, green for a gain and red for a loss; bold when the 95\% paired bootstrap confidence interval over questions excludes zero. Acc.: answer accuracy judged with the official S-EMBER judge prompt; mIoU and R@0.5: temporal grounding. \emph{Streaming}: HERMES KV compression with no per-frame token floor; \emph{Timestamps}: whether a frame's timestamp tokens are kept while its visual tokens survive, or always. \emph{Offline}: one pruning pass after encoding keeps the given share of visual tokens; \emph{Stratified} keeps an equal share of every frame. All numbers in \%.}
 \label{tab:timeline-prompt}
 \begin{tabular}{lllccccccccc}
 \toprule
@@ -16,14 +16,12 @@
 & & & Official & Timeline & $\Delta$ & Official & Timeline & $\Delta$ & Official & Timeline & $\Delta$ \\
 \midrule
 \multicolumn{12}{l}{\textbf{Qwen3-VL-8B, streaming (HERMES, 0.2\,fps)}} \\
-\textit{KV budget} & \textit{$k$} & \textit{Timestamps} & & & & & & & & & \\
-4k & 0 & Kept if frame survives & 11.8 & 13.5 & \gain{+1.7} & 23.9 & 21.6 & \loss{$-$2.3} & 21.9 & 20.6 & \loss{$-$1.3} \\
- & 1 & Kept if frame survives & 11.8 & 13.3 & \gain{+1.5} & 24.0 & 21.5 & \loss{$-$2.5} & 21.7 & 20.2 & \loss{$-$1.5} \\
- & 0 & Always kept & 11.8 & 14.1 & \gain{+2.3} & 23.9 & 21.7 & \loss{$-$2.2} & 21.9 & 20.6 & \loss{$-$1.3} \\
-6k & 0 & Kept if frame survives & 12.4 & 14.3 & \gain{+1.9} & 24.8 & 22.6 & \loss{$-$2.2} & 24.4 & 21.1 & \loss{$-$3.4} \\
- & 1 & Kept if frame survives & 12.2 & 13.7 & \gain{+1.5} & 24.6 & 22.5 & \loss{$-$2.1} & 24.6 & 21.3 & \loss{$-$3.4} \\
- & 0 & Always kept & 12.2 & 14.1 & \gain{+1.9} & 24.5 & 22.5 & \loss{$-$2.1} & 24.4 & 20.6 & \loss{$-$3.8} \\
-10.7k & 0 & Always kept & 11.2 & 15.6 & \gain{\textbf{+4.4}} & 23.9 & 22.6 & \loss{$-$1.3} & 22.7 & 21.1 & \loss{$-$1.7} \\
+\textit{KV budget} & \multicolumn{2}{l}{\textit{Timestamps}} & & & & & & & & & \\
+4k & \multicolumn{2}{l}{Kept if frame survives} & 11.8 & 13.5 & \gain{+1.7} & 23.9 & 21.6 & \loss{$-$2.3} & 21.9 & 20.6 & \loss{$-$1.3} \\
+ & \multicolumn{2}{l}{Always kept} & 11.8 & 14.1 & \gain{+2.3} & 23.9 & 21.7 & \loss{$-$2.2} & 21.9 & 20.6 & \loss{$-$1.3} \\
+6k & \multicolumn{2}{l}{Kept if frame survives} & 12.4 & 14.3 & \gain{+1.9} & 24.8 & 22.6 & \loss{$-$2.2} & 24.4 & 21.1 & \loss{$-$3.4} \\
+ & \multicolumn{2}{l}{Always kept} & 12.2 & 14.1 & \gain{+1.9} & 24.5 & 22.5 & \loss{$-$2.1} & 24.4 & 20.6 & \loss{$-$3.8} \\
+10.7k & \multicolumn{2}{l}{Always kept} & 11.2 & 15.6 & \gain{\textbf{+4.4}} & 23.9 & 22.6 & \loss{$-$1.3} & 22.7 & 21.1 & \loss{$-$1.7} \\
 \midrule
 \multicolumn{12}{l}{\textbf{Qwen3-VL-8B, offline (uniform frames, one pruning pass)}} \\
 \textit{Frames} & \textit{Keep} & \textit{Pruning} & & & & & & & & & \\
