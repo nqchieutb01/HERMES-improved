@@ -7,7 +7,7 @@
 \begin{table*}[t]
 \centering
 \setlength{\tabcolsep}{3.5pt}
-\caption{\textbf{Timeline-reasoning prompt vs.\ the official S-EMBER prompt} on S-EMBER grounded VideoQA (475 questions, 300 videos). Each row runs one memory configuration twice, changing only the prompt. \emph{Off.}: the official benchmark prompt (answer and interval directly). \emph{TL} (timeline): the model first lists up to 8 timestamped moments where the evidence is visible, derives the answer from them, and gives the interval from the first to the last moment. $\Delta$ = TL $-$ Off., green for a gain and red for a loss; bold when the 95\% paired bootstrap confidence interval over questions excludes zero. Acc.: answer accuracy judged with the official S-EMBER judge prompt; mIoU and R@0.5: temporal grounding; GQ@0.5: the answer is judged correct and its interval has IoU $\geq 0.5$. \emph{Streaming}: HERMES KV compression with no per-frame token floor; \emph{Timestamps}: whether a frame's timestamp tokens are kept while its visual tokens survive, or always. \emph{Offline}: one pruning pass after encoding keeps the given share of visual tokens; \emph{Stratified} keeps an equal share of every frame. All numbers in \%.}
+\caption{\textbf{Timeline-reasoning prompt vs.\ the official S-EMBER prompt} on S-EMBER grounded VideoQA (475 questions, 300 videos). Each row runs one memory configuration twice, changing only the prompt. \emph{Off.}: the official benchmark prompt (answer and interval directly). \emph{TL} (timeline): the model first lists up to 8 timestamped moments where the evidence is visible, derives the answer from them, and gives the interval from the first to the last moment. $\Delta$ = TL $-$ Off., green for a gain and red for a loss; bold when the 95\% paired bootstrap confidence interval over questions excludes zero. Acc.: answer accuracy judged with the official S-EMBER judge prompt; mIoU and R@0.5: temporal grounding; GQ@0.5: the answer is judged correct and its interval has IoU $\geq 0.5$. \emph{Streaming}: HERMES KV compression with no per-frame token floor; \emph{Timestamps}: whether a frame's timestamp tokens are kept while its visual tokens survive, or always. \emph{Offline}: one pruning pass after encoding keeps the given share of visual tokens: \emph{HERMES} by attention score, \emph{Random} at random, \emph{Stratified} an equal share of every frame; \emph{Spatial pooling} lowers the decode resolution instead (scale $s$ keeps $\approx s^2$ of the tokens). All numbers in \%.}
 \label{tab:timeline-prompt}
 \begin{tabular}{lllcccccccccccc}
 \toprule
@@ -27,14 +27,30 @@
 \textit{Frames} & \textit{Keep} & \textit{Pruning} & & & & & & & & & & & & \\
 32 frames & 100\% & None & 13.3 & 18.9 & \gain{\textbf{+5.7}} & 27.5 & 25.4 & \loss{$-$2.1} & 26.7 & 23.4 & \loss{$-$3.4} & 5.3 & 8.8 & \gain{\textbf{+3.6}} \\
 64 frames & 100\% & None & 13.5 & 18.5 & \gain{\textbf{+5.1}} & 26.9 & 28.0 & \gain{+1.2} & 25.3 & 26.7 & \gain{+1.5} & 4.4 & 8.6 & \gain{\textbf{+4.2}} \\
+\cmidrule(lr){2-15}
+ & 50\% & HERMES & 13.9 & 19.8 & \gain{\textbf{+5.9}} & 28.4 & 29.2 & \gain{+0.8} & 26.7 & 29.1 & \gain{+2.3} & 4.4 & 10.1 & \gain{\textbf{+5.7}} \\
+ &  & Random & 12.6 & 15.4 & \gain{+2.7} & 28.6 & 28.1 & \loss{$-$0.5} & 26.9 & 27.6 & \gain{+0.6} & 5.1 & 8.0 & \gain{+2.9} \\
+ &  & Stratified & 12.6 & 16.8 & \gain{\textbf{+4.2}} & 28.2 & 29.2 & \gain{+1.0} & 27.4 & 28.8 & \gain{+1.5} & 5.1 & 9.5 & \gain{\textbf{+4.4}} \\
+ &  & Spatial pooling ($\times$0.7) & 14.1 & 17.7 & \gain{+3.6} & 25.7 & 26.8 & \gain{+1.1} & 24.0 & 26.7 & \gain{+2.7} & 4.4 & 9.1 & \gain{\textbf{+4.6}} \\
+\cmidrule(lr){2-15}
+ & 25\% & HERMES & 11.8 & 16.6 & \gain{\textbf{+4.8}} & 25.9 & 26.3 & \gain{+0.4} & 24.0 & 24.8 & \gain{+0.8} & 3.8 & 8.2 & \gain{\textbf{+4.4}} \\
+ &  & Random & 12.4 & 17.7 & \gain{\textbf{+5.3}} & 27.2 & 28.2 & \gain{+0.9} & 25.3 & 27.4 & \gain{+2.1} & 4.8 & 8.2 & \gain{\textbf{+3.4}} \\
+ &  & Stratified & 11.8 & 16.6 & \gain{\textbf{+4.8}} & 27.0 & 26.5 & \loss{$-$0.5} & 25.9 & 25.7 & \loss{$-$0.2} & 4.2 & 9.1 & \gain{\textbf{+4.8}} \\
+ &  & Spatial pooling ($\times$0.5) & 13.1 & 15.8 & \gain{+2.7} & 20.8 & 23.6 & \gain{+2.8} & 18.7 & 22.3 & \gain{+3.6} & 3.2 & 6.7 & \gain{\textbf{+3.6}} \\
+\cmidrule(lr){2-15}
  & 10\% & HERMES & 9.7 & 13.1 & \gain{+3.4} & 23.3 & 18.3 & \loss{\textbf{$-$4.9}} & 23.2 & 16.2 & \loss{\textbf{$-$6.9}} & 3.4 & 4.0 & \gain{+0.6} \\
- & 10\% & Stratified & 9.9 & 14.1 & \gain{\textbf{+4.2}} & 25.9 & 23.7 & \loss{$-$2.2} & 24.2 & 21.7 & \loss{$-$2.5} & 2.9 & 6.1 & \gain{\textbf{+3.2}} \\
+ &  & Random & -- & -- & -- & -- & -- & -- & -- & -- & -- & -- & -- & -- \\
+ &  & Stratified & 9.9 & 14.1 & \gain{\textbf{+4.2}} & 25.9 & 23.7 & \loss{$-$2.2} & 24.2 & 21.7 & \loss{$-$2.5} & 2.9 & 6.1 & \gain{\textbf{+3.2}} \\
+ &  & Spatial pooling ($\times$0.35) & -- & -- & -- & -- & -- & -- & -- & -- & -- & -- & -- & -- \\
+\cmidrule(lr){2-15}
  & 5\% & HERMES & 8.8 & 13.5 & \gain{\textbf{+4.6}} & 14.8 & 12.2 & \loss{\textbf{$-$2.6}} & 13.3 & 10.5 & \loss{$-$2.7} & 1.5 & 3.4 & \gain{\textbf{+1.9}} \\
- & 5\% & Stratified & 9.7 & 13.3 & \gain{+3.6} & 25.4 & 21.8 & \loss{\textbf{$-$3.6}} & 24.6 & 18.1 & \loss{\textbf{$-$6.5}} & 2.9 & 5.7 & \gain{\textbf{+2.7}} \\
+ &  & Random & -- & -- & -- & -- & -- & -- & -- & -- & -- & -- & -- & -- \\
+ &  & Stratified & 9.7 & 13.3 & \gain{+3.6} & 25.4 & 21.8 & \loss{\textbf{$-$3.6}} & 24.6 & 18.1 & \loss{\textbf{$-$6.5}} & 2.9 & 5.7 & \gain{\textbf{+2.7}} \\
 \midrule
 \multicolumn{15}{l}{\textbf{Qwen2.5-VL-7B, offline (uniform frames, one pruning pass)}} \\
 \textit{Frames} & \textit{Keep} & \textit{Pruning} & & & & & & & & & & & & \\
 64 frames & 100\% & None & 10.7 & 10.5 & \loss{$-$0.2} & 4.9 & 17.7 & \gain{\textbf{+12.8}} & 2.1 & 15.8 & \gain{\textbf{+13.7}} & 0.4 & 3.8 & \gain{\textbf{+3.4}} \\
+\cmidrule(lr){2-15}
  & 10\% & Stratified & 9.3 & 9.3 & \same{+0.0} & 4.6 & 13.2 & \gain{\textbf{+8.7}} & 2.1 & 8.6 & \gain{\textbf{+6.5}} & 0.2 & 1.7 & \gain{\textbf{+1.5}} \\
 \bottomrule
 \end{tabular}

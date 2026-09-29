@@ -57,7 +57,14 @@ METRICS = [("acc", "Acc."), ("miou", "mIoU"), ("r05", "R@0.5"), ("gq05", "GQ@0.5
 HEADS = {0: ("KV budget", "Timestamps"), 1: ("Frames", "Keep", "Pruning"), 2: ("Frames", "Keep", "Pruning")}
 
 
+def ready(run):
+    return all(os.path.exists(f"results/{run}/{f}")
+               for f in ("sember_grounding_scored.jsonl", "answer_judgments.jsonl"))
+
+
 def cells(path):
+    if not (ready(path(True)) and ready(path(False))):
+        return ["--"] * (3 * len(METRICS))  # run not finished or not judged yet
     t, b = per_question(path(True)), per_question(path(False))
     qs = sorted(set(t) & set(b))
     out = []

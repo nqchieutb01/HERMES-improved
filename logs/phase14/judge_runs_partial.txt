@@ -1,0 +1,8 @@
+qwen3_vl_8b/sember_grounding/uniform-n64-time-count-location-offline-hermes-keep0.5-timeline-v300-native-time
+qwen3_vl_8b/sember_grounding/uniform-n64-time-count-location-offline-random-keep0.5-timeline-v300-native-time
+qwen3_vl_8b/sember_grounding/uniform-n64-time-count-location-offline-stratified-keep0.5-timeline-v300-native-time
+qwen3_vl_8b/sember_grounding/uniform-n64-time-count-location-scale0.7-timeline-v300-native-time
+qwen3_vl_8b/sember_grounding/uniform-n64-time-count-location-offline-hermes-keep0.25-timeline-v300-native-time
+qwen3_vl_8b/sember_grounding/uniform-n64-time-count-location-offline-random-keep0.25-timeline-v300-native-time
+qwen3_vl_8b/sember_grounding/uniform-n64-time-count-location-offline-stratified-keep0.25-timeline-v300-native-time
+qwen3_vl_8b/sember_grounding/uniform-n64-time-count-location-scale0.5-timeline-v300-native-time
