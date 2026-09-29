@@ -87,9 +87,9 @@ def main():
         r"\begin{table*}[t]", r"\centering", r"\setlength{\tabcolsep}{3.5pt}",
         r"\caption{\textbf{Timeline-reasoning prompt vs.\ the official S-EMBER prompt} on S-EMBER grounded "
         r"VideoQA (475 questions, 300 videos). Each row runs one memory configuration twice, changing only the "
-        r"prompt. \emph{Official}: the benchmark prompt (answer and interval directly). \emph{Timeline}: the model "
+        r"prompt. \emph{Off.}: the official benchmark prompt (answer and interval directly). \emph{TL} (timeline): the model "
         r"first lists up to 8 timestamped moments where the evidence is visible, derives the answer from them, and "
-        r"gives the interval from the first to the last moment. $\Delta$ = Timeline $-$ Official, green for a gain "
+        r"gives the interval from the first to the last moment. $\Delta$ = TL $-$ Off., green for a gain "
         r"and red for a loss; bold when the 95\% paired bootstrap confidence interval over questions excludes zero. "
         r"Acc.: answer accuracy judged with the official S-EMBER judge prompt; mIoU and R@0.5: temporal grounding; "
         r"GQ@0.5: the answer is judged correct and its interval has IoU $\geq 0.5$. "
@@ -102,7 +102,7 @@ def main():
         r"\toprule",
         r"& & & " + " & ".join(rf"\multicolumn{{3}}{{c}}{{{name}}}" for _, name in METRICS) + r" \\",
         " ".join(rf"\cmidrule(lr){{{4 + 3 * i}-{6 + 3 * i}}}" for i in range(len(METRICS))),
-        r"& & & " + " & ".join(["Official", "Timeline", r"$\Delta$"] * len(METRICS)) + r" \\",
+        r"& & & " + " & ".join(["Off.", "TL", r"$\Delta$"] * len(METRICS)) + r" \\",
     ]
     for gi, (label, rows) in enumerate(GROUPS):
         lines.append(r"\midrule")

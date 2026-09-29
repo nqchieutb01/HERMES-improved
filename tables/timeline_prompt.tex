@@ -7,13 +7,13 @@
 \begin{table*}[t]
 \centering
 \setlength{\tabcolsep}{3.5pt}
-\caption{\textbf{Timeline-reasoning prompt vs.\ the official S-EMBER prompt} on S-EMBER grounded VideoQA (475 questions, 300 videos). Each row runs one memory configuration twice, changing only the prompt. \emph{Official}: the benchmark prompt (answer and interval directly). \emph{Timeline}: the model first lists up to 8 timestamped moments where the evidence is visible, derives the answer from them, and gives the interval from the first to the last moment. $\Delta$ = Timeline $-$ Official, green for a gain and red for a loss; bold when the 95\% paired bootstrap confidence interval over questions excludes zero. Acc.: answer accuracy judged with the official S-EMBER judge prompt; mIoU and R@0.5: temporal grounding; GQ@0.5: the answer is judged correct and its interval has IoU $\geq 0.5$. \emph{Streaming}: HERMES KV compression with no per-frame token floor; \emph{Timestamps}: whether a frame's timestamp tokens are kept while its visual tokens survive, or always. \emph{Offline}: one pruning pass after encoding keeps the given share of visual tokens; \emph{Stratified} keeps an equal share of every frame. All numbers in \%.}
+\caption{\textbf{Timeline-reasoning prompt vs.\ the official S-EMBER prompt} on S-EMBER grounded VideoQA (475 questions, 300 videos). Each row runs one memory configuration twice, changing only the prompt. \emph{Off.}: the official benchmark prompt (answer and interval directly). \emph{TL} (timeline): the model first lists up to 8 timestamped moments where the evidence is visible, derives the answer from them, and gives the interval from the first to the last moment. $\Delta$ = TL $-$ Off., green for a gain and red for a loss; bold when the 95\% paired bootstrap confidence interval over questions excludes zero. Acc.: answer accuracy judged with the official S-EMBER judge prompt; mIoU and R@0.5: temporal grounding; GQ@0.5: the answer is judged correct and its interval has IoU $\geq 0.5$. \emph{Streaming}: HERMES KV compression with no per-frame token floor; \emph{Timestamps}: whether a frame's timestamp tokens are kept while its visual tokens survive, or always. \emph{Offline}: one pruning pass after encoding keeps the given share of visual tokens; \emph{Stratified} keeps an equal share of every frame. All numbers in \%.}
 \label{tab:timeline-prompt}
 \begin{tabular}{lllcccccccccccc}
 \toprule
 & & & \multicolumn{3}{c}{Acc.} & \multicolumn{3}{c}{mIoU} & \multicolumn{3}{c}{R@0.5} & \multicolumn{3}{c}{GQ@0.5} \\
 \cmidrule(lr){4-6} \cmidrule(lr){7-9} \cmidrule(lr){10-12} \cmidrule(lr){13-15}
-& & & Official & Timeline & $\Delta$ & Official & Timeline & $\Delta$ & Official & Timeline & $\Delta$ & Official & Timeline & $\Delta$ \\
+& & & Off. & TL & $\Delta$ & Off. & TL & $\Delta$ & Off. & TL & $\Delta$ & Off. & TL & $\Delta$ \\
 \midrule
 \multicolumn{15}{l}{\textbf{Qwen3-VL-8B, streaming (HERMES, 0.2\,fps)}} \\
 \textit{KV budget} & \multicolumn{2}{l}{\textit{Timestamps}} & & & & & & & & & & & & \\
