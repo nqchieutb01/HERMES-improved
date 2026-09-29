@@ -40,10 +40,13 @@ GROUPS = [
     ("Qwen3-VL-8B, offline (uniform frames, one pruning pass)", [
         (("32 frames", "100\\%", "None"), uniform(Q3, 32)),
         (("64 frames", "100\\%", "None"), uniform(Q3, 64)),
-        (("64 frames", "10\\%", "HERMES"), uniform(Q3, 64, "offline-hermes-keep0.1")),
-        (("64 frames", "10\\%", "Stratified"), uniform(Q3, 64, "offline-stratified-keep0.1")),
-        (("64 frames", "5\\%", "HERMES"), uniform(Q3, 64, "offline-hermes-keep0.05")),
-        (("64 frames", "5\\%", "Stratified"), uniform(Q3, 64, "offline-stratified-keep0.05")),
+    ] + [
+        (("64 frames", keep, label), uniform(Q3, 64, tag))
+        for keep, ratio, scale in (("50\\%", "0.5", "0.7"), ("25\\%", "0.25", "0.5"), ("10\\%", "0.1", "0.35"),
+                                   ("5\\%", "0.05", None))
+        for label, tag in [(name, f"offline-{score}-keep{ratio}") for score, name in
+                           (("hermes", "HERMES"), ("random", "Random"), ("stratified", "Stratified"))]
+        + ([(f"Spatial pooling ($\\times${scale})", f"scale{scale}")] if scale else [])
     ]),
     ("Qwen2.5-VL-7B, offline (uniform frames, one pruning pass)", [
         (("64 frames", "100\\%", "None"), uniform(Q25, 64)),
@@ -95,8 +98,9 @@ def main():
         r"GQ@0.5: the answer is judged correct and its interval has IoU $\geq 0.5$. "
         r"\emph{Streaming}: HERMES KV compression with no per-frame token floor; \emph{Timestamps}: whether a "
         r"frame's timestamp tokens are kept while its visual tokens survive, or always. \emph{Offline}: one pruning "
-        r"pass after encoding keeps the given share of visual tokens; \emph{Stratified} keeps an equal share of "
-        r"every frame. All numbers in \%.}",
+        r"pass after encoding keeps the given share of visual tokens: \emph{HERMES} by attention score, "
+        r"\emph{Random} at random, \emph{Stratified} an equal share of every frame; \emph{Spatial pooling} "
+        r"lowers the decode resolution instead (scale $s$ keeps $\approx s^2$ of the tokens). All numbers in \%.}",
         r"\label{tab:timeline-prompt}",
         r"\begin{tabular}{lll" + "ccc" * len(METRICS) + "}",
         r"\toprule",
@@ -114,6 +118,11 @@ def main():
             shown = list(lead)
             if prev and lead[0] == prev[0]:
                 shown[0] = ""
+                if len(lead) == 3 and lead[1] == prev[1]:
+                    shown[1] = ""
+                elif len(lead) == 3:
+                    # Thin rule between keep-ratio blocks of the same frame count.
+                    lines.append(rf"\cmidrule(lr){{2-{3 + 3 * len(METRICS)}}}")
             prev = lead
             lines.append(" & ".join(lead_cells(shown) + cells(path)) + r" \\")
     lines += [r"\bottomrule", r"\end{tabular}", r"\end{table*}"]
