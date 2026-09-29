@@ -2,7 +2,7 @@
 
 Each row is one memory configuration run twice on S-EMBER grounding (475 questions, 300 videos): once with
 the official prompt and once with the timeline prompt. Columns: answer accuracy (official S-EMBER judge
-prompt), mIoU and R@0.5, each as official / timeline / change. Changes are coloured by sign and bold when
+prompt), mIoU, R@0.5 and GQ@0.5, each as official / timeline / change. Changes are coloured by sign and bold when
 the 95% paired bootstrap CI over questions excludes zero. Needs answer_judgments.jsonl for every run.
 Writes tables/timeline_prompt.tex. Run from the repo root: python3 tables/make_timeline_table.py
 """
@@ -50,7 +50,7 @@ GROUPS = [
         (("64 frames", "10\\%", "Stratified"), uniform(Q25, 64, "offline-stratified-keep0.1")),
     ]),
 ]
-METRICS = [("acc", "Acc."), ("miou", "mIoU"), ("r05", "R@0.5")]
+METRICS = [("acc", "Acc."), ("miou", "mIoU"), ("r05", "R@0.5"), ("gq05", "GQ@0.5")]
 HEADS = {0: ("KV budget", "Timestamps"), 1: ("Frames", "Keep", "Pruning"), 2: ("Frames", "Keep", "Pruning")}
 
 
@@ -84,14 +84,15 @@ def main():
         r"%   \newcommand{\gain}[1]{\cellcolor{gaincol!12}\textcolor{gaincol}{#1}}",
         r"%   \newcommand{\loss}[1]{\cellcolor{losscol!12}\textcolor{losscol}{#1}}",
         r"%   \newcommand{\same}[1]{#1}",
-        r"\begin{table*}[t]", r"\centering", r"\setlength{\tabcolsep}{4.5pt}",
+        r"\begin{table*}[t]", r"\centering", r"\setlength{\tabcolsep}{3.5pt}",
         r"\caption{\textbf{Timeline-reasoning prompt vs.\ the official S-EMBER prompt} on S-EMBER grounded "
         r"VideoQA (475 questions, 300 videos). Each row runs one memory configuration twice, changing only the "
         r"prompt. \emph{Official}: the benchmark prompt (answer and interval directly). \emph{Timeline}: the model "
         r"first lists up to 8 timestamped moments where the evidence is visible, derives the answer from them, and "
         r"gives the interval from the first to the last moment. $\Delta$ = Timeline $-$ Official, green for a gain "
         r"and red for a loss; bold when the 95\% paired bootstrap confidence interval over questions excludes zero. "
-        r"Acc.: answer accuracy judged with the official S-EMBER judge prompt; mIoU and R@0.5: temporal grounding. "
+        r"Acc.: answer accuracy judged with the official S-EMBER judge prompt; mIoU and R@0.5: temporal grounding; "
+        r"GQ@0.5: the answer is judged correct and its interval has IoU $\geq 0.5$. "
         r"\emph{Streaming}: HERMES KV compression with no per-frame token floor; \emph{Timestamps}: whether a "
         r"frame's timestamp tokens are kept while its visual tokens survive, or always. \emph{Offline}: one pruning "
         r"pass after encoding keeps the given share of visual tokens; \emph{Stratified} keeps an equal share of "
