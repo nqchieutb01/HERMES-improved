@@ -14,7 +14,12 @@ import torch.nn.functional as F
 from logzero import logger
 from transformers import AutoProcessor, Qwen3VLForConditionalGeneration
 
-from inference.abstract_hermes import Abstract_Hermes, time_token_tag
+from inference.abstract_hermes import (
+    Abstract_Hermes,
+    is_time_token,
+    time_token_group_frame,
+    time_token_tag,
+)
 from inference.qwenvl_hermes import (
     QwenVL_Hermes,
     pad_to_temporal_patch,
@@ -216,7 +221,9 @@ class Qwen3VL_Hermes(QwenVL_Hermes):
                 for k in range(patch)
             ]
             stamp = (times[group * patch] + times[group * patch + patch - 1]) / 2
-            text_ids = tokenizer(
+            # Diagnostics: shift every timestamp by time_offset seconds, or drop the text.
+            stamp += float(getattr(self, "time_offset", 0.0))
+            text_ids = [] if getattr(self, "drop_timestamps", False) else tokenizer(
                 f"<{stamp:.1f} seconds>", add_special_tokens=False
             ).input_ids
             add_text(text_ids + [start_id], real[0])
@@ -353,6 +360,7 @@ class Qwen3VL_Hermes(QwenVL_Hermes):
             config.hidden_size // config.num_attention_heads,
         )
         attention_weights = []
+        exact = getattr(self, "exact_attention", False)
 
         for layer_idx, layer in enumerate(self.language_model.layers):
             past_key, past_value = past_key_values[layer_idx]
@@ -397,12 +405,62 @@ class Qwen3VL_Hermes(QwenVL_Hermes):
             scores = torch.matmul(
                 query_states.float(), key_states.float().transpose(-2, -1)
             ) * attention.scaling
+            if exact:
+                # Causal mask within the query block (the cached prefix is fully visible).
+                past = past_key.shape[2]
+                block = torch.ones(q_len, q_len, dtype=torch.bool, device=device).triu(1)
+                scores[..., past:] = scores[..., past:].masked_fill(block, float("-inf"))
             scores = F.softmax(scores, dim=-1, dtype=torch.float32).to(
                 query_states.dtype
             )
             attention_weights.append(scores)
+            if exact:
+                # Propagate the query tokens through the full layer (attention output, residual,
+                # MLP), so the next layer's queries come from real hidden states. The default path
+                # reuses the input embeddings at every layer (HERMES's original approximation).
+                attended = torch.matmul(scores, value_states).transpose(1, 2).reshape(batch, q_len, -1)
+                hidden_states = hidden_states + attention.o_proj(attended)
+                hidden_states = hidden_states + layer.mlp(layer.post_attention_layernorm(hidden_states))
 
         return attention_weights
+
+    def question_attention_profile(self, question, first_frame=0):
+        """Diagnostics: attention from the real question to every frame of the current cache.
+
+        Runs the question text through all layers with exact propagation and returns, per layer
+        band (early / mid / late thirds), the attention mass on each frame's visual tokens and on
+        each temporal group's timestamp text, averaged over heads and question tokens. Frame ids are
+        relative to ``first_frame``.
+        """
+        ids = torch.as_tensor([self.processor.tokenizer(question).input_ids], device=self.device)
+        exact_before = getattr(self, "exact_attention", False)
+        self.exact_attention = True
+        try:
+            with torch.no_grad():
+                weights = self._compute_attention_scores_manually(ids, self.kv_cache)
+        finally:
+            self.exact_attention = exact_before
+        num_layers = len(weights)
+        bands = [range(0, num_layers // 3), range(num_layers // 3, 2 * num_layers // 3),
+                 range(2 * num_layers // 3, num_layers)]
+        visual, stamps = {}, {}
+        for band_idx, band in enumerate(bands):
+            for layer_idx in band:
+                mass = weights[layer_idx][0].float().mean(dim=(0, 1))  # over heads and query tokens
+                ids_layer = self._token_frame_ids_per_layer[layer_idx].to(mass.device)
+                mass = mass[: ids_layer.numel()]
+                for frame in torch.unique(ids_layer[ids_layer >= 0]).tolist():
+                    v = visual.setdefault(frame - first_frame, [0.0, 0.0, 0.0])
+                    v[band_idx] += float(mass[ids_layer == frame].sum()) / len(band)
+                time_ids = is_time_token(ids_layer)
+                if time_ids.any():
+                    groups = time_token_group_frame(ids_layer[time_ids])
+                    group_mass = mass[time_ids]
+                    for frame in torch.unique(groups).tolist():
+                        s = stamps.setdefault(int(frame) - first_frame, [0.0, 0.0, 0.0])
+                        s[band_idx] += float(group_mass[groups == frame].sum()) / len(band)
+        round3 = lambda d: {int(k): [round(x, 6) for x in v] for k, v in sorted(d.items())}
+        return {"visual": round3(visual), "timestamps": round3(stamps)}
 
 
 def load_model(

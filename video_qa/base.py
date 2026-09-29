@@ -292,11 +292,13 @@ class BaseVQA:
             fps=source_fps,
             end_time=end_time,
         )
-        frame_idx = uniform_frame_indices(
-            total_frames=len(reader),
+        # Diagnostic: skip the first uniform_start_frac of the window (0 = start at frame zero).
+        first = int(float(getattr(self, "uniform_start_frac", 0.0)) * end_frame)
+        frame_idx = [first + i for i in uniform_frame_indices(
+            total_frames=len(reader) - first,
             num_frames=num_frames,
-            end_frame_exclusive=end_frame,
-        )
+            end_frame_exclusive=end_frame - first,
+        )]
         if not frame_idx:
             raise ValueError(
                 f"No frames are available through time {end_time!r} in {video_path}"
@@ -426,16 +428,31 @@ def work(QA_CLASS):
     )
     parser.add_argument(
         "--prune_score",
-        choices=("hermes", "random", "recent", "stratified"),
+        choices=("hermes", "random", "recent", "stratified", "oracle", "hermes_exact"),
         default="hermes",
-        help="Token score used by compression: HERMES attention+recency, random, or most recent",
+        help="Token score used by compression: HERMES attention+recency, random, or most recent; "
+             "oracle keeps gold-interval frames first (diagnostic); hermes_exact propagates the "
+             "probe questions through every layer when scoring",
     )
     parser.add_argument(
         "--retention_snapshot",
         type=str2bool,
         default=False,
-        help="Write per-question token retention per frame to retention-<chunk>.jsonl (streaming only)",
+        help="Write per-question token retention per frame to retention-<chunk>.jsonl",
     )
+    parser.add_argument(
+        "--question_attention",
+        type=str2bool,
+        default=False,
+        help="Uniform sampling: write the real question's attention per frame (before pruning) "
+             "to qattn-<chunk>.jsonl (diagnostic)",
+    )
+    parser.add_argument("--time_offset", type=float, default=0.0,
+                        help="Diagnostic: add this many seconds to every Qwen3 timestamp")
+    parser.add_argument("--drop_timestamps", type=str2bool, default=False,
+                        help="Diagnostic: omit Qwen3's per-group timestamp text")
+    parser.add_argument("--uniform_start_frac", type=float, default=0.0,
+                        help="Diagnostic: uniform frames start at this fraction of the question time")
     parser.add_argument(
         "--frame_scale",
         type=float,
@@ -646,10 +663,17 @@ def work(QA_CLASS):
         parser.error("offline_keep_ratio must be in (0, 1]")
     analyzer.offline_keep_ratio = args.offline_keep_ratio
     videoqa_model.prune_score = args.prune_score
-    if args.prune_score == "stratified":
+    videoqa_model.exact_attention = args.prune_score == "hermes_exact"
+    if args.prune_score in ("stratified", "oracle"):
         videoqa_model.force_token_provenance = True
-    if args.retention_snapshot:
+    if args.retention_snapshot or args.question_attention:
         videoqa_model.force_token_provenance = True
+    analyzer.question_attention = args.question_attention
+    videoqa_model.time_offset = args.time_offset
+    videoqa_model.drop_timestamps = args.drop_timestamps
+    if not 0 <= args.uniform_start_frac < 1:
+        parser.error("uniform_start_frac must be in [0, 1)")
+    analyzer.uniform_start_frac = args.uniform_start_frac
     if not args.sample_schedule:
         analyzer.sample_schedule = None
     elif args.sample_schedule.startswith("dup:"):

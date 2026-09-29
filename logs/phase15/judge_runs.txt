@@ -1,0 +1,17 @@
+qwen3_vl_8b/sember_grounding/uniform-n64-time-count-location-dx-qattn-v300-native-time
+qwen3_vl_8b/sember_grounding/uniform-n64-time-count-location-dx-ret-hermes-keep0.1-v300-native-time
+qwen3_vl_8b/sember_grounding/uniform-n64-time-count-location-dx-ret-hermes-keep0.05-v300-native-time
+qwen3_vl_8b/sember_grounding/uniform-n64-time-count-location-dx-ret-stratified-keep0.1-v300-native-time
+qwen3_vl_8b/sember_grounding/uniform-n64-time-count-location-dx-ret-random-keep0.1-v300-native-time
+qwen3_vl_8b/sember_grounding/uniform-n64-time-count-location-offline-oracle-keep0.1-v300-native-time
+qwen3_vl_8b/sember_grounding/uniform-n64-time-count-location-offline-oracle-keep0.1-timeline-v300-native-time
+qwen3_vl_8b/sember_grounding/uniform-n64-time-count-location-offline-oracle-keep0.05-v300-native-time
+qwen3_vl_8b/sember_grounding/uniform-n64-time-count-location-offline-oracle-keep0.05-timeline-v300-native-time
+qwen3_vl_8b/sember_grounding/uniform-n64-time-count-location-offline-hermes_exact-keep0.1-v300-native-time
+qwen3_vl_8b/sember_grounding/uniform-n64-time-count-location-offline-hermes_exact-keep0.05-v300-native-time
+qwen3_vl_8b/sember_grounding/uniform-n64-time-count-location-offline-hermes_exact-keep0.1-timeline-v300-native-time
+qwen3_vl_8b/sember_grounding/uniform-n64-time-count-location-dx-offset200-v300-native-time
+qwen3_vl_8b/sember_grounding/uniform-n64-time-count-location-dx-offset200-timeline-v300-native-time
+qwen3_vl_8b/sember_grounding/uniform-n64-time-count-location-dx-nostamp-v300-native-time
+qwen3_vl_8b/sember_grounding/uniform-n64-time-count-location-dx-start50-v300-native-time
+qwen3_vl_8b/sember_grounding/uniform-n64-time-count-location-dx-start50-timeline-v300-native-time

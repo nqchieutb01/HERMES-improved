@@ -916,7 +916,18 @@ class QwenVL_Hermes(Qwen2_5_VLForConditionalGeneration, Abstract_Hermes):
                 self._rank_within_frames(s, layer_configs[i]["visual_start_idx"], i)
                 for i, s in enumerate(refined_scores)
             ]
-        elif score_mode != "hermes":
+        elif score_mode == "oracle":
+            # Diagnostics (uses the gold answer interval): tokens of frames inside the gold interval
+            # outrank every other token; the rest of the budget is spread over frames like stratified.
+            hermes_scores, refined_scores = refined_scores, []
+            for i, s in enumerate(hermes_scores):
+                ranked = self._rank_within_frames(s, layer_configs[i]["visual_start_idx"], i)
+                start = layer_configs[i]["visual_start_idx"]
+                ids = self._token_frame_ids_per_layer[i][start:start + s.numel()].to(s.device)
+                gold = torch.isin(ids, torch.as_tensor(sorted(getattr(self, "oracle_frame_ids", set())),
+                                                       dtype=ids.dtype, device=s.device))
+                refined_scores.append(ranked + 2.0 * gold.to(ranked.dtype))
+        elif score_mode not in ("hermes", "hermes_exact"):
             raise ValueError(f"unknown prune_score {score_mode!r}")
 
         if evict_masks is not None:

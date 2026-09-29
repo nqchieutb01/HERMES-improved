@@ -87,6 +87,9 @@ class HermesVQA(BaseVQA):
                     float(sample.get('end_time', 0.0)),
                     selected_frame_indices,
                 )
+                # Frame ids keep counting across questions; ids first_frame + i <-> frame_times[i].
+                first_frame = getattr(self.qa_model, 'total_processed_frames', 0)
+                frame_times = list(getattr(self, 'last_uniform_frame_times', []))
                 for start in range(0, len(question_video), encode_chunk_size):
                     stop = min(start + encode_chunk_size, len(question_video))
                     print(f"Encoding uniform frames {start} to {stop-1}")
@@ -95,6 +98,24 @@ class HermesVQA(BaseVQA):
                     if hasattr(self.qa_model, 'next_frame_times'):
                         self.qa_model.next_frame_times = self.last_uniform_frame_times[start:stop]
                     self.qa_model.encode_video_chunk(question_video[start:stop])
+                if getattr(self, 'question_attention', False):
+                    # Diagnostic: where the real question attends, over the unpruned cache.
+                    profile = self.qa_model.question_attention_profile(question, first_frame=first_frame)
+                    with open(os.path.join(self.save_dir, f"qattn-{self.chunk_idx}.jsonl"), "a") as out:
+                        out.write(json.dumps({
+                            "video_id": video_sample['video_id'],
+                            "question_id": sample.get('question_id'),
+                            "frame_times": frame_times,
+                            **profile,
+                        }) + "\n")
+                if getattr(self.qa_model, 'prune_score', 'hermes') == 'oracle':
+                    # Diagnostic: frames inside the gold interval (nearest frame if none falls inside).
+                    lo, hi = float(sample['answer_start_time']), float(sample['answer_end_time'])
+                    inside = {first_frame + i for i, t in enumerate(frame_times) if lo <= t <= hi}
+                    if not inside:
+                        mid = (lo + hi) / 2
+                        inside = {first_frame + min(range(len(frame_times)), key=lambda i: abs(frame_times[i] - mid))}
+                    self.qa_model.oracle_frame_ids = inside
                 keep_ratio = float(getattr(self, 'offline_keep_ratio', 1.0))
                 if keep_ratio < 1.0:
                     # Offline token pruning: one compression pass over all encoded frames,
@@ -154,8 +175,7 @@ class HermesVQA(BaseVQA):
             # Memory at question time: tokens kept per streamed frame (for retention analysis).
             snapshot = (
                 self.qa_model.retention_snapshot()
-                if getattr(self, 'retention_snapshot', False) and frame_sampling == 'incremental'
-                else None
+                if getattr(self, 'retention_snapshot', False) else None
             )
 
             if 'choices' in sample:
@@ -229,11 +249,17 @@ class HermesVQA(BaseVQA):
                     sample.get('answers', []), ensure_ascii=False
                 )
 
-            if snapshot is not None:
+            if snapshot is not None and frame_sampling == 'uniform':
+                # Offline: frame ids are relative to this question's first encoded frame.
+                shift = lambda d: {int(k) - first_frame: v for k, v in d.items()}
+                snapshot = {key: shift(val) for key, val in snapshot.items()}
+                times = frame_times
+            elif snapshot is not None:
                 times = (
                     stream_frame_times[:current_frame_idx] if stream_frame_times is not None
                     else [i / float(self.sample_fps) for i in range(current_frame_idx)]
                 )
+            if snapshot is not None:
                 with open(os.path.join(self.save_dir, f"retention-{self.chunk_idx}.jsonl"), "a") as out:
                     out.write(json.dumps({
                         "video_id": video_sample['video_id'],

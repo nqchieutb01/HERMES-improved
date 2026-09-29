@@ -29,6 +29,12 @@ run:
   offline_keep_ratio: 1.0
   # Compression token score: hermes (attention + recency), random, or recent.
   prune_score: hermes
+  # Diagnostics (all off by default): real-question attention per frame (qattn-<chunk>.jsonl),
+  # shift or drop Qwen3 timestamp text, start uniform frames later in the window.
+  question_attention: false
+  time_offset: 0.0
+  drop_timestamps: false
+  uniform_start_frac: 0.0
   kv_size: 6000
   debug: false
   encode_chunk_size: 16

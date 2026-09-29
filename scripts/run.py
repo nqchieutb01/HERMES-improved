@@ -277,6 +277,14 @@ def inference_command(
         command.extend(["--prune_score", str(cfg.run.prune_score)])
     if cfg.run.get("retention_snapshot"):
         command.extend(["--retention_snapshot", "true"])
+    if cfg.run.get("question_attention"):
+        command.extend(["--question_attention", "true"])
+    if float(cfg.run.get("time_offset", 0.0)) != 0.0:
+        command.extend(["--time_offset", str(cfg.run.time_offset)])
+    if cfg.run.get("drop_timestamps"):
+        command.extend(["--drop_timestamps", "true"])
+    if float(cfg.run.get("uniform_start_frac", 0.0)) != 0.0:
+        command.extend(["--uniform_start_frac", str(cfg.run.uniform_start_frac)])
     if float(cfg.run.get("frame_scale", 1.0)) != 1.0:
         command.extend(["--frame_scale", str(cfg.run.frame_scale)])
     if cfg.run.get("sample_schedule"):
