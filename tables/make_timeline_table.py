@@ -72,7 +72,7 @@ def cells(path):
         tv = [100 * float(t[q][key]) for q in qs]
         bv = [100 * float(b[q][key]) for q in qs]
         diffs = [x - y for x, y in zip(tv, bv)]
-        d = sum(diffs) / len(qs)
+        d = round(sum(diffs) / len(qs), 1) + 0.0  # colour and print the rounded value (no "-0.0")
         lo, hi = boot(diffs)
         delta = f"{d:+.1f}".replace("-", "$-$")
         delta = rf"\textbf{{{delta}}}" if lo > 0 or hi < 0 else delta
