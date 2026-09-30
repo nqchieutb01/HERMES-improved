@@ -1,8 +1,8 @@
 """CVPR two-column LaTeX table: blind, uniform frame dropping, HERMES, random, stratified, spatial pooling and oracles.
 
 Qwen3-VL-8B on S-EMBER grounded QA (475 questions, 300 videos). Rows: no video (blind); 64 uniform frames
-(all tokens); at 50/25/10/5% of the tokens: uniform frame dropping (32/16/6/4 frames), HERMES offline pruning
-of 64 frames, random, stratified, spatial pooling, and the oracle (gold-interval frames first); the evidence-window oracle (64 frames inside the
+(all tokens); at 50/25% of the tokens: uniform frame dropping (32/16 frames), HERMES offline pruning
+of 64 frames, random, stratified and spatial pooling (best per budget in bold); the evidence-window oracle (64 frames inside the
 gold interval, timestamp text elsewhere). Columns: share of kept visual tokens inside the gold interval, then
 Acc., mIoU, R@0.5 and GQ@0.5 with the official and the timeline prompt.
 Writes tables/oracle_comparison.tex. Run from the repo root: python3 tables/make_oracle_table.py
@@ -60,20 +60,6 @@ GROUPS = [
         ("Uniform, 16 frames", uni(16), lambda: share_uniform(16)),
         ("HERMES", U + "offline-hermes-keep0.25-{tl}v300-native-time", lambda: share_ret("dx-ret-hermes-keep0.25")),
     ] + extra("25", "0.5")),
-    ("10\\%", [
-        ("Uniform, 6 frames", uni(6), lambda: share_uniform(6)),
-        ("HERMES", U + "offline-hermes-keep0.1-{tl}v300-native-time", lambda: share_ret("dx-ret-hermes-keep0.1")),
-    ] + extra("10", "0.35") + [
-        ("Oracle (gold frames first)", U + "offline-oracle-keep0.1-{tl}v300-native-time",
-         lambda: share_ret("offline-oracle-keep0.1")),
-    ]),
-    ("5\\%", [
-        ("Uniform, 4 frames", uni(4), lambda: share_uniform(4)),
-        ("HERMES", U + "offline-hermes-keep0.05-{tl}v300-native-time", lambda: share_ret("dx-ret-hermes-keep0.05")),
-    ] + extra("5", None) + [
-        ("Oracle (gold frames first)", U + "offline-oracle-keep0.05-{tl}v300-native-time",
-         lambda: share_ret("offline-oracle-keep0.05")),
-    ]),
     ("Upper bound", [
         ("Evidence-window oracle", U + "oracle-window-{tl}v300-native-time", lambda: 100.0),
     ]),
@@ -87,17 +73,17 @@ def main():
         r"\begin{table*}[t]", r"\centering", r"\setlength{\tabcolsep}{4.5pt}",
         r"\caption{\textbf{Token selectors against blind and oracle inputs} for Qwen3-VL-8B on S-EMBER grounded QA "
         r"(475 questions, 300 videos). \emph{No video}: the question alone. \emph{Uniform}: $N$ frames sampled "
-        r"uniformly up to the question time, all tokens kept (64 frames $\approx$21.4k visual tokens; 32/16/6/4 frames "
-        r"match 50/25/9/6\% of them). \emph{HERMES}, \emph{Random}, \emph{Stratified}: 64 frames pruned once to the "
+        r"uniformly up to the question time, all tokens kept (64 frames $\approx$21.4k visual tokens; 32/16 frames "
+        r"match 50/25\% of them). \emph{HERMES}, \emph{Random}, \emph{Stratified}: 64 frames pruned once to the "
         r"given share of visual tokens by the HERMES attention-and-recency score, at random, or with an equal share of "
         r"every frame; \emph{Spatial pooling}: 64 frames decoded at lower resolution (scale $s$ keeps $\approx s^2$ "
-        r"of the tokens). \emph{Oracle}: the same pruning, but tokens of frames inside the "
-        r"gold evidence interval are kept first (uses the labels). \emph{Evidence-window oracle}: 64 frames sampled "
+        r"of the tokens). \emph{Evidence-window oracle}: 64 frames sampled "
         r"inside the gold interval only, with timestamp text every 5\,s elsewhere and no pruning. \emph{Gold}: share "
         r"of the kept visual tokens that lie inside the gold interval ($^\dagger$: by construction or in expectation "
         r"equal to the unpruned share, as every frame keeps the same share of its tokens). Acc.: answer accuracy with the official S-EMBER "
         r"judge prompt; mIoU and R@0.5: temporal grounding; GQ@0.5: correct answer and IoU $\geq 0.5$. Official: the "
-        r"S-EMBER prompt; Timeline: the model lists timestamped moments before answering. All numbers in \%.}",
+        r"S-EMBER prompt; Timeline: the model lists timestamped moments before answering. All numbers in \%. "
+        r"Best selector per token budget in bold.}",
         r"\label{tab:oracle}",
         r"\begin{tabular}{llccccccccc}", r"\toprule",
         r"& & & \multicolumn{4}{c}{Official prompt} & \multicolumn{4}{c}{Timeline prompt} \\",
@@ -107,14 +93,22 @@ def main():
     print(f"{'Tokens':12s} {'Input':34s} {'Gold':>5s} | official Acc mIoU R@.5 GQ@.5 | timeline Acc mIoU R@.5 GQ@.5")
     for gi, (label, rows) in enumerate(GROUPS):
         lines.append(r"\midrule")
+        results = {name: (grounding(tag.format(tl="")) or [None] * 4) + (grounding(tag.format(tl="timeline-")) or [None] * 4)
+                   for name, tag, _ in rows}
+        compare = label.endswith("\\%") and len(rows) > 1
+        best = [max((v[i] for v in results.values() if v[i] is not None), default=None) for i in range(8)]
         for j, (name, tag, share) in enumerate(rows):
-            off, tl = grounding(tag.format(tl="")), grounding(tag.format(tl="timeline-"))
+            off, tl = results[name][:4], results[name][4:]
             sh = share() if share else None
             dagger = isinstance(sh, tuple)
             sh = sh[1] if dagger else sh
             vals = [sh] + (off or [None] * 4) + (tl or [None] * 4)
             head = (rf"\multirow{{{len(rows)}}}{{*}}{{{label}}}" if len(rows) > 1 else label) if j == 0 else ""
             cells = [f(v) for v in vals]
+            if compare:
+                for i in range(8):
+                    if vals[i + 1] is not None and round(vals[i + 1], 1) == round(best[i], 1):
+                        cells[i + 1] = rf"\textbf{{{cells[i + 1]}}}"
             if dagger:
                 cells[0] += r"$^\dagger$"
             if name.startswith(("Oracle", "Evidence")):
