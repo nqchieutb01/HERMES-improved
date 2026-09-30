@@ -8,7 +8,8 @@ setup, its result and what we learn from it. A summary comes first; implications
 
 1. **Pruning is not the main bottleneck; the model's reading of the evidence is.** A perfect selector at 10%
    of the tokens only matches the unpruned model, and 37% of questions are never answered correctly by any of
-   100 runs. About half of the correct answers can be produced without any video.
+   100 runs. Without any video the model still gets 7–11% right, through stock guesses on questions it often
+   misses when it does see the video; for counting, the video adds nothing over the guess.
 2. **Denser evidence helps.** Showing all 64 frames inside the evidence interval (and nothing else) raises
    accuracy by +7.4 to +7.8 points and mIoU by about +7 points. How densely the evidence is seen matters; how
    much of the rest of the video is kept does not.
@@ -84,11 +85,15 @@ which points to the model rather than to any memory setting.
 
 **Setup.** Same questions and prompts, but no frame is encoded (`run.blind=true`).
 
-**Results.** Accuracy 6.9% (official) and 10.5% (timeline), against 13.5% and 18.5% with video. Grounding
-collapses (mIoU 3.4 official). The blind model gives the same stock answers ("1 minute and 30 seconds").
+**Results.** Accuracy 6.9% (official) and 10.5% (timeline), against 13.5% and 18.5% with video. By category
+(official): counting 15.2% (with video 15.8%), duration 2.1%, location 1.0%. Grounding collapses (mIoU 3.4
+official). Blind and with-video answers are right on largely different questions: with the official prompt 7
+questions are right in both, 26 only blind and 57 only with video (timeline: 15 / 35 / 73). Blind answers are
+stock guesses ("1 minute and 30 seconds").
 
-**Insight.** About half of the correct answers come from language priors (plausible durations, common
-locations). Grounding does need the video.
+**Insight.** Priors alone reach about half the with-video accuracy, but on other questions, so the video does
+change which answers are right. Counting is the exception: the model counts no better with the video than from
+the prior. Grounding needs the video. Per-question outputs: `logs/phase15/blind_by_question.json`.
 
 ## Experiment 3: label audit
 
@@ -281,10 +286,10 @@ tokens survived.)
 | Question | Answer |
 |---|---|
 | **Where** does it fail? | Evidence in the middle or late part of the window; counting (undercounting); location (ambiguous labels, point intervals); long events (intervals too short) |
-| **When** in the pipeline? | Mostly at reading and writing, not at memory: oracle selection only matches unpruned, blind answers are half as good as seeing, and wrong outputs often had the evidence in view. Memory matters in two ways: HERMES starves the timeline, and dense evidence (Experiment 5) raises the ceiling |
+| **When** in the pipeline? | Mostly at reading and writing, not at memory: oracle selection only matches unpruned, counting is no better with the video than blind, and wrong outputs often had the evidence in view. Memory matters in two ways: HERMES starves the timeline, and dense evidence (Experiment 5) raises the ceiling |
 | **How** does it fail? | Early and short intervals; "0.0 s" and intervals outside what was shown; stock durations ("10 s", "90 s"); counts limited by how many moments it lists |
 | **What** information is lost? | Under HERMES, the whole timeline except the last few frames; under uniform frame dropping, the evidence itself at small budgets; under random and stratified, detail only |
-| **Why**? | (1) Recency bias in HERMES scoring; (2) a primacy prior over time and U-shaped attention over frames; (3) time is read from the timestamp text and written from text context rather than from the frames; (4) language priors for answers |
+| **Why**? | (1) Recency bias in HERMES scoring; (2) a primacy prior over time and U-shaped attention over frames; (3) time is read from the timestamp text and written from text context rather than from the frames; (4) language priors for answers, especially counts |
 
 ## Implications for methods
 
@@ -296,7 +301,7 @@ tokens survived.)
    prompting or decoding (for example, only allow times that were shown).
 4. **Read then regenerate.** The grounding heads (layers 20–21) carry a localisation signal the output does not
    fully use; cropping to where they look and asking again is a training-free follow-up to test.
-5. **The largest headroom is reasoning.** Counting, stock durations and language priors limit accuracy even
+5. **The largest headroom is reasoning.** Counting (no better than blind), stock durations and language priors limit accuracy even
    with perfect evidence.
 
 ## Reproduction
