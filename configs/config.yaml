@@ -34,6 +34,7 @@ run:
   question_attention: false
   answer_attention: false
   blind: false
+  oracle_window: false
   shuffle_mode: none
   time_offset: 0.0
   drop_timestamps: false

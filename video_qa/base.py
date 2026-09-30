@@ -231,8 +231,9 @@ class BaseVQA:
         end_time=None,
         video_fps=None,
         duration=None,
+        start_time=None,
     ):
-        """Decode uniform source frames from time zero through a question time."""
+        """Decode uniform source frames from time zero (or ``start_time``) through a question time."""
         if video_path.endswith('.npy'):
             source = np.load(video_path, mmap_mode='r')
             total_frames = len(source)
@@ -294,6 +295,9 @@ class BaseVQA:
         )
         # Diagnostic: skip the first uniform_start_frac of the window (0 = start at frame zero).
         first = int(float(getattr(self, "uniform_start_frac", 0.0)) * end_frame)
+        if start_time is not None:
+            # Diagnostic (evidence-window oracle): sample only from start_time on.
+            first = min(max(0, int(float(start_time) * source_fps)), max(0, end_frame - 1))
         frame_idx = [first + i for i in uniform_frame_indices(
             total_frames=len(reader) - first,
             num_frames=num_frames,
@@ -450,6 +454,9 @@ def work(QA_CLASS):
     parser.add_argument("--answer_attention", type=str2bool, default=False,
                         help="Uniform sampling: write per-head gold-frame attention while reading the prompt and "
                              "writing the answer to aattn-<chunk>.jsonl (diagnostic)")
+    parser.add_argument("--oracle_window", type=str2bool, default=False,
+                        help="Diagnostic upper bound: sample the uniform frames only inside the gold evidence "
+                             "interval; outside it, show timestamp text alone every 5 s (0.2 fps)")
     parser.add_argument("--blind", type=str2bool, default=False,
                         help="Diagnostic: answer without encoding any video frame")
     parser.add_argument("--shuffle_mode", choices=("none", "frames", "stamps"), default="none",
@@ -678,6 +685,7 @@ def work(QA_CLASS):
     analyzer.question_attention = args.question_attention
     analyzer.answer_attention = args.answer_attention
     analyzer.blind = args.blind
+    analyzer.oracle_window = args.oracle_window
     analyzer.shuffle_mode = args.shuffle_mode
     if args.answer_attention:
         videoqa_model.force_token_provenance = True

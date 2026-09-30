@@ -346,6 +346,51 @@ class Qwen3VL_Hermes(QwenVL_Hermes):
         self._layer_position_ids.clear()
         torch.cuda.empty_cache()
 
+    @torch.no_grad()
+    def encode_timestamp_text(self, times):
+        """Diagnostics: append timestamp text only ("<t seconds>" per time, no frame) to the cache.
+
+        Used by the evidence-window oracle to mark video time outside the shown segment. Text advances all
+        three M-RoPE axes together, as in _build_native_video_sequence; tokens are tagged as text (-1).
+        """
+        if not times:
+            return
+        tokenizer = self.processor.tokenizer
+        ids = []
+        for t in times:
+            ids += tokenizer(f"<{t:.1f} seconds>", add_special_tokens=False).input_ids
+        ids = torch.tensor(ids, device=self.device)
+        inputs_embeds = self.get_input_embeddings()(ids).to(self.dtype).unsqueeze(0)
+        rel_pos_ids = torch.arange(len(ids), device=self.device).float().expand(3, -1)
+
+        self._ensure_dynamic_cache()
+        global_offset_per_layer = self._get_next_global_offset_per_layer()
+        base_offset = global_offset_per_layer[0]
+        grid_pos_ids = rel_pos_ids + base_offset
+        self._layer_position_ids.clear()
+        for layer_idx, layer_offset in enumerate(global_offset_per_layer):
+            current_layer_pos = grid_pos_ids.clone()
+            if layer_offset != base_offset:
+                current_layer_pos += layer_offset - base_offset
+            self._layer_position_ids[layer_idx] = self._build_position_ids_3d_for_vision(current_layer_pos, 1)
+        output = self.language_model(
+            inputs_embeds=inputs_embeds,
+            past_key_values=self.kv_cache,
+            use_cache=True,
+            return_dict=True,
+            position_ids=self._build_position_ids_3d_for_vision(grid_pos_ids, 1),
+        )
+        self.kv_cache = output.past_key_values
+        contiguous_kv(self.kv_cache)
+        for layer_idx, layer_offset in enumerate(global_offset_per_layer):
+            current_layer_pos = grid_pos_ids.clone()
+            if layer_offset != base_offset:
+                current_layer_pos += layer_offset - base_offset
+            self._append_position_ids_layer_explicit(layer_idx, current_layer_pos)
+        if self.token_provenance_enabled:
+            self._append_token_frame_ids([-1] * len(ids))
+        self._layer_position_ids.clear()
+
     def _compute_attention_scores_manually(self, input_ids, past_key_values, offsets=None, reduce=None):
         """Compute pruning attention with Qwen3's normalized Q/K states.
 

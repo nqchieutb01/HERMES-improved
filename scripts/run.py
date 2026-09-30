@@ -283,6 +283,8 @@ def inference_command(
         command.extend(["--answer_attention", "true"])
     if cfg.run.get("blind"):
         command.extend(["--blind", "true"])
+    if cfg.run.get("oracle_window"):
+        command.extend(["--oracle_window", "true"])
     if cfg.run.get("shuffle_mode", "none") != "none":
         command.extend(["--shuffle_mode", str(cfg.run.shuffle_mode)])
     if float(cfg.run.get("time_offset", 0.0)) != 0.0:

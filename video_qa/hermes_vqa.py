@@ -74,12 +74,23 @@ class HermesVQA(BaseVQA):
             if frame_sampling == 'uniform':
                 self.qa_model.clear_cache()
                 self.qa_model.encode_init_prompt()
+                oracle_window = getattr(self, 'oracle_window', False)
+                window_start = window_end = None
+                if oracle_window:
+                    # Diagnostic upper bound: all frames inside the gold interval (clipped to the question time).
+                    q_end = float(sample.get('end_time', sample['answer_end_time']))
+                    window_start = float(sample['answer_start_time'])
+                    window_end = min(float(sample['answer_end_time']), q_end)
+                    if window_end - window_start < 1.0:  # keep at least ~1 s of frames
+                        window_start = max(0.0, min(window_start, q_end - 1.0))
+                        window_end = min(q_end, window_start + 1.0)
                 video, selected_frame_indices = self.load_uniform_video(
                     video_path,
                     num_frames=self.uniform_num_frames,
-                    end_time=sample.get('end_time'),
+                    end_time=window_end if oracle_window else sample.get('end_time'),
                     video_fps=video_fps,
                     duration=video_sample.get('duration'),
+                    start_time=window_start,
                 )
                 question_video = torch.from_numpy(video)
                 shuffle = getattr(self, 'shuffle_mode', 'none')
@@ -105,6 +116,10 @@ class HermesVQA(BaseVQA):
                 frame_times = list(getattr(self, 'last_uniform_frame_times', []))
                 if getattr(self, 'blind', False):
                     question_video = question_video[:0]  # Diagnostic: answer without any video.
+                if oracle_window:
+                    # Timestamp text alone every 5 s (0.2 fps) before the evidence window.
+                    self.qa_model.encode_timestamp_text([5.0 * k for k in range(int(math.ceil(window_start / 5.0)))
+                                                         if 5.0 * k < window_start])
                 for start in range(0, len(question_video), encode_chunk_size):
                     stop = min(start + encode_chunk_size, len(question_video))
                     print(f"Encoding uniform frames {start} to {stop-1}")
@@ -113,6 +128,10 @@ class HermesVQA(BaseVQA):
                     if hasattr(self.qa_model, 'next_frame_times'):
                         self.qa_model.next_frame_times = self.last_uniform_frame_times[start:stop]
                     self.qa_model.encode_video_chunk(question_video[start:stop])
+                if oracle_window:
+                    # ... and after it, up to the question time.
+                    k0 = int(math.floor(window_end / 5.0)) + 1
+                    self.qa_model.encode_timestamp_text([5.0 * k for k in range(k0, int(q_end // 5.0) + 1)])
                 if getattr(self, 'question_attention', False):
                     # Diagnostic: where the real question attends, over the unpruned cache.
                     profile = self.qa_model.question_attention_profile(question, first_frame=first_frame)
