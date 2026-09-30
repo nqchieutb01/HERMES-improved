@@ -1,0 +1,41 @@
+% CVPR two-column: spans both columns. Requires \usepackage{booktabs} and \usepackage{multirow}.
+\begin{table*}[t]
+\centering
+\setlength{\tabcolsep}{4.5pt}
+\caption{\textbf{Token selectors at matched budgets} with Qwen3-VL-8B on S-EMBER (300 videos). All rows start from 64 uniformly sampled frames ($\approx$21.4k visual tokens) except \emph{Uniform}, which samples fewer frames (32/16/12/6/4 for $\approx$50/25/19/9/6\% of the tokens). \emph{HERMES}: attention and recency score; \emph{Random}: random tokens; \emph{Stratified}: an equal share of every frame; \emph{Spatial pooling}: lower decode resolution (scale $s$ keeps $\approx s^2$ of the tokens); \emph{Oracle}: gold-interval frames first (uses the labels; reference only, not bolded). Grounded QA with the official S-EMBER prompt and with the timeline-reasoning prompt: Acc.\ is judged with the official S-EMBER judge prompt, GQ@0.5 requires a correct answer and IoU $\geq 0.5$. MCQ: 5-way accuracy. All numbers in \%; -- = not run. Best non-oracle per keep ratio in bold.}
+\label{tab:selectors}
+\begin{tabular}{llccccccccc}
+\toprule
+& & \multicolumn{4}{c}{Official prompt} & \multicolumn{4}{c}{Timeline prompt} & \\
+\cmidrule(lr){3-6} \cmidrule(lr){7-10}
+Keep & Selector & Acc. & mIoU & R@0.5 & GQ@0.5 & Acc. & mIoU & R@0.5 & GQ@0.5 & MCQ \\
+\midrule
+100\% & None (64 frames) & 13.5 & 26.9 & 25.3 & 4.4 & 18.5 & 28.0 & 26.7 & 8.6 & 25.3 \\
+\midrule
+\multirow{5}{*}{50\%} & HERMES & 13.9 & 28.4 & 26.7 & 4.4 & \textbf{19.8} & \textbf{29.2} & \textbf{29.1} & \textbf{10.1} & \textbf{26.9} \\
+ & Uniform (32 frames) & 13.3 & 27.5 & 26.7 & \textbf{5.3} & 18.9 & 25.4 & 23.4 & 8.8 & 25.0 \\
+ & Random & 12.6 & \textbf{28.6} & 26.9 & 5.1 & 15.4 & 28.1 & 27.6 & 8.0 & 26.0 \\
+ & Stratified & 12.6 & 28.2 & \textbf{27.4} & 5.1 & 16.8 & \textbf{29.2} & 28.8 & 9.5 & 26.7 \\
+ & Spatial pooling ($\times$0.7) & \textbf{14.1} & 25.7 & 24.0 & 4.4 & 17.7 & 26.8 & 26.7 & 9.1 & 26.2 \\
+\midrule
+\multirow{5}{*}{25\%} & HERMES & 11.8 & 25.9 & 24.0 & 3.8 & 16.6 & 26.3 & 24.8 & 8.2 & 26.2 \\
+ & Uniform (16 frames) & -- & -- & -- & -- & -- & -- & -- & -- & -- \\
+ & Random & 12.4 & \textbf{27.2} & 25.3 & \textbf{4.8} & \textbf{17.7} & \textbf{28.2} & \textbf{27.4} & 8.2 & 26.7 \\
+ & Stratified & 11.8 & 27.0 & \textbf{25.9} & 4.2 & 16.6 & 26.5 & 25.7 & \textbf{9.1} & 26.0 \\
+ & Spatial pooling ($\times$0.5) & \textbf{13.1} & 20.8 & 18.7 & 3.2 & 15.8 & 23.6 & 22.3 & 6.7 & \textbf{27.3} \\
+\midrule
+\multirow{6}{*}{10\%} & HERMES & 9.7 & 23.3 & 23.2 & 3.4 & 13.1 & 18.3 & 16.2 & 4.0 & 21.5 \\
+ & Uniform (6 frames) & -- & -- & -- & -- & -- & -- & -- & -- & -- \\
+ & Random & 10.9 & \textbf{26.1} & 23.6 & 3.4 & \textbf{15.2} & \textbf{25.8} & \textbf{24.2} & \textbf{7.2} & \textbf{27.4} \\
+ & Stratified & 9.9 & 25.9 & \textbf{24.2} & 2.9 & 14.1 & 23.7 & 21.7 & 6.1 & 26.7 \\
+ & Spatial pooling ($\times$0.35) & \textbf{12.8} & 21.8 & 20.8 & \textbf{4.2} & 14.1 & 21.7 & 20.8 & 5.9 & 25.0 \\
+ & \textit{Oracle (gold frames)} & 12.2 & 28.8 & 25.9 & 4.6 & 17.5 & 27.9 & 25.7 & 8.4 & -- \\
+\midrule
+\multirow{5}{*}{5\%} & HERMES & 8.8 & 14.8 & 13.3 & 1.5 & 13.5 & 12.2 & 10.5 & 3.4 & 20.1 \\
+ & Uniform (4 frames) & -- & -- & -- & -- & -- & -- & -- & -- & -- \\
+ & Random & \textbf{10.7} & 25.3 & 22.9 & \textbf{3.4} & \textbf{15.8} & \textbf{23.6} & \textbf{21.1} & \textbf{5.9} & \textbf{26.7} \\
+ & Stratified & 9.7 & \textbf{25.4} & \textbf{24.6} & 2.9 & 13.3 & 21.8 & 18.1 & 5.7 & 25.9 \\
+ & \textit{Oracle (gold frames)} & 12.2 & 28.4 & 25.5 & 4.2 & 17.1 & 27.0 & 24.6 & 7.8 & -- \\
+\bottomrule
+\end{tabular}
+\end{table*}
