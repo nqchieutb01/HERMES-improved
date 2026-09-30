@@ -2,7 +2,7 @@
 \begin{table*}[t]
 \centering
 \setlength{\tabcolsep}{4.5pt}
-\caption{\textbf{Blind, uniform, HERMES and oracle inputs} for Qwen3-VL-8B on S-EMBER grounded QA (475 questions, 300 videos). \emph{No video}: the question alone. \emph{Uniform}: $N$ frames sampled uniformly up to the question time, all tokens kept (64 frames $\approx$21.4k visual tokens; 32/16/6/4 frames match 50/25/9/6\% of them). \emph{HERMES}: 64 frames pruned once to the given share of visual tokens by the HERMES attention-and-recency score. \emph{Oracle}: the same pruning, but tokens of frames inside the gold evidence interval are kept first (uses the labels). \emph{Evidence-window oracle}: 64 frames sampled inside the gold interval only, with timestamp text every 5\,s elsewhere and no pruning. \emph{Gold}: share of the kept visual tokens that lie inside the gold interval. Acc.: answer accuracy with the official S-EMBER judge prompt; mIoU and R@0.5: temporal grounding; GQ@0.5: correct answer and IoU $\geq 0.5$. Official: the S-EMBER prompt; Timeline: the model lists timestamped moments before answering. All numbers in \%.}
+\caption{\textbf{Token selectors against blind and oracle inputs} for Qwen3-VL-8B on S-EMBER grounded QA (475 questions, 300 videos). \emph{No video}: the question alone. \emph{Uniform}: $N$ frames sampled uniformly up to the question time, all tokens kept (64 frames $\approx$21.4k visual tokens; 32/16/6/4 frames match 50/25/9/6\% of them). \emph{HERMES}, \emph{Random}, \emph{Stratified}: 64 frames pruned once to the given share of visual tokens by the HERMES attention-and-recency score, at random, or with an equal share of every frame; \emph{Spatial pooling}: 64 frames decoded at lower resolution (scale $s$ keeps $\approx s^2$ of the tokens). \emph{Oracle}: the same pruning, but tokens of frames inside the gold evidence interval are kept first (uses the labels). \emph{Evidence-window oracle}: 64 frames sampled inside the gold interval only, with timestamp text every 5\,s elsewhere and no pruning. \emph{Gold}: share of the kept visual tokens that lie inside the gold interval ($^\dagger$: by construction or in expectation equal to the unpruned share, as every frame keeps the same share of its tokens). Acc.: answer accuracy with the official S-EMBER judge prompt; mIoU and R@0.5: temporal grounding; GQ@0.5: correct answer and IoU $\geq 0.5$. Official: the S-EMBER prompt; Timeline: the model lists timestamped moments before answering. All numbers in \%.}
 \label{tab:oracle}
 \begin{tabular}{llccccccccc}
 \toprule
@@ -13,18 +13,29 @@ Tokens & Input & Gold & Acc. & mIoU & R@0.5 & GQ@0.5 & Acc. & mIoU & R@0.5 & GQ@
 \multirow{2}{*}{Reference} & No video (blind) & -- & 6.9 & 3.4 & 1.5 & 0.0 & 10.5 & 7.9 & 4.8 & 0.8 \\
  & Uniform, 64 frames (all tokens) & 33.5 & 13.5 & 26.9 & 25.3 & 4.4 & 18.5 & 28.0 & 26.7 & 8.6 \\
 \midrule
-\multirow{2}{*}{50\%} & Uniform, 32 frames & 33.1 & 13.3 & 27.5 & 26.7 & 5.3 & 18.9 & 25.4 & 23.4 & 8.8 \\
+\multirow{5}{*}{50\%} & Uniform, 32 frames & 33.1 & 13.3 & 27.5 & 26.7 & 5.3 & 18.9 & 25.4 & 23.4 & 8.8 \\
  & HERMES & 34.3 & 13.9 & 28.4 & 26.7 & 4.4 & 19.8 & 29.2 & 29.1 & 10.1 \\
+ & Random & 33.5$^\dagger$ & 12.6 & 28.6 & 26.9 & 5.1 & 15.4 & 28.1 & 27.6 & 8.0 \\
+ & Stratified & 33.5$^\dagger$ & 12.6 & 28.2 & 27.4 & 5.1 & 16.8 & 29.2 & 28.8 & 9.5 \\
+ & Spatial pooling ($\times$0.7) & 33.5$^\dagger$ & 14.1 & 25.7 & 24.0 & 4.4 & 17.7 & 26.8 & 26.7 & 9.1 \\
 \midrule
-\multirow{2}{*}{25\%} & Uniform, 16 frames & 32.5 & 10.9 & 21.2 & 15.6 & 1.5 & 14.7 & 20.1 & 17.9 & 4.8 \\
+\multirow{5}{*}{25\%} & Uniform, 16 frames & 32.5 & 10.9 & 21.2 & 15.6 & 1.5 & 14.7 & 20.1 & 17.9 & 4.8 \\
  & HERMES & 35.3 & 11.8 & 25.9 & 24.0 & 3.8 & 16.6 & 26.3 & 24.8 & 8.2 \\
+ & Random & 33.5$^\dagger$ & 12.4 & 27.2 & 25.3 & 4.8 & 17.7 & 28.2 & 27.4 & 8.2 \\
+ & Stratified & 33.5$^\dagger$ & 11.8 & 27.0 & 25.9 & 4.2 & 16.6 & 26.5 & 25.7 & 9.1 \\
+ & Spatial pooling ($\times$0.5) & 33.5$^\dagger$ & 13.1 & 20.8 & 18.7 & 3.2 & 15.8 & 23.6 & 22.3 & 6.7 \\
 \midrule
-\multirow{3}{*}{10\%} & Uniform, 6 frames & 30.0 & 8.6 & 16.2 & 12.6 & 1.3 & 11.4 & 13.1 & 9.3 & 1.9 \\
+\multirow{6}{*}{10\%} & Uniform, 6 frames & 30.0 & 8.6 & 16.2 & 12.6 & 1.3 & 11.4 & 13.1 & 9.3 & 1.9 \\
  & HERMES & 32.3 & 9.7 & 23.3 & 23.2 & 3.4 & 13.1 & 18.3 & 16.2 & 4.0 \\
+ & Random & 33.4 & 10.9 & 26.1 & 23.6 & 3.4 & 15.2 & 25.8 & 24.2 & 7.2 \\
+ & Stratified & 33.5 & 9.9 & 25.9 & 24.2 & 2.9 & 14.1 & 23.7 & 21.7 & 6.1 \\
+ & Spatial pooling ($\times$0.35) & 33.5$^\dagger$ & 12.8 & 21.8 & 20.8 & 4.2 & 14.1 & 21.7 & 20.8 & 5.9 \\
  & \textit{Oracle (gold frames first)} & 89.0 & 12.2 & 28.8 & 25.9 & 4.6 & 17.5 & 27.9 & 25.7 & 8.4 \\
 \midrule
-\multirow{3}{*}{5\%} & Uniform, 4 frames & 27.0 & 6.9 & 13.7 & 12.2 & 0.6 & 10.7 & 13.1 & 12.8 & 2.1 \\
+\multirow{5}{*}{5\%} & Uniform, 4 frames & 27.0 & 6.9 & 13.7 & 12.2 & 0.6 & 10.7 & 13.1 & 12.8 & 2.1 \\
  & HERMES & 28.8 & 8.8 & 14.8 & 13.3 & 1.5 & 13.5 & 12.2 & 10.5 & 3.4 \\
+ & Random & 33.5$^\dagger$ & 10.7 & 25.3 & 22.9 & 3.4 & 15.8 & 23.6 & 21.1 & 5.9 \\
+ & Stratified & 33.5$^\dagger$ & 9.7 & 25.4 & 24.6 & 2.9 & 13.3 & 21.8 & 18.1 & 5.7 \\
  & \textit{Oracle (gold frames first)} & 97.4 & 12.2 & 28.4 & 25.5 & 4.2 & 17.1 & 27.0 & 24.6 & 7.8 \\
 \midrule
 Upper bound & \textit{Evidence-window oracle} & 100.0 & 20.8 & 34.3 & 34.3 & 7.6 & 26.3 & 35.3 & 36.2 & 13.9 \\
