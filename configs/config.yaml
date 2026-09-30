@@ -32,6 +32,9 @@ run:
   # Diagnostics (all off by default): real-question attention per frame (qattn-<chunk>.jsonl),
   # shift or drop Qwen3 timestamp text, start uniform frames later in the window.
   question_attention: false
+  answer_attention: false
+  blind: false
+  shuffle_mode: none
   time_offset: 0.0
   drop_timestamps: false
   uniform_start_frac: 0.0

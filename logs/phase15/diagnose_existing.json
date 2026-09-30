@@ -1,0 +1,2102 @@
+{
+ "A_where": {
+  "category": {
+   "uni64 official": {
+    "time_duration": {
+     "n": 191,
+     "acc": 8.4,
+     "miou": 26.4,
+     "gq05": 3.1
+    },
+    "counting_objects_events": {
+     "n": 184,
+     "acc": 15.8,
+     "miou": 33.1,
+     "gq05": 6.0
+    },
+    "location_trace": {
+     "n": 100,
+     "acc": 19.0,
+     "miou": 16.3,
+     "gq05": 4.0
+    }
+   },
+   "uni64 timeline": {
+    "time_duration": {
+     "n": 191,
+     "acc": 22.5,
+     "miou": 37.6,
+     "gq05": 14.7
+    },
+    "counting_objects_events": {
+     "n": 184,
+     "acc": 16.3,
+     "miou": 30.1,
+     "gq05": 6.5
+    },
+    "location_trace": {
+     "n": 100,
+     "acc": 15.0,
+     "miou": 5.9,
+     "gq05": 1.0
+    }
+   },
+   "HERMES10 official": {
+    "time_duration": {
+     "n": 191,
+     "acc": 5.8,
+     "miou": 21.0,
+     "gq05": 2.6
+    },
+    "counting_objects_events": {
+     "n": 184,
+     "acc": 13.6,
+     "miou": 31.2,
+     "gq05": 4.3
+    },
+    "location_trace": {
+     "n": 100,
+     "acc": 10.0,
+     "miou": 13.0,
+     "gq05": 3.0
+    }
+   },
+   "HERMES10 timeline": {
+    "time_duration": {
+     "n": 191,
+     "acc": 12.0,
+     "miou": 22.9,
+     "gq05": 5.2
+    },
+    "counting_objects_events": {
+     "n": 184,
+     "acc": 16.8,
+     "miou": 21.7,
+     "gq05": 4.9
+    },
+    "location_trace": {
+     "n": 100,
+     "acc": 8.0,
+     "miou": 3.4,
+     "gq05": 0.0
+    }
+   },
+   "strat10 official": {
+    "time_duration": {
+     "n": 191,
+     "acc": 7.9,
+     "miou": 28.4,
+     "gq05": 2.6
+    },
+    "counting_objects_events": {
+     "n": 184,
+     "acc": 11.4,
+     "miou": 30.4,
+     "gq05": 3.8
+    },
+    "location_trace": {
+     "n": 100,
+     "acc": 11.0,
+     "miou": 12.6,
+     "gq05": 2.0
+    }
+   },
+   "strat10 timeline": {
+    "time_duration": {
+     "n": 191,
+     "acc": 17.8,
+     "miou": 33.0,
+     "gq05": 11.5
+    },
+    "counting_objects_events": {
+     "n": 184,
+     "acc": 14.7,
+     "miou": 24.7,
+     "gq05": 3.8
+    },
+    "location_trace": {
+     "n": 100,
+     "acc": 6.0,
+     "miou": 3.9,
+     "gq05": 0.0
+    }
+   },
+   "random10 official": {
+    "time_duration": {
+     "n": 191,
+     "acc": 6.8,
+     "miou": 28.1,
+     "gq05": 2.6
+    },
+    "counting_objects_events": {
+     "n": 184,
+     "acc": 14.1,
+     "miou": 30.4,
+     "gq05": 4.9
+    },
+    "location_trace": {
+     "n": 100,
+     "acc": 13.0,
+     "miou": 14.4,
+     "gq05": 2.0
+    }
+   },
+   "random10 timeline": {
+    "time_duration": {
+     "n": 191,
+     "acc": 17.8,
+     "miou": 33.7,
+     "gq05": 11.5
+    },
+    "counting_objects_events": {
+     "n": 184,
+     "acc": 14.7,
+     "miou": 29.6,
+     "gq05": 6.5
+    },
+    "location_trace": {
+     "n": 100,
+     "acc": 11.0,
+     "miou": 3.7,
+     "gq05": 0.0
+    }
+   },
+   "HERMES5 official": {
+    "time_duration": {
+     "n": 191,
+     "acc": 6.8,
+     "miou": 10.9,
+     "gq05": 0.5
+    },
+    "counting_objects_events": {
+     "n": 184,
+     "acc": 12.0,
+     "miou": 20.7,
+     "gq05": 2.7
+    },
+    "location_trace": {
+     "n": 100,
+     "acc": 7.0,
+     "miou": 11.5,
+     "gq05": 1.0
+    }
+   },
+   "HERMES5 timeline": {
+    "time_duration": {
+     "n": 191,
+     "acc": 11.0,
+     "miou": 12.1,
+     "gq05": 3.7
+    },
+    "counting_objects_events": {
+     "n": 184,
+     "acc": 19.0,
+     "miou": 16.9,
+     "gq05": 4.3
+    },
+    "location_trace": {
+     "n": 100,
+     "acc": 8.0,
+     "miou": 3.7,
+     "gq05": 1.0
+    }
+   },
+   "stream6k official": {
+    "time_duration": {
+     "n": 191,
+     "acc": 10.5,
+     "miou": 25.7,
+     "gq05": 1.6
+    },
+    "counting_objects_events": {
+     "n": 184,
+     "acc": 13.6,
+     "miou": 29.9,
+     "gq05": 6.5
+    },
+    "location_trace": {
+     "n": 100,
+     "acc": 14.0,
+     "miou": 13.7,
+     "gq05": 2.0
+    }
+   },
+   "stream6k timeline": {
+    "time_duration": {
+     "n": 191,
+     "acc": 14.1,
+     "miou": 32.7,
+     "gq05": 8.4
+    },
+    "counting_objects_events": {
+     "n": 184,
+     "acc": 13.6,
+     "miou": 22.7,
+     "gq05": 3.3
+    },
+    "location_trace": {
+     "n": 100,
+     "acc": 16.0,
+     "miou": 3.0,
+     "gq05": 1.0
+    }
+   }
+  },
+  "question_time": {
+   "uni64 official": {
+    "<80s": {
+     "n": 50,
+     "acc": 18.0,
+     "miou": 48.3,
+     "gq05": 16.0
+    },
+    "80-160s": {
+     "n": 110,
+     "acc": 12.7,
+     "miou": 37.9,
+     "gq05": 4.5
+    },
+    "160-320s": {
+     "n": 196,
+     "acc": 15.3,
+     "miou": 19.7,
+     "gq05": 4.1
+    },
+    ">=320s": {
+     "n": 119,
+     "acc": 9.2,
+     "miou": 19.5,
+     "gq05": 0.0
+    }
+   },
+   "uni64 timeline": {
+    "<80s": {
+     "n": 50,
+     "acc": 20.0,
+     "miou": 39.4,
+     "gq05": 14.0
+    },
+    "80-160s": {
+     "n": 110,
+     "acc": 20.0,
+     "miou": 38.3,
+     "gq05": 13.6
+    },
+    "160-320s": {
+     "n": 196,
+     "acc": 18.4,
+     "miou": 25.8,
+     "gq05": 7.1
+    },
+    ">=320s": {
+     "n": 119,
+     "acc": 16.8,
+     "miou": 17.4,
+     "gq05": 4.2
+    }
+   },
+   "HERMES10 official": {
+    "<80s": {
+     "n": 50,
+     "acc": 14.0,
+     "miou": 41.6,
+     "gq05": 10.0
+    },
+    "80-160s": {
+     "n": 110,
+     "acc": 9.1,
+     "miou": 31.0,
+     "gq05": 2.7
+    },
+    "160-320s": {
+     "n": 196,
+     "acc": 10.7,
+     "miou": 16.4,
+     "gq05": 3.6
+    },
+    ">=320s": {
+     "n": 119,
+     "acc": 6.7,
+     "miou": 19.8,
+     "gq05": 0.8
+    }
+   },
+   "HERMES10 timeline": {
+    "<80s": {
+     "n": 50,
+     "acc": 18.0,
+     "miou": 31.1,
+     "gq05": 10.0
+    },
+    "80-160s": {
+     "n": 110,
+     "acc": 10.9,
+     "miou": 25.4,
+     "gq05": 5.5
+    },
+    "160-320s": {
+     "n": 196,
+     "acc": 15.8,
+     "miou": 15.8,
+     "gq05": 2.6
+    },
+    ">=320s": {
+     "n": 119,
+     "acc": 8.4,
+     "miou": 10.6,
+     "gq05": 2.5
+    }
+   },
+   "strat10 official": {
+    "<80s": {
+     "n": 50,
+     "acc": 16.0,
+     "miou": 40.6,
+     "gq05": 12.0
+    },
+    "80-160s": {
+     "n": 110,
+     "acc": 10.0,
+     "miou": 33.0,
+     "gq05": 0.9
+    },
+    "160-320s": {
+     "n": 196,
+     "acc": 10.2,
+     "miou": 22.2,
+     "gq05": 3.6
+    },
+    ">=320s": {
+     "n": 119,
+     "acc": 6.7,
+     "miou": 19.2,
+     "gq05": 0.0
+    }
+   },
+   "strat10 timeline": {
+    "<80s": {
+     "n": 50,
+     "acc": 18.0,
+     "miou": 38.0,
+     "gq05": 14.0
+    },
+    "80-160s": {
+     "n": 110,
+     "acc": 14.5,
+     "miou": 33.6,
+     "gq05": 7.3
+    },
+    "160-320s": {
+     "n": 196,
+     "acc": 14.8,
+     "miou": 19.3,
+     "gq05": 5.1
+    },
+    ">=320s": {
+     "n": 119,
+     "acc": 10.9,
+     "miou": 15.7,
+     "gq05": 3.4
+    }
+   },
+   "random10 official": {
+    "<80s": {
+     "n": 50,
+     "acc": 20.0,
+     "miou": 42.6,
+     "gq05": 14.0
+    },
+    "80-160s": {
+     "n": 110,
+     "acc": 11.8,
+     "miou": 31.7,
+     "gq05": 1.8
+    },
+    "160-320s": {
+     "n": 196,
+     "acc": 10.7,
+     "miou": 21.6,
+     "gq05": 3.1
+    },
+    ">=320s": {
+     "n": 119,
+     "acc": 6.7,
+     "miou": 21.4,
+     "gq05": 0.8
+    }
+   },
+   "random10 timeline": {
+    "<80s": {
+     "n": 50,
+     "acc": 18.0,
+     "miou": 36.0,
+     "gq05": 12.0
+    },
+    "80-160s": {
+     "n": 110,
+     "acc": 15.5,
+     "miou": 34.1,
+     "gq05": 10.0
+    },
+    "160-320s": {
+     "n": 196,
+     "acc": 16.3,
+     "miou": 23.6,
+     "gq05": 6.1
+    },
+    ">=320s": {
+     "n": 119,
+     "acc": 11.8,
+     "miou": 17.6,
+     "gq05": 4.2
+    }
+   },
+   "HERMES5 official": {
+    "<80s": {
+     "n": 50,
+     "acc": 14.0,
+     "miou": 31.4,
+     "gq05": 6.0
+    },
+    "80-160s": {
+     "n": 110,
+     "acc": 5.5,
+     "miou": 17.0,
+     "gq05": 0.0
+    },
+    "160-320s": {
+     "n": 196,
+     "acc": 10.7,
+     "miou": 10.2,
+     "gq05": 1.5
+    },
+    ">=320s": {
+     "n": 119,
+     "acc": 6.7,
+     "miou": 13.3,
+     "gq05": 0.8
+    }
+   },
+   "HERMES5 timeline": {
+    "<80s": {
+     "n": 50,
+     "acc": 20.0,
+     "miou": 31.0,
+     "gq05": 14.0
+    },
+    "80-160s": {
+     "n": 110,
+     "acc": 8.2,
+     "miou": 16.5,
+     "gq05": 1.8
+    },
+    "160-320s": {
+     "n": 196,
+     "acc": 15.8,
+     "miou": 10.2,
+     "gq05": 2.6
+    },
+    ">=320s": {
+     "n": 119,
+     "acc": 11.8,
+     "miou": 3.5,
+     "gq05": 1.7
+    }
+   },
+   "stream6k official": {
+    "<80s": {
+     "n": 50,
+     "acc": 10.0,
+     "miou": 29.1,
+     "gq05": 8.0
+    },
+    "80-160s": {
+     "n": 110,
+     "acc": 12.7,
+     "miou": 31.3,
+     "gq05": 4.5
+    },
+    "160-320s": {
+     "n": 196,
+     "acc": 15.3,
+     "miou": 22.1,
+     "gq05": 3.1
+    },
+    ">=320s": {
+     "n": 119,
+     "acc": 8.4,
+     "miou": 21.3,
+     "gq05": 1.7
+    }
+   },
+   "stream6k timeline": {
+    "<80s": {
+     "n": 50,
+     "acc": 16.0,
+     "miou": 29.8,
+     "gq05": 2.0
+    },
+    "80-160s": {
+     "n": 110,
+     "acc": 16.4,
+     "miou": 31.2,
+     "gq05": 9.1
+    },
+    "160-320s": {
+     "n": 196,
+     "acc": 15.3,
+     "miou": 20.9,
+     "gq05": 4.6
+    },
+    ">=320s": {
+     "n": 119,
+     "acc": 10.1,
+     "miou": 14.3,
+     "gq05": 2.5
+    }
+   }
+  },
+  "recency (qtime - gold end)": {
+   "uni64 official": {
+    "<10s": {
+     "n": 178,
+     "acc": 11.2,
+     "miou": 27.8,
+     "gq05": 4.5
+    },
+    "10-60s": {
+     "n": 197,
+     "acc": 16.2,
+     "miou": 27.0,
+     "gq05": 5.6
+    },
+    "60-180s": {
+     "n": 81,
+     "acc": 11.1,
+     "miou": 24.8,
+     "gq05": 1.2
+    },
+    ">=180s": {
+     "n": 19,
+     "acc": 15.8,
+     "miou": 25.4,
+     "gq05": 5.3
+    }
+   },
+   "uni64 timeline": {
+    "<10s": {
+     "n": 178,
+     "acc": 17.4,
+     "miou": 30.1,
+     "gq05": 9.0
+    },
+    "10-60s": {
+     "n": 197,
+     "acc": 22.3,
+     "miou": 26.7,
+     "gq05": 10.2
+    },
+    "60-180s": {
+     "n": 81,
+     "acc": 13.6,
+     "miou": 27.9,
+     "gq05": 6.2
+    },
+    ">=180s": {
+     "n": 19,
+     "acc": 10.5,
+     "miou": 23.8,
+     "gq05": 0.0
+    }
+   },
+   "HERMES10 official": {
+    "<10s": {
+     "n": 178,
+     "acc": 11.8,
+     "miou": 33.1,
+     "gq05": 6.7
+    },
+    "10-60s": {
+     "n": 197,
+     "acc": 9.1,
+     "miou": 18.2,
+     "gq05": 2.0
+    },
+    "60-180s": {
+     "n": 81,
+     "acc": 7.4,
+     "miou": 15.2,
+     "gq05": 0.0
+    },
+    ">=180s": {
+     "n": 19,
+     "acc": 5.3,
+     "miou": 18.1,
+     "gq05": 0.0
+    }
+   },
+   "HERMES10 timeline": {
+    "<10s": {
+     "n": 178,
+     "acc": 15.2,
+     "miou": 21.8,
+     "gq05": 5.6
+    },
+    "10-60s": {
+     "n": 197,
+     "acc": 13.7,
+     "miou": 17.8,
+     "gq05": 4.1
+    },
+    "60-180s": {
+     "n": 81,
+     "acc": 9.9,
+     "miou": 12.5,
+     "gq05": 1.2
+    },
+    ">=180s": {
+     "n": 19,
+     "acc": 0.0,
+     "miou": 17.4,
+     "gq05": 0.0
+    }
+   },
+   "strat10 official": {
+    "<10s": {
+     "n": 178,
+     "acc": 4.5,
+     "miou": 28.2,
+     "gq05": 3.4
+    },
+    "10-60s": {
+     "n": 197,
+     "acc": 14.2,
+     "miou": 25.7,
+     "gq05": 3.6
+    },
+    "60-180s": {
+     "n": 81,
+     "acc": 11.1,
+     "miou": 22.7,
+     "gq05": 1.2
+    },
+    ">=180s": {
+     "n": 19,
+     "acc": 10.5,
+     "miou": 18.5,
+     "gq05": 0.0
+    }
+   },
+   "strat10 timeline": {
+    "<10s": {
+     "n": 178,
+     "acc": 12.9,
+     "miou": 24.5,
+     "gq05": 5.1
+    },
+    "10-60s": {
+     "n": 197,
+     "acc": 13.7,
+     "miou": 22.5,
+     "gq05": 6.6
+    },
+    "60-180s": {
+     "n": 81,
+     "acc": 18.5,
+     "miou": 26.4,
+     "gq05": 8.6
+    },
+    ">=180s": {
+     "n": 19,
+     "acc": 10.5,
+     "miou": 16.1,
+     "gq05": 0.0
+    }
+   },
+   "random10 official": {
+    "<10s": {
+     "n": 178,
+     "acc": 7.9,
+     "miou": 27.8,
+     "gq05": 2.8
+    },
+    "10-60s": {
+     "n": 197,
+     "acc": 14.2,
+     "miou": 27.3,
+     "gq05": 5.1
+    },
+    "60-180s": {
+     "n": 81,
+     "acc": 9.9,
+     "miou": 20.1,
+     "gq05": 0.0
+    },
+    ">=180s": {
+     "n": 19,
+     "acc": 10.5,
+     "miou": 22.8,
+     "gq05": 5.3
+    }
+   },
+   "random10 timeline": {
+    "<10s": {
+     "n": 178,
+     "acc": 16.3,
+     "miou": 26.4,
+     "gq05": 7.9
+    },
+    "10-60s": {
+     "n": 197,
+     "acc": 14.2,
+     "miou": 25.5,
+     "gq05": 7.1
+    },
+    "60-180s": {
+     "n": 81,
+     "acc": 16.0,
+     "miou": 25.4,
+     "gq05": 7.4
+    },
+    ">=180s": {
+     "n": 19,
+     "acc": 10.5,
+     "miou": 25.6,
+     "gq05": 0.0
+    }
+   },
+   "HERMES5 official": {
+    "<10s": {
+     "n": 178,
+     "acc": 9.0,
+     "miou": 21.1,
+     "gq05": 3.4
+    },
+    "10-60s": {
+     "n": 197,
+     "acc": 8.6,
+     "miou": 11.6,
+     "gq05": 0.5
+    },
+    "60-180s": {
+     "n": 81,
+     "acc": 8.6,
+     "miou": 7.9,
+     "gq05": 0.0
+    },
+    ">=180s": {
+     "n": 19,
+     "acc": 10.5,
+     "miou": 17.9,
+     "gq05": 0.0
+    }
+   },
+   "HERMES5 timeline": {
+    "<10s": {
+     "n": 178,
+     "acc": 15.2,
+     "miou": 16.5,
+     "gq05": 5.6
+    },
+    "10-60s": {
+     "n": 197,
+     "acc": 12.7,
+     "miou": 8.5,
+     "gq05": 2.0
+    },
+    "60-180s": {
+     "n": 81,
+     "acc": 11.1,
+     "miou": 8.7,
+     "gq05": 0.0
+    },
+    ">=180s": {
+     "n": 19,
+     "acc": 15.8,
+     "miou": 24.1,
+     "gq05": 10.5
+    }
+   },
+   "stream6k official": {
+    "<10s": {
+     "n": 178,
+     "acc": 14.6,
+     "miou": 27.4,
+     "gq05": 6.7
+    },
+    "10-60s": {
+     "n": 197,
+     "acc": 11.7,
+     "miou": 25.6,
+     "gq05": 2.5
+    },
+    "60-180s": {
+     "n": 81,
+     "acc": 8.6,
+     "miou": 18.7,
+     "gq05": 0.0
+    },
+    ">=180s": {
+     "n": 19,
+     "acc": 15.8,
+     "miou": 17.9,
+     "gq05": 0.0
+    }
+   },
+   "stream6k timeline": {
+    "<10s": {
+     "n": 178,
+     "acc": 13.5,
+     "miou": 23.0,
+     "gq05": 4.5
+    },
+    "10-60s": {
+     "n": 197,
+     "acc": 16.8,
+     "miou": 22.8,
+     "gq05": 5.1
+    },
+    "60-180s": {
+     "n": 81,
+     "acc": 12.3,
+     "miou": 22.5,
+     "gq05": 6.2
+    },
+    ">=180s": {
+     "n": 19,
+     "acc": 5.3,
+     "miou": 16.4,
+     "gq05": 0.0
+    }
+   }
+  },
+  "gold length": {
+   "uni64 official": {
+    "<15s": {
+     "n": 96,
+     "acc": 19.8,
+     "miou": 25.7,
+     "gq05": 9.4
+    },
+    "15-45s": {
+     "n": 150,
+     "acc": 12.7,
+     "miou": 21.3,
+     "gq05": 2.7
+    },
+    "45-120s": {
+     "n": 122,
+     "acc": 14.8,
+     "miou": 30.9,
+     "gq05": 4.9
+    },
+    ">=120s": {
+     "n": 107,
+     "acc": 7.5,
+     "miou": 31.1,
+     "gq05": 1.9
+    }
+   },
+   "uni64 timeline": {
+    "<15s": {
+     "n": 96,
+     "acc": 14.6,
+     "miou": 15.2,
+     "gq05": 4.2
+    },
+    "15-45s": {
+     "n": 150,
+     "acc": 16.0,
+     "miou": 25.9,
+     "gq05": 4.7
+    },
+    "45-120s": {
+     "n": 122,
+     "acc": 18.0,
+     "miou": 33.9,
+     "gq05": 13.1
+    },
+    ">=120s": {
+     "n": 107,
+     "acc": 26.2,
+     "miou": 35.9,
+     "gq05": 13.1
+    }
+   },
+   "HERMES10 official": {
+    "<15s": {
+     "n": 96,
+     "acc": 10.4,
+     "miou": 18.5,
+     "gq05": 5.2
+    },
+    "15-45s": {
+     "n": 150,
+     "acc": 12.0,
+     "miou": 20.7,
+     "gq05": 4.0
+    },
+    "45-120s": {
+     "n": 122,
+     "acc": 7.4,
+     "miou": 26.0,
+     "gq05": 1.6
+    },
+    ">=120s": {
+     "n": 107,
+     "acc": 8.4,
+     "miou": 28.0,
+     "gq05": 2.8
+    }
+   },
+   "HERMES10 timeline": {
+    "<15s": {
+     "n": 96,
+     "acc": 11.5,
+     "miou": 10.0,
+     "gq05": 2.1
+    },
+    "15-45s": {
+     "n": 150,
+     "acc": 12.0,
+     "miou": 16.6,
+     "gq05": 1.3
+    },
+    "45-120s": {
+     "n": 122,
+     "acc": 13.1,
+     "miou": 22.0,
+     "gq05": 5.7
+    },
+    ">=120s": {
+     "n": 107,
+     "acc": 15.9,
+     "miou": 24.1,
+     "gq05": 7.5
+    }
+   },
+   "strat10 official": {
+    "<15s": {
+     "n": 96,
+     "acc": 14.6,
+     "miou": 21.0,
+     "gq05": 6.2
+    },
+    "15-45s": {
+     "n": 150,
+     "acc": 10.7,
+     "miou": 24.6,
+     "gq05": 3.3
+    },
+    "45-120s": {
+     "n": 122,
+     "acc": 9.0,
+     "miou": 25.6,
+     "gq05": 0.8
+    },
+    ">=120s": {
+     "n": 107,
+     "acc": 5.6,
+     "miou": 32.2,
+     "gq05": 1.9
+    }
+   },
+   "strat10 timeline": {
+    "<15s": {
+     "n": 96,
+     "acc": 10.4,
+     "miou": 14.0,
+     "gq05": 5.2
+    },
+    "15-45s": {
+     "n": 150,
+     "acc": 12.7,
+     "miou": 20.9,
+     "gq05": 2.7
+    },
+    "45-120s": {
+     "n": 122,
+     "acc": 15.6,
+     "miou": 29.7,
+     "gq05": 7.4
+    },
+    ">=120s": {
+     "n": 107,
+     "acc": 17.8,
+     "miou": 29.3,
+     "gq05": 10.3
+    }
+   },
+   "random10 official": {
+    "<15s": {
+     "n": 96,
+     "acc": 13.5,
+     "miou": 21.1,
+     "gq05": 6.2
+    },
+    "15-45s": {
+     "n": 150,
+     "acc": 13.3,
+     "miou": 24.6,
+     "gq05": 3.3
+    },
+    "45-120s": {
+     "n": 122,
+     "acc": 10.7,
+     "miou": 28.1,
+     "gq05": 4.1
+    },
+    ">=120s": {
+     "n": 107,
+     "acc": 5.6,
+     "miou": 30.3,
+     "gq05": 0.0
+    }
+   },
+   "random10 timeline": {
+    "<15s": {
+     "n": 96,
+     "acc": 11.5,
+     "miou": 13.4,
+     "gq05": 4.2
+    },
+    "15-45s": {
+     "n": 150,
+     "acc": 13.3,
+     "miou": 21.1,
+     "gq05": 2.7
+    },
+    "45-120s": {
+     "n": 122,
+     "acc": 17.2,
+     "miou": 33.7,
+     "gq05": 9.8
+    },
+    ">=120s": {
+     "n": 107,
+     "acc": 18.7,
+     "miou": 34.6,
+     "gq05": 13.1
+    }
+   },
+   "HERMES5 official": {
+    "<15s": {
+     "n": 96,
+     "acc": 7.3,
+     "miou": 13.0,
+     "gq05": 1.0
+    },
+    "15-45s": {
+     "n": 150,
+     "acc": 10.0,
+     "miou": 11.3,
+     "gq05": 2.7
+    },
+    "45-120s": {
+     "n": 122,
+     "acc": 9.0,
+     "miou": 16.2,
+     "gq05": 0.8
+    },
+    ">=120s": {
+     "n": 107,
+     "acc": 8.4,
+     "miou": 19.8,
+     "gq05": 0.9
+    }
+   },
+   "HERMES5 timeline": {
+    "<15s": {
+     "n": 96,
+     "acc": 13.5,
+     "miou": 11.1,
+     "gq05": 2.1
+    },
+    "15-45s": {
+     "n": 150,
+     "acc": 16.7,
+     "miou": 10.4,
+     "gq05": 5.3
+    },
+    "45-120s": {
+     "n": 122,
+     "acc": 11.5,
+     "miou": 14.3,
+     "gq05": 2.5
+    },
+    ">=120s": {
+     "n": 107,
+     "acc": 11.2,
+     "miou": 13.2,
+     "gq05": 2.8
+    }
+   },
+   "stream6k official": {
+    "<15s": {
+     "n": 96,
+     "acc": 12.5,
+     "miou": 12.2,
+     "gq05": 1.0
+    },
+    "15-45s": {
+     "n": 150,
+     "acc": 13.3,
+     "miou": 26.7,
+     "gq05": 4.0
+    },
+    "45-120s": {
+     "n": 122,
+     "acc": 16.4,
+     "miou": 26.8,
+     "gq05": 6.6
+    },
+    ">=120s": {
+     "n": 107,
+     "acc": 6.5,
+     "miou": 30.9,
+     "gq05": 1.9
+    }
+   },
+   "stream6k timeline": {
+    "<15s": {
+     "n": 96,
+     "acc": 13.5,
+     "miou": 9.3,
+     "gq05": 1.0
+    },
+    "15-45s": {
+     "n": 150,
+     "acc": 14.7,
+     "miou": 22.9,
+     "gq05": 3.3
+    },
+    "45-120s": {
+     "n": 122,
+     "acc": 12.3,
+     "miou": 29.4,
+     "gq05": 7.4
+    },
+    ">=120s": {
+     "n": 107,
+     "acc": 16.8,
+     "miou": 26.2,
+     "gq05": 7.5
+    }
+   }
+  },
+  "gold start / qtime": {
+   "uni64 official": {
+    "0-0.25": {
+     "n": 162,
+     "acc": 11.7,
+     "miou": 40.4,
+     "gq05": 7.4
+    },
+    "0.25-0.5": {
+     "n": 87,
+     "acc": 14.9,
+     "miou": 28.8,
+     "gq05": 3.4
+    },
+    "0.5-0.75": {
+     "n": 97,
+     "acc": 12.4,
+     "miou": 18.0,
+     "gq05": 1.0
+    },
+    "0.75-1": {
+     "n": 129,
+     "acc": 15.5,
+     "miou": 15.2,
+     "gq05": 3.9
+    }
+   },
+   "uni64 timeline": {
+    "0-0.25": {
+     "n": 162,
+     "acc": 22.8,
+     "miou": 42.3,
+     "gq05": 16.0
+    },
+    "0.25-0.5": {
+     "n": 87,
+     "acc": 17.2,
+     "miou": 27.8,
+     "gq05": 5.7
+    },
+    "0.5-0.75": {
+     "n": 97,
+     "acc": 18.6,
+     "miou": 22.0,
+     "gq05": 8.2
+    },
+    "0.75-1": {
+     "n": 129,
+     "acc": 14.0,
+     "miou": 14.8,
+     "gq05": 1.6
+    }
+   },
+   "HERMES10 official": {
+    "0-0.25": {
+     "n": 162,
+     "acc": 8.6,
+     "miou": 35.6,
+     "gq05": 3.7
+    },
+    "0.25-0.5": {
+     "n": 87,
+     "acc": 9.2,
+     "miou": 20.8,
+     "gq05": 2.3
+    },
+    "0.5-0.75": {
+     "n": 97,
+     "acc": 9.3,
+     "miou": 13.8,
+     "gq05": 1.0
+    },
+    "0.75-1": {
+     "n": 129,
+     "acc": 11.6,
+     "miou": 16.5,
+     "gq05": 5.4
+    }
+   },
+   "HERMES10 timeline": {
+    "0-0.25": {
+     "n": 162,
+     "acc": 16.7,
+     "miou": 32.3,
+     "gq05": 8.6
+    },
+    "0.25-0.5": {
+     "n": 87,
+     "acc": 13.8,
+     "miou": 14.4,
+     "gq05": 4.6
+    },
+    "0.5-0.75": {
+     "n": 97,
+     "acc": 9.3,
+     "miou": 8.2,
+     "gq05": 1.0
+    },
+    "0.75-1": {
+     "n": 129,
+     "acc": 10.9,
+     "miou": 11.1,
+     "gq05": 0.0
+    }
+   },
+   "strat10 official": {
+    "0-0.25": {
+     "n": 162,
+     "acc": 10.5,
+     "miou": 34.3,
+     "gq05": 4.3
+    },
+    "0.25-0.5": {
+     "n": 87,
+     "acc": 10.3,
+     "miou": 30.5,
+     "gq05": 2.3
+    },
+    "0.5-0.75": {
+     "n": 97,
+     "acc": 10.3,
+     "miou": 19.9,
+     "gq05": 1.0
+    },
+    "0.75-1": {
+     "n": 129,
+     "acc": 8.5,
+     "miou": 16.6,
+     "gq05": 3.1
+    }
+   },
+   "strat10 timeline": {
+    "0-0.25": {
+     "n": 162,
+     "acc": 19.1,
+     "miou": 35.6,
+     "gq05": 13.0
+    },
+    "0.25-0.5": {
+     "n": 87,
+     "acc": 18.4,
+     "miou": 28.0,
+     "gq05": 6.9
+    },
+    "0.5-0.75": {
+     "n": 97,
+     "acc": 9.3,
+     "miou": 15.9,
+     "gq05": 1.0
+    },
+    "0.75-1": {
+     "n": 129,
+     "acc": 8.5,
+     "miou": 11.6,
+     "gq05": 0.8
+    }
+   },
+   "random10 official": {
+    "0-0.25": {
+     "n": 162,
+     "acc": 10.5,
+     "miou": 36.9,
+     "gq05": 4.9
+    },
+    "0.25-0.5": {
+     "n": 87,
+     "acc": 12.6,
+     "miou": 26.4,
+     "gq05": 2.3
+    },
+    "0.5-0.75": {
+     "n": 97,
+     "acc": 9.3,
+     "miou": 17.1,
+     "gq05": 1.0
+    },
+    "0.75-1": {
+     "n": 129,
+     "acc": 11.6,
+     "miou": 19.2,
+     "gq05": 3.9
+    }
+   },
+   "random10 timeline": {
+    "0-0.25": {
+     "n": 162,
+     "acc": 19.1,
+     "miou": 39.8,
+     "gq05": 14.8
+    },
+    "0.25-0.5": {
+     "n": 87,
+     "acc": 16.1,
+     "miou": 28.1,
+     "gq05": 6.9
+    },
+    "0.5-0.75": {
+     "n": 97,
+     "acc": 13.4,
+     "miou": 17.9,
+     "gq05": 2.1
+    },
+    "0.75-1": {
+     "n": 129,
+     "acc": 10.9,
+     "miou": 12.6,
+     "gq05": 1.6
+    }
+   },
+   "HERMES5 official": {
+    "0-0.25": {
+     "n": 162,
+     "acc": 6.8,
+     "miou": 26.6,
+     "gq05": 1.2
+    },
+    "0.25-0.5": {
+     "n": 87,
+     "acc": 10.3,
+     "miou": 12.9,
+     "gq05": 2.3
+    },
+    "0.5-0.75": {
+     "n": 97,
+     "acc": 12.4,
+     "miou": 4.4,
+     "gq05": 0.0
+    },
+    "0.75-1": {
+     "n": 129,
+     "acc": 7.8,
+     "miou": 9.0,
+     "gq05": 2.3
+    }
+   },
+   "HERMES5 timeline": {
+    "0-0.25": {
+     "n": 162,
+     "acc": 11.7,
+     "miou": 25.1,
+     "gq05": 5.6
+    },
+    "0.25-0.5": {
+     "n": 87,
+     "acc": 16.1,
+     "miou": 8.5,
+     "gq05": 3.4
+    },
+    "0.5-0.75": {
+     "n": 97,
+     "acc": 10.3,
+     "miou": 2.9,
+     "gq05": 1.0
+    },
+    "0.75-1": {
+     "n": 129,
+     "acc": 16.3,
+     "miou": 5.4,
+     "gq05": 2.3
+    }
+   },
+   "stream6k official": {
+    "0-0.25": {
+     "n": 162,
+     "acc": 9.3,
+     "miou": 31.5,
+     "gq05": 4.3
+    },
+    "0.25-0.5": {
+     "n": 87,
+     "acc": 11.5,
+     "miou": 28.2,
+     "gq05": 4.6
+    },
+    "0.5-0.75": {
+     "n": 97,
+     "acc": 17.5,
+     "miou": 18.4,
+     "gq05": 2.1
+    },
+    "0.75-1": {
+     "n": 129,
+     "acc": 13.2,
+     "miou": 18.8,
+     "gq05": 3.1
+    }
+   },
+   "stream6k timeline": {
+    "0-0.25": {
+     "n": 162,
+     "acc": 17.3,
+     "miou": 35.0,
+     "gq05": 9.9
+    },
+    "0.25-0.5": {
+     "n": 87,
+     "acc": 13.8,
+     "miou": 20.2,
+     "gq05": 2.3
+    },
+    "0.5-0.75": {
+     "n": 97,
+     "acc": 11.3,
+     "miou": 15.7,
+     "gq05": 2.1
+    },
+    "0.75-1": {
+     "n": 129,
+     "acc": 13.2,
+     "miou": 13.7,
+     "gq05": 2.3
+    }
+   }
+  }
+ },
+ "B_how": {
+  "uni64 official": {
+   "taxonomy_%": {
+    "inside gold (too short)": 33.9,
+    "disjoint, before gold": 25.1,
+    "partial overlap": 22.5,
+    "covers gold (too long)": 8.0,
+    "disjoint, after gold": 7.4,
+    "unparsed": 3.2
+   },
+   "median start error s (pred - gold)": 0.0,
+   "median end error s": -13.2,
+   "median length ratio pred/gold": 0.5,
+   "IoU>=0.5 %": 25.3,
+   "answer right but IoU<0.1 %": 6.5,
+   "answer wrong but IoU>=0.5 %": 20.8
+  },
+  "uni64 timeline": {
+   "taxonomy_%": {
+    "inside gold (too short)": 34.5,
+    "partial overlap": 27.8,
+    "disjoint, before gold": 26.9,
+    "covers gold (too long)": 6.3,
+    "disjoint, after gold": 3.2,
+    "unparsed": 1.3
+   },
+   "median start error s (pred - gold)": -2.0,
+   "median end error s": -23.0,
+   "median length ratio pred/gold": 0.57,
+   "IoU>=0.5 %": 26.7,
+   "answer right but IoU<0.1 %": 5.5,
+   "answer wrong but IoU>=0.5 %": 18.1
+  },
+  "HERMES10 official": {
+   "taxonomy_%": {
+    "disjoint, before gold": 32.6,
+    "inside gold (too short)": 26.7,
+    "partial overlap": 22.7,
+    "covers gold (too long)": 7.8,
+    "disjoint, after gold": 7.6,
+    "unparsed": 2.5
+   },
+   "median start error s (pred - gold)": -1.5,
+   "median end error s": -20.8,
+   "median length ratio pred/gold": 0.47,
+   "IoU>=0.5 %": 23.2,
+   "answer right but IoU<0.1 %": 3.8,
+   "answer wrong but IoU>=0.5 %": 19.8
+  },
+  "HERMES10 timeline": {
+   "taxonomy_%": {
+    "disjoint, before gold": 42.3,
+    "partial overlap": 24.6,
+    "inside gold (too short)": 24.4,
+    "covers gold (too long)": 5.3,
+    "disjoint, after gold": 3.2,
+    "unparsed": 0.2
+   },
+   "median start error s (pred - gold)": -17.5,
+   "median end error s": -56.2,
+   "median length ratio pred/gold": 0.37,
+   "IoU>=0.5 %": 16.2,
+   "answer right but IoU<0.1 %": 5.7,
+   "answer wrong but IoU>=0.5 %": 12.2
+  },
+  "strat10 official": {
+   "taxonomy_%": {
+    "inside gold (too short)": 36.6,
+    "partial overlap": 24.4,
+    "disjoint, before gold": 21.7,
+    "disjoint, after gold": 8.4,
+    "covers gold (too long)": 5.5,
+    "unparsed": 3.4
+   },
+   "median start error s (pred - gold)": 3.4,
+   "median end error s": -11.8,
+   "median length ratio pred/gold": 0.53,
+   "IoU>=0.5 %": 24.2,
+   "answer right but IoU<0.1 %": 3.8,
+   "answer wrong but IoU>=0.5 %": 21.3
+  },
+  "strat10 timeline": {
+   "taxonomy_%": {
+    "inside gold (too short)": 36.6,
+    "disjoint, before gold": 31.4,
+    "partial overlap": 25.5,
+    "covers gold (too long)": 3.2,
+    "disjoint, after gold": 3.2,
+    "unparsed": 0.2
+   },
+   "median start error s (pred - gold)": -1.5,
+   "median end error s": -36.0,
+   "median length ratio pred/gold": 0.36,
+   "IoU>=0.5 %": 21.7,
+   "answer right but IoU<0.1 %": 5.3,
+   "answer wrong but IoU>=0.5 %": 15.6
+  },
+  "random10 official": {
+   "taxonomy_%": {
+    "inside gold (too short)": 36.0,
+    "partial overlap": 25.3,
+    "disjoint, before gold": 22.3,
+    "disjoint, after gold": 7.4,
+    "covers gold (too long)": 5.5,
+    "unparsed": 3.6
+   },
+   "median start error s (pred - gold)": 2.6,
+   "median end error s": -12.9,
+   "median length ratio pred/gold": 0.51,
+   "IoU>=0.5 %": 23.6,
+   "answer right but IoU<0.1 %": 4.8,
+   "answer wrong but IoU>=0.5 %": 20.2
+  },
+  "random10 timeline": {
+   "taxonomy_%": {
+    "inside gold (too short)": 34.5,
+    "disjoint, before gold": 30.3,
+    "partial overlap": 27.4,
+    "covers gold (too long)": 4.2,
+    "disjoint, after gold": 2.3,
+    "unparsed": 1.3
+   },
+   "median start error s (pred - gold)": -3.0,
+   "median end error s": -32.0,
+   "median length ratio pred/gold": 0.53,
+   "IoU>=0.5 %": 24.2,
+   "answer right but IoU<0.1 %": 4.6,
+   "answer wrong but IoU>=0.5 %": 17.1
+  },
+  "HERMES5 official": {
+   "taxonomy_%": {
+    "disjoint, before gold": 49.3,
+    "inside gold (too short)": 19.6,
+    "partial overlap": 17.1,
+    "covers gold (too long)": 7.2,
+    "disjoint, after gold": 4.6,
+    "unparsed": 2.3
+   },
+   "median start error s (pred - gold)": -28.0,
+   "median end error s": -79.9,
+   "median length ratio pred/gold": 0.33,
+   "IoU>=0.5 %": 13.3,
+   "answer right but IoU<0.1 %": 5.7,
+   "answer wrong but IoU>=0.5 %": 11.8
+  },
+  "HERMES5 timeline": {
+   "taxonomy_%": {
+    "disjoint, before gold": 59.6,
+    "partial overlap": 21.1,
+    "inside gold (too short)": 14.3,
+    "covers gold (too long)": 4.0,
+    "disjoint, after gold": 0.8,
+    "unparsed": 0.2
+   },
+   "median start error s (pred - gold)": -60.0,
+   "median end error s": -127.0,
+   "median length ratio pred/gold": 0.36,
+   "IoU>=0.5 %": 10.5,
+   "answer right but IoU<0.1 %": 8.4,
+   "answer wrong but IoU>=0.5 %": 7.2
+  },
+  "stream6k official": {
+   "taxonomy_%": {
+    "inside gold (too short)": 33.5,
+    "disjoint, before gold": 26.7,
+    "partial overlap": 24.0,
+    "covers gold (too long)": 7.6,
+    "disjoint, after gold": 6.7,
+    "unparsed": 1.5
+   },
+   "median start error s (pred - gold)": 0.0,
+   "median end error s": -17.0,
+   "median length ratio pred/gold": 0.5,
+   "IoU>=0.5 %": 24.4,
+   "answer right but IoU<0.1 %": 6.7,
+   "answer wrong but IoU>=0.5 %": 20.8
+  },
+  "stream6k timeline": {
+   "taxonomy_%": {
+    "disjoint, before gold": 34.7,
+    "inside gold (too short)": 32.8,
+    "partial overlap": 25.3,
+    "covers gold (too long)": 4.6,
+    "disjoint, after gold": 2.1,
+    "unparsed": 0.4
+   },
+   "median start error s (pred - gold)": -6.5,
+   "median end error s": -32.5,
+   "median length ratio pred/gold": 0.45,
+   "IoU>=0.5 %": 21.1,
+   "answer right but IoU<0.1 %": 5.7,
+   "answer wrong but IoU>=0.5 %": 16.2
+  }
+ },
+ "C_answer_vs_interval": {
+  "uni64 official": {
+   "duration: n parsed": 183,
+   "duration: median stated / gold": 0.67,
+   "duration: stated within 25% of gold %": 18.6,
+   "duration: stated within 25% of own interval length %": 53.1,
+   "duration: gold answer vs gold interval length, median ratio": 0.94,
+   "count: n parsed": 184,
+   "count: exact %": 15.2,
+   "count: under %": 69.0,
+   "count: over %": 15.8,
+   "count: median gold": 5.0,
+   "count: median predicted": 3.0
+  },
+  "uni64 timeline": {
+   "duration: n parsed": 190,
+   "duration: median stated / gold": 0.87,
+   "duration: stated within 25% of gold %": 37.9,
+   "duration: stated within 25% of own interval length %": 97.3,
+   "duration: gold answer vs gold interval length, median ratio": 0.94,
+   "count: n parsed": 183,
+   "count: exact %": 16.4,
+   "count: under %": 68.3,
+   "count: over %": 15.3,
+   "count: median gold": 5.0,
+   "count: median predicted": 3.0
+  },
+  "HERMES10 official": {
+   "duration: n parsed": 186,
+   "duration: median stated / gold": 0.59,
+   "duration: stated within 25% of gold %": 15.6,
+   "duration: stated within 25% of own interval length %": 59.4,
+   "duration: gold answer vs gold interval length, median ratio": 0.94,
+   "count: n parsed": 182,
+   "count: exact %": 13.7,
+   "count: under %": 74.7,
+   "count: over %": 11.5,
+   "count: median gold": 5.0,
+   "count: median predicted": 2.0
+  },
+  "HERMES10 timeline": {
+   "duration: n parsed": 190,
+   "duration: median stated / gold": 0.64,
+   "duration: stated within 25% of gold %": 23.7,
+   "duration: stated within 25% of own interval length %": 98.4,
+   "duration: gold answer vs gold interval length, median ratio": 0.94,
+   "count: n parsed": 182,
+   "count: exact %": 18.1,
+   "count: under %": 68.1,
+   "count: over %": 13.7,
+   "count: median gold": 5.0,
+   "count: median predicted": 3.0
+  },
+  "strat10 official": {
+   "duration: n parsed": 189,
+   "duration: median stated / gold": 0.75,
+   "duration: stated within 25% of gold %": 23.8,
+   "duration: stated within 25% of own interval length %": 50.0,
+   "duration: gold answer vs gold interval length, median ratio": 0.94,
+   "count: n parsed": 184,
+   "count: exact %": 11.4,
+   "count: under %": 78.3,
+   "count: over %": 10.3,
+   "count: median gold": 5.0,
+   "count: median predicted": 2.0
+  },
+  "strat10 timeline": {
+   "duration: n parsed": 190,
+   "duration: median stated / gold": 0.82,
+   "duration: stated within 25% of gold %": 34.2,
+   "duration: stated within 25% of own interval length %": 97.9,
+   "duration: gold answer vs gold interval length, median ratio": 0.94,
+   "count: n parsed": 183,
+   "count: exact %": 14.2,
+   "count: under %": 69.9,
+   "count: over %": 15.8,
+   "count: median gold": 5.0,
+   "count: median predicted": 2.0
+  },
+  "random10 official": {
+   "duration: n parsed": 187,
+   "duration: median stated / gold": 0.73,
+   "duration: stated within 25% of gold %": 20.3,
+   "duration: stated within 25% of own interval length %": 54.8,
+   "duration: gold answer vs gold interval length, median ratio": 0.94,
+   "count: n parsed": 184,
+   "count: exact %": 13.6,
+   "count: under %": 75.5,
+   "count: over %": 10.9,
+   "count: median gold": 5.0,
+   "count: median predicted": 2.0
+  },
+  "random10 timeline": {
+   "duration: n parsed": 190,
+   "duration: median stated / gold": 0.84,
+   "duration: stated within 25% of gold %": 36.3,
+   "duration: stated within 25% of own interval length %": 96.7,
+   "duration: gold answer vs gold interval length, median ratio": 0.94,
+   "count: n parsed": 180,
+   "count: exact %": 15.0,
+   "count: under %": 70.6,
+   "count: over %": 14.4,
+   "count: median gold": 5.0,
+   "count: median predicted": 3.0
+  },
+  "HERMES5 official": {
+   "duration: n parsed": 183,
+   "duration: median stated / gold": 0.38,
+   "duration: stated within 25% of gold %": 11.5,
+   "duration: stated within 25% of own interval length %": 78.5,
+   "duration: gold answer vs gold interval length, median ratio": 0.94,
+   "count: n parsed": 183,
+   "count: exact %": 11.5,
+   "count: under %": 79.8,
+   "count: over %": 8.7,
+   "count: median gold": 5.0,
+   "count: median predicted": 2.0
+  },
+  "HERMES5 timeline": {
+   "duration: n parsed": 190,
+   "duration: median stated / gold": 0.44,
+   "duration: stated within 25% of gold %": 21.1,
+   "duration: stated within 25% of own interval length %": 95.2,
+   "duration: gold answer vs gold interval length, median ratio": 0.94,
+   "count: n parsed": 184,
+   "count: exact %": 19.0,
+   "count: under %": 62.5,
+   "count: over %": 18.5,
+   "count: median gold": 5.0,
+   "count: median predicted": 3.0
+  },
+  "stream6k official": {
+   "duration: n parsed": 186,
+   "duration: median stated / gold": 0.63,
+   "duration: stated within 25% of gold %": 19.4,
+   "duration: stated within 25% of own interval length %": 67.2,
+   "duration: gold answer vs gold interval length, median ratio": 0.94,
+   "count: n parsed": 184,
+   "count: exact %": 14.1,
+   "count: under %": 73.9,
+   "count: over %": 12.0,
+   "count: median gold": 5.0,
+   "count: median predicted": 2.0
+  },
+  "stream6k timeline": {
+   "duration: n parsed": 189,
+   "duration: median stated / gold": 0.82,
+   "duration: stated within 25% of gold %": 29.1,
+   "duration: stated within 25% of own interval length %": 96.3,
+   "duration: gold answer vs gold interval length, median ratio": 0.94,
+   "count: n parsed": 182,
+   "count: exact %": 14.8,
+   "count: under %": 69.8,
+   "count: over %": 15.4,
+   "count: median gold": 5.0,
+   "count: median predicted": 3.0
+  }
+ },
+ "D_seen_moments": {
+  "uni64 timeline": {
+   "questions with a Seen list %": 100.0,
+   "median # Seen": 2,
+   "Seen inside gold (+-2.5s) %": 59.4,
+   "questions with NO Seen inside gold %": 29.9,
+   "first Seen at ~0 s %": 33.3,
+   "Seen matching a shown timestamp %": 26.5,
+   "acc when some Seen inside gold": 20.4,
+   "acc when no Seen inside gold": 14.1,
+   "mIoU when some Seen inside gold": 39.1,
+   "mIoU when no Seen inside gold": 2.2
+  },
+  "HERMES10 timeline": {
+   "questions with a Seen list %": 100.0,
+   "median # Seen": 2,
+   "Seen inside gold (+-2.5s) %": 46.9,
+   "questions with NO Seen inside gold %": 45.3,
+   "first Seen at ~0 s %": 42.9,
+   "Seen matching a shown timestamp %": 26.5,
+   "acc when some Seen inside gold": 16.9,
+   "acc when no Seen inside gold": 8.4,
+   "mIoU when some Seen inside gold": 32.6,
+   "mIoU when no Seen inside gold": 1.1
+  },
+  "strat10 timeline": {
+   "questions with a Seen list %": 100.0,
+   "median # Seen": 2,
+   "Seen inside gold (+-2.5s) %": 58.0,
+   "questions with NO Seen inside gold %": 33.5,
+   "first Seen at ~0 s %": 24.4,
+   "Seen matching a shown timestamp %": 26.5,
+   "acc when some Seen inside gold": 15.5,
+   "acc when no Seen inside gold": 11.3,
+   "mIoU when some Seen inside gold": 35.0,
+   "mIoU when no Seen inside gold": 1.2
+  },
+  "random10 timeline": {
+   "questions with a Seen list %": 100.0,
+   "median # Seen": 2,
+   "Seen inside gold (+-2.5s) %": 58.9,
+   "questions with NO Seen inside gold %": 32.2,
+   "first Seen at ~0 s %": 29.7,
+   "Seen matching a shown timestamp %": 28.6,
+   "acc when some Seen inside gold": 16.5,
+   "acc when no Seen inside gold": 12.4,
+   "mIoU when some Seen inside gold": 36.6,
+   "mIoU when no Seen inside gold": 3.2
+  },
+  "HERMES5 timeline": {
+   "questions with a Seen list %": 100.0,
+   "median # Seen": 2,
+   "Seen inside gold (+-2.5s) %": 33.4,
+   "questions with NO Seen inside gold %": 60.4,
+   "first Seen at ~0 s %": 68.8,
+   "Seen matching a shown timestamp %": 24.4,
+   "acc when some Seen inside gold": 17.0,
+   "acc when no Seen inside gold": 11.1,
+   "mIoU when some Seen inside gold": 30.0,
+   "mIoU when no Seen inside gold": 0.5
+  },
+  "stream6k timeline": {
+   "questions with a Seen list %": 100.0,
+   "median # Seen": 2,
+   "Seen inside gold (+-2.5s) %": 51.0,
+   "questions with NO Seen inside gold %": 35.8,
+   "first Seen at ~0 s %": 32.4,
+   "Seen matching a shown timestamp %": 25.0,
+   "acc when some Seen inside gold": 16.4,
+   "acc when no Seen inside gold": 10.6,
+   "mIoU when some Seen inside gold": 34.4,
+   "mIoU when no Seen inside gold": 1.4
+  }
+ },
+ "E_pruning_induced": {
+  "HERMES10 official": {
+   "answers lost vs unpruned (same prompt)": 33,
+   "answers gained": 15,
+   "IoU>=0.5 lost": 52,
+   "IoU>=0.5 gained": 42
+  },
+  "HERMES10 timeline": {
+   "answers lost vs unpruned (same prompt)": 50,
+   "answers gained": 24,
+   "IoU>=0.5 lost": 70,
+   "IoU>=0.5 gained": 20
+  },
+  "strat10 official": {
+   "answers lost vs unpruned (same prompt)": 28,
+   "answers gained": 11,
+   "IoU>=0.5 lost": 38,
+   "IoU>=0.5 gained": 33
+  },
+  "strat10 timeline": {
+   "answers lost vs unpruned (same prompt)": 49,
+   "answers gained": 28,
+   "IoU>=0.5 lost": 44,
+   "IoU>=0.5 gained": 20
+  },
+  "random10 official": {
+   "answers lost vs unpruned (same prompt)": 23,
+   "answers gained": 11,
+   "IoU>=0.5 lost": 39,
+   "IoU>=0.5 gained": 31
+  },
+  "random10 timeline": {
+   "answers lost vs unpruned (same prompt)": 40,
+   "answers gained": 24,
+   "IoU>=0.5 lost": 35,
+   "IoU>=0.5 gained": 23
+  },
+  "HERMES5 official": {
+   "answers lost vs unpruned (same prompt)": 40,
+   "answers gained": 18,
+   "IoU>=0.5 lost": 79,
+   "IoU>=0.5 gained": 22
+  },
+  "HERMES5 timeline": {
+   "answers lost vs unpruned (same prompt)": 61,
+   "answers gained": 37,
+   "IoU>=0.5 lost": 93,
+   "IoU>=0.5 gained": 16
+  },
+  "stream6k official": {
+   "answers lost vs unpruned (same prompt)": 27,
+   "answers gained": 22,
+   "IoU>=0.5 lost": 60,
+   "IoU>=0.5 gained": 56
+  },
+  "stream6k timeline": {
+   "answers lost vs unpruned (same prompt)": 48,
+   "answers gained": 28,
+   "IoU>=0.5 lost": 56,
+   "IoU>=0.5 gained": 29
+  },
+  "across all judged runs": {
+   "runs": 100,
+   "questions never answered correctly %": 36.6,
+   "never answered, by category": {
+    "location_trace": 44,
+    "counting_objects_events": 77,
+    "time_duration": 53
+   },
+   "questions never GQ@0.5 %": 61.7,
+   "questions answered correctly by >=half of runs %": 10.3
+  }
+ },
+ "F_sampling_limits": {
+  "0 frames in gold": {
+   "official": {
+    "n": 3,
+    "acc": 33.3,
+    "miou": 17.6,
+    "gq05": 0.0
+   },
+   "timeline": {
+    "n": 3,
+    "acc": 0.0,
+    "miou": 5.8,
+    "gq05": 0.0
+   }
+  },
+  "1 frames in gold": {
+   "official": {
+    "n": 16,
+    "acc": 0.0,
+    "miou": 0.2,
+    "gq05": 0.0
+   },
+   "timeline": {
+    "n": 16,
+    "acc": 6.2,
+    "miou": 2.3,
+    "gq05": 0.0
+   }
+  },
+  "2-3 frames in gold": {
+   "official": {
+    "n": 55,
+    "acc": 21.8,
+    "miou": 13.4,
+    "gq05": 3.6
+   },
+   "timeline": {
+    "n": 55,
+    "acc": 18.2,
+    "miou": 6.7,
+    "gq05": 0.0
+   }
+  },
+  "4-8 frames in gold": {
+   "official": {
+    "n": 95,
+    "acc": 11.6,
+    "miou": 18.7,
+    "gq05": 3.2
+   },
+   "timeline": {
+    "n": 95,
+    "acc": 14.7,
+    "miou": 17.6,
+    "gq05": 2.1
+   }
+  },
+  ">8 frames in gold": {
+   "official": {
+    "n": 306,
+    "acc": 13.1,
+    "miou": 33.3,
+    "gq05": 5.2
+   },
+   "timeline": {
+    "n": 306,
+    "acc": 20.6,
+    "miou": 36.7,
+    "gq05": 12.7
+   }
+  }
+ },
+ "G_streaming_retention": {
+  "grid32x8-kv6000-k0": {
+   "questions": 454,
+   "gold frames: % tokens kept": 30.3,
+   "other frames: % tokens kept": 19.1,
+   "gold frames with no token %": 20.7,
+   "other frames with no token %": 45.2,
+   "gold % kept when IoU>=0.3": 29.8,
+   "gold % kept when IoU<0.3": 30.6
+  },
+  "fps0.2-kv6000-k0": {
+   "questions": 457,
+   "gold frames: % tokens kept": 53.6,
+   "other frames: % tokens kept": 50.6,
+   "gold frames with no token %": 0.0,
+   "other frames with no token %": 0.0,
+   "gold % kept when IoU>=0.3": 58.4,
+   "gold % kept when IoU<0.3": 51.1
+  },
+  "fps0.2-kv4000-k0": {
+   "questions": 457,
+   "gold frames: % tokens kept": 38.4,
+   "other frames: % tokens kept": 37.8,
+   "gold frames with no token %": 0.0,
+   "other frames with no token %": 0.0,
+   "gold % kept when IoU>=0.3": 43.9,
+   "gold % kept when IoU<0.3": 35.7
+  }
+ }
+}

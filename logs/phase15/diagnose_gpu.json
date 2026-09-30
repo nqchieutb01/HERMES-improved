@@ -1,0 +1,438 @@
+{
+ "1_question_attention": {
+  "questions": 457,
+  "attention share on gold frames (early/mid/late)": [
+   0.33,
+   0.378,
+   0.357
+  ],
+  "lift = share on gold / gold share of frames (1 = no targeting)": [
+   1.168,
+   1.514,
+   1.394
+  ],
+  "median lift (early/mid/late)": [
+   0.979,
+   1.155,
+   1.091
+  ],
+  "top-8 late-attention frames include a gold frame %": 84.9,
+  "attention on the first frame pair (frames 0-1, 3% of frames)": [
+   0.058,
+   0.043,
+   0.073
+  ],
+  "timestamp-text share of video attention": [
+   0.451,
+   0.173,
+   0.083
+  ],
+  "visual attention by frame decile (late layers)": [
+   0.144,
+   0.07,
+   0.08,
+   0.065,
+   0.069,
+   0.082,
+   0.079,
+   0.107,
+   0.106,
+   0.161
+  ],
+  "late lift when answer correct / wrong": [
+   1.368,
+   1.399
+  ]
+ },
+ "2_retention": {
+  "HERMES 10%": {
+   "questions": 457,
+   "gold frames: % tokens kept": 13.4,
+   "other frames: % tokens kept": 11.0,
+   "gold frames with no token %": 0.1,
+   "other frames with no token %": 0.0,
+   "gold groups keeping their timestamp %": 100.0,
+   "gold % kept when IoU>=0.3 / <0.3": [
+    14.6,
+    13.0
+   ],
+   "gold frames with no token when IoU>=0.3 / <0.3": [
+    0.0,
+    0.1
+   ]
+  },
+  "HERMES 5%": {
+   "questions": 457,
+   "gold frames: % tokens kept": 5.9,
+   "other frames: % tokens kept": 5.8,
+   "gold frames with no token %": 5.8,
+   "other frames with no token %": 4.4,
+   "gold groups keeping their timestamp %": 100.0,
+   "gold % kept when IoU>=0.3 / <0.3": [
+    6.7,
+    5.7
+   ],
+   "gold frames with no token when IoU>=0.3 / <0.3": [
+    5.1,
+    5.9
+   ]
+  },
+  "stratified 10%": {
+   "questions": 457,
+   "gold frames: % tokens kept": 8.6,
+   "other frames: % tokens kept": 8.6,
+   "gold frames with no token %": 0.0,
+   "other frames with no token %": 0.0,
+   "gold groups keeping their timestamp %": 100.0,
+   "gold % kept when IoU>=0.3 / <0.3": [
+    8.6,
+    8.6
+   ],
+   "gold frames with no token when IoU>=0.3 / <0.3": [
+    0.0,
+    0.0
+   ]
+  },
+  "random 10%": {
+   "questions": 457,
+   "gold frames: % tokens kept": 8.6,
+   "other frames: % tokens kept": 8.7,
+   "gold frames with no token %": 0.0,
+   "other frames with no token %": 0.0,
+   "gold groups keeping their timestamp %": 100.0,
+   "gold % kept when IoU>=0.3 / <0.3": [
+    8.6,
+    8.6
+   ],
+   "gold frames with no token when IoU>=0.3 / <0.3": [
+    0.0,
+    0.0
+   ]
+  },
+  "oracle 10%": {
+   "questions": 457,
+   "gold frames: % tokens kept": 52.6,
+   "other frames: % tokens kept": 1.0,
+   "gold frames with no token %": 0.0,
+   "other frames with no token %": 74.6,
+   "gold groups keeping their timestamp %": 100.0,
+   "gold % kept when IoU>=0.3 / <0.3": [
+    46.5,
+    56.3
+   ],
+   "gold frames with no token when IoU>=0.3 / <0.3": [
+    0.0,
+    0.0
+   ]
+  },
+  "oracle 5%": {
+   "questions": 457,
+   "gold frames: % tokens kept": 34.0,
+   "other frames: % tokens kept": 0.1,
+   "gold frames with no token %": 0.0,
+   "other frames with no token %": 91.9,
+   "gold groups keeping their timestamp %": 100.0,
+   "gold % kept when IoU>=0.3 / <0.3": [
+    26.7,
+    38.0
+   ],
+   "gold frames with no token when IoU>=0.3 / <0.3": [
+    0.0,
+    0.0
+   ]
+  },
+  "hermes_exact 10%": {
+   "questions": 457,
+   "gold frames: % tokens kept": 14.7,
+   "other frames: % tokens kept": 11.4,
+   "gold frames with no token %": 0.2,
+   "other frames with no token %": 0.1,
+   "gold groups keeping their timestamp %": 100.0,
+   "gold % kept when IoU>=0.3 / <0.3": [
+    21.7,
+    13.6
+   ],
+   "gold frames with no token when IoU>=0.3 / <0.3": [
+    0.4,
+    0.1
+   ]
+  },
+  "hermes_exact 5%": {
+   "questions": 457,
+   "gold frames: % tokens kept": 6.4,
+   "other frames: % tokens kept": 6.1,
+   "gold frames with no token %": 7.1,
+   "other frames with no token %": 6.6,
+   "gold groups keeping their timestamp %": 100.0,
+   "gold % kept when IoU>=0.3 / <0.3": [
+    9.5,
+    6.0
+   ],
+   "gold frames with no token when IoU>=0.3 / <0.3": [
+    7.5,
+    7.1
+   ]
+  }
+ },
+ "3_selection_and_scorer_metrics": {
+  "unpruned (official)": {
+   "n": 475,
+   "acc": 13.5,
+   "miou": 26.9,
+   "r05": 25.3,
+   "gq05": 4.4
+  },
+  "HERMES 10% (official)": {
+   "n": 475,
+   "acc": 9.7,
+   "miou": 23.3,
+   "r05": 23.2,
+   "gq05": 3.4
+  },
+  "HERMES 5% (official)": {
+   "n": 475,
+   "acc": 8.8,
+   "miou": 14.8,
+   "r05": 13.3,
+   "gq05": 1.5
+  },
+  "stratified 10% (official)": {
+   "n": 475,
+   "acc": 9.9,
+   "miou": 25.9,
+   "r05": 24.2,
+   "gq05": 2.9
+  },
+  "stratified 5% (official)": {
+   "n": 475,
+   "acc": 9.7,
+   "miou": 25.4,
+   "r05": 24.6,
+   "gq05": 2.9
+  },
+  "random 10% (official)": {
+   "n": 475,
+   "acc": 10.9,
+   "miou": 26.1,
+   "r05": 23.6,
+   "gq05": 3.4
+  },
+  "random 5% (official)": {
+   "n": 475,
+   "acc": 10.7,
+   "miou": 25.3,
+   "r05": 22.9,
+   "gq05": 3.4
+  },
+  "oracle 10% (official)": {
+   "n": 475,
+   "acc": 12.2,
+   "miou": 28.8,
+   "r05": 25.9,
+   "gq05": 4.6
+  },
+  "oracle 5% (official)": {
+   "n": 475,
+   "acc": 12.2,
+   "miou": 28.4,
+   "r05": 25.5,
+   "gq05": 4.2
+  },
+  "hermes_exact 10% (official)": {
+   "n": 475,
+   "acc": 9.5,
+   "miou": 12.0,
+   "r05": 9.7,
+   "gq05": 2.5
+  },
+  "hermes_exact 5% (official)": {
+   "n": 475,
+   "acc": 8.2,
+   "miou": 8.3,
+   "r05": 6.1,
+   "gq05": 0.8
+  },
+  "unpruned (timeline)": {
+   "n": 475,
+   "acc": 18.5,
+   "miou": 28.0,
+   "r05": 26.7,
+   "gq05": 8.6
+  },
+  "HERMES 10% (timeline)": {
+   "n": 475,
+   "acc": 13.1,
+   "miou": 18.3,
+   "r05": 16.2,
+   "gq05": 4.0
+  },
+  "HERMES 5% (timeline)": {
+   "n": 475,
+   "acc": 13.5,
+   "miou": 12.2,
+   "r05": 10.5,
+   "gq05": 3.4
+  },
+  "stratified 10% (timeline)": {
+   "n": 475,
+   "acc": 14.1,
+   "miou": 23.7,
+   "r05": 21.7,
+   "gq05": 6.1
+  },
+  "stratified 5% (timeline)": {
+   "n": 475,
+   "acc": 13.3,
+   "miou": 21.8,
+   "r05": 18.1,
+   "gq05": 5.7
+  },
+  "random 10% (timeline)": {
+   "n": 475,
+   "acc": 15.2,
+   "miou": 25.8,
+   "r05": 24.2,
+   "gq05": 7.2
+  },
+  "random 5% (timeline)": {
+   "n": 475,
+   "acc": 15.8,
+   "miou": 23.6,
+   "r05": 21.1,
+   "gq05": 5.9
+  },
+  "oracle 10% (timeline)": {
+   "n": 475,
+   "acc": 17.5,
+   "miou": 27.9,
+   "r05": 25.7,
+   "gq05": 8.4
+  },
+  "oracle 5% (timeline)": {
+   "n": 475,
+   "acc": 17.1,
+   "miou": 27.0,
+   "r05": 24.6,
+   "gq05": 7.8
+  },
+  "hermes_exact 10% (timeline)": {
+   "n": 475,
+   "acc": 10.7,
+   "miou": 10.8,
+   "r05": 9.9,
+   "gq05": 1.5
+  }
+ },
+ "3b_paired_differences": {
+  "oracle 10% - stratified 10% (official)": {
+   "acc": "+2.3 [-0.2, +5.1]",
+   "miou": "+2.9 [+0.7, +5.2] *",
+   "gq05": "+1.7 [+0.0, +3.6]"
+  },
+  "oracle 10% - HERMES 10% (official)": {
+   "acc": "+2.5 [-0.2, +5.3]",
+   "miou": "+5.5 [+2.6, +8.4] *",
+   "gq05": "+1.3 [-0.6, +3.2]"
+  },
+  "oracle 10% - random 10% (official)": {
+   "acc": "+1.3 [-1.3, +3.8]",
+   "miou": "+2.7 [+0.1, +5.2] *",
+   "gq05": "+1.3 [-0.4, +2.9]"
+  },
+  "oracle 10% - unpruned (official)": {
+   "acc": "-1.3 [-3.8, +1.3]",
+   "miou": "+1.9 [-0.5, +4.3]",
+   "gq05": "+0.2 [-1.5, +2.1]"
+  },
+  "oracle 5% - stratified 5% (official)": {
+   "acc": "+2.5 [-0.2, +5.3]",
+   "miou": "+3.0 [+0.5, +5.5] *",
+   "gq05": "+1.3 [-0.4, +3.2]"
+  },
+  "oracle 5% - unpruned (official)": {
+   "acc": "-1.3 [-4.0, +1.7]",
+   "miou": "+1.5 [-1.1, +4.1]",
+   "gq05": "-0.2 [-1.9, +1.3]"
+  },
+  "hermes_exact 10% - HERMES 10% (official)": {
+   "acc": "-0.2 [-2.1, +1.7]",
+   "miou": "-11.3 [-13.7, -8.8] *",
+   "gq05": "-0.8 [-2.3, +0.6]"
+  },
+  "hermes_exact 5% - HERMES 5% (official)": {
+   "acc": "-0.6 [-2.7, +1.3]",
+   "miou": "-6.5 [-8.5, -4.5] *",
+   "gq05": "-0.6 [-1.5, +0.2]"
+  },
+  "oracle 10% - stratified 10% (timeline)": {
+   "acc": "+3.4 [+0.0, +6.9]",
+   "miou": "+4.2 [+2.3, +6.2] *",
+   "gq05": "+2.3 [+0.0, +4.6]"
+  },
+  "oracle 10% - HERMES 10% (timeline)": {
+   "acc": "+4.4 [+0.8, +8.0] *",
+   "miou": "+9.6 [+7.3, +12.0] *",
+   "gq05": "+4.4 [+1.9, +7.2] *"
+  },
+  "oracle 10% - random 10% (timeline)": {
+   "acc": "+2.3 [-1.3, +5.9]",
+   "miou": "+2.1 [-0.1, +4.3]",
+   "gq05": "+1.3 [-1.3, +3.6]"
+  },
+  "oracle 10% - unpruned (timeline)": {
+   "acc": "-1.1 [-4.6, +2.7]",
+   "miou": "-0.1 [-2.3, +2.0]",
+   "gq05": "-0.2 [-2.7, +2.3]"
+  },
+  "oracle 5% - stratified 5% (timeline)": {
+   "acc": "+3.8 [+0.4, +7.4] *",
+   "miou": "+5.2 [+3.3, +7.2] *",
+   "gq05": "+2.1 [+0.0, +4.4]"
+  },
+  "oracle 5% - unpruned (timeline)": {
+   "acc": "-1.5 [-5.1, +2.3]",
+   "miou": "-1.0 [-3.2, +1.2]",
+   "gq05": "-0.8 [-3.4, +1.7]"
+  },
+  "hermes_exact 10% - HERMES 10% (timeline)": {
+   "acc": "-2.3 [-5.5, +0.6]",
+   "miou": "-7.5 [-9.6, -5.5] *",
+   "gq05": "-2.5 [-4.4, -0.8] *"
+  }
+ },
+ "5_timestamps": {
+  "offset +200 s (official)": {
+   "predictions starting >= 0.75 x offset (model followed the shifted stamps) %": 56.0,
+   "mIoU after undoing the shift": 20.1,
+   "R@0.5 after undoing the shift": 18.9
+  },
+  "offset +200 s (timeline)": {
+   "predictions starting >= 0.75 x offset (model followed the shifted stamps) %": 46.9,
+   "mIoU after undoing the shift": 17.0,
+   "R@0.5 after undoing the shift": 16.0
+  },
+  "no timestamp text (official)": {
+   "n": 475,
+   "acc": 10.9,
+   "miou": 5.0,
+   "r05": 2.7,
+   "gq05": 0.6
+  }
+ },
+ "6_primacy": {
+  "start at 0.5 x question time (official)": {
+   "median predicted start, position in shown window (0 = window start)": 0.01,
+   "predictions starting in the first 10% of the window %": 59.1,
+   "predictions starting before the window (impossible) %": 37.7,
+   "questions whose gold interval ends before the window %": 13.1,
+   "answer accuracy on those (evidence not shown)": 12.9
+  },
+  "start at 0.5 x question time (timeline)": {
+   "median predicted start, position in shown window (0 = window start)": 0.01,
+   "predictions starting in the first 10% of the window %": 65.2,
+   "predictions starting before the window (impossible) %": 41.2,
+   "questions whose gold interval ends before the window %": 13.1,
+   "answer accuracy on those (evidence not shown)": 8.1
+  }
+ }
+}

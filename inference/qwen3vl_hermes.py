@@ -346,10 +346,15 @@ class Qwen3VL_Hermes(QwenVL_Hermes):
         self._layer_position_ids.clear()
         torch.cuda.empty_cache()
 
-    def _compute_attention_scores_manually(self, input_ids, past_key_values):
-        """Compute pruning attention with Qwen3's normalized Q/K states."""
+    def _compute_attention_scores_manually(self, input_ids, past_key_values, offsets=None, reduce=None):
+        """Compute pruning attention with Qwen3's normalized Q/K states.
+
+        Diagnostics: ``offsets`` overrides the text positions; ``reduce(layer_idx, scores)`` replaces each
+        layer's full attention map by its return value (keeps memory flat for long query blocks).
+        """
         device = self.device
-        offsets = self._get_next_global_offset_per_layer()
+        if offsets is None:
+            offsets = self._get_next_global_offset_per_layer()
         q_len = input_ids.shape[1]
         batch = input_ids.shape[0]
         hidden_states = self.get_input_embeddings()(input_ids)
@@ -413,7 +418,7 @@ class Qwen3VL_Hermes(QwenVL_Hermes):
             scores = F.softmax(scores, dim=-1, dtype=torch.float32).to(
                 query_states.dtype
             )
-            attention_weights.append(scores)
+            attention_weights.append(scores if reduce is None else reduce(layer_idx, scores))
             if exact:
                 # Propagate the query tokens through the full layer (attention output, residual,
                 # MLP), so the next layer's queries come from real hidden states. The default path
@@ -461,6 +466,53 @@ class Qwen3VL_Hermes(QwenVL_Hermes):
                         s[band_idx] += float(group_mass[groups == frame].sum()) / len(band)
         round3 = lambda d: {int(k): [round(x, 6) for x in v] for k, v in sorted(d.items())}
         return {"visual": round3(visual), "timestamps": round3(stamps)}
+
+    def _gold_masks(self, layer_idx, kv_len, first_frame, gold_frames):
+        ids = self._token_frame_ids_per_layer[layer_idx][:kv_len].to(self.device)
+        gold = torch.as_tensor(sorted(first_frame + g for g in gold_frames), dtype=ids.dtype, device=self.device)
+        return ids >= 0, torch.isin(ids, gold)
+
+    def answer_attention_profile(self, prompt_text, answer_text, cache_len, offsets, first_frame, gold_frames):
+        """Diagnostics: attention to the gold-interval frames while reading the prompt and while writing
+        the answer and its timestamps (teacher-forced replay of the model's own output).
+
+        The cache is cropped back to ``cache_len`` (its length before answering) and the prompt plus the
+        generated answer are replayed with exact propagation from the pre-answer ``offsets``. For three row
+        groups (prompt, answer text, text from "Time:" on) returns, per layer and head, the share of
+        visual attention on gold frames, and per layer the share of all attention that goes to video.
+        """
+        tok = self.processor.tokenizer
+        before_time = answer_text.split("Time:")[0]
+        n_prompt = len(tok(prompt_text).input_ids)
+        n_answer = len(tok(prompt_text + before_time).input_ids)
+        ids = tok(prompt_text + answer_text).input_ids
+        groups = {"prompt": (0, n_prompt), "answer": (n_prompt, n_answer), "time": (n_answer, len(ids))}
+        groups = {k: v for k, v in groups.items() if v[1] > v[0]}
+        self.kv_cache.crop(int(cache_len))
+        kv_len = int(cache_len)
+
+        def reduce(layer_idx, scores):
+            vis, gold = self._gold_masks(layer_idx, kv_len, first_frame, gold_frames)
+            out = {}
+            for name, (a, b) in groups.items():
+                m = scores[0, :, a:b, :kv_len].float().mean(dim=1)  # heads x kv
+                visual_mass = m[:, vis].sum(-1)
+                out[name] = {"gold_share": (m[:, gold].sum(-1) / visual_mass.clamp_min(1e-9)).tolist(),
+                             "video_share": float(visual_mass.mean() / scores[0, :, a:b].float().sum(-1).mean())}
+            return out
+
+        exact_before = getattr(self, "exact_attention", False)
+        self.exact_attention = True
+        try:
+            with torch.no_grad():
+                per_layer = self._compute_attention_scores_manually(
+                    torch.as_tensor([ids], device=self.device), self.kv_cache, offsets=offsets, reduce=reduce)
+        finally:
+            self.exact_attention = exact_before
+        r3 = lambda xs: [round(x, 4) for x in xs]
+        return {name: {"gold_share": [r3(layer[name]["gold_share"]) for layer in per_layer],
+                       "video_share": [round(layer[name]["video_share"], 4) for layer in per_layer]}
+                for name in groups}
 
 
 def load_model(

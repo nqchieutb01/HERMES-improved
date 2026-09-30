@@ -1,0 +1,221 @@
+{
+ "1_grounding_heads (timeline, unpruned)": {
+  "questions (test half)": 232,
+  "grounding heads (layer, head)": [
+   [
+    21,
+    10
+   ],
+   [
+    20,
+    15
+   ],
+   [
+    20,
+    18
+   ],
+   [
+    17,
+    27
+   ],
+   [
+    17,
+    4
+   ],
+   [
+    18,
+    15
+   ],
+   [
+    20,
+    17
+   ],
+   [
+    20,
+    21
+   ],
+   [
+    16,
+    23
+   ],
+   [
+    19,
+    13
+   ]
+  ],
+  "lift, all heads: prompt / answer / time rows": [
+   1.06,
+   1.22,
+   1.04
+  ],
+  "lift, grounding heads: prompt / answer / time rows": [
+   1.23,
+   2.2,
+   1.77
+  ],
+  "grounding-head lift (prompt rows) when output IoU>=0.5 / IoU<0.1": [
+   1.22,
+   1.27
+  ],
+  "grounding-head lift (time rows) when output IoU>=0.5 / IoU<0.1": [
+   1.52,
+   1.97
+  ],
+  "wrong outputs (IoU<0.1) whose grounding heads still favour gold (lift>1.5) %": 25.7,
+  "video share of attention: prompt / answer / time rows": [
+   0.059,
+   0.071,
+   0.035
+  ]
+ },
+ "1b_grounding_heads (official, unpruned)": {
+  "questions (test half)": 234,
+  "grounding heads (layer, head)": [
+   [
+    21,
+    10
+   ],
+   [
+    20,
+    15
+   ],
+   [
+    21,
+    11
+   ],
+   [
+    21,
+    25
+   ],
+   [
+    24,
+    5
+   ],
+   [
+    21,
+    26
+   ],
+   [
+    21,
+    18
+   ],
+   [
+    20,
+    21
+   ],
+   [
+    20,
+    17
+   ],
+   [
+    20,
+    8
+   ]
+  ],
+  "lift, all heads: prompt / answer / time rows": [
+   1.11,
+   1.23,
+   1.19
+  ],
+  "lift, grounding heads: prompt / answer / time rows": [
+   1.44,
+   2.3,
+   2.42
+  ],
+  "grounding-head lift (prompt rows) when output IoU>=0.5 / IoU<0.1": [
+   1.41,
+   1.42
+  ],
+  "grounding-head lift (time rows) when output IoU>=0.5 / IoU<0.1": [
+   2.38,
+   2.13
+  ],
+  "wrong outputs (IoU<0.1) whose grounding heads still favour gold (lift>1.5) %": 27.8,
+  "video share of attention: prompt / answer / time rows": [
+   0.091,
+   0.082,
+   0.057
+  ]
+ },
+ "1c_same heads under pruning: HERMES 10%": {
+  "grounding-head lift, prompt / time rows": [
+   1.46,
+   1.55
+  ]
+ },
+ "1c_same heads under pruning: stratified 10%": {
+  "grounding-head lift, prompt / time rows": [
+   1.09,
+   1.38
+  ]
+ },
+ "2_blind": {
+  "official": {
+   "n": 475,
+   "acc": 6.9,
+   "miou": 3.4,
+   "r05": 1.5,
+   "gq05": 0.0
+  },
+  "timeline": {
+   "n": 475,
+   "acc": 10.5,
+   "miou": 7.9,
+   "r05": 4.8,
+   "gq05": 0.8
+  }
+ },
+ "2b_blind vs video (paired)": {
+  "official": {
+   "acc": "+6.5 [+2.9, +10.3] *",
+   "miou": "+23.5 [+20.6, +26.1] *",
+   "gq05": "+4.4 [+2.7, +6.3] *"
+  },
+  "timeline": {
+   "acc": "+8.0 [+3.8, +12.4] *",
+   "miou": "+20.2 [+17.5, +23.0] *",
+   "gq05": "+7.8 [+5.3, +10.5] *"
+  }
+ },
+ "3_shuffles": {
+  "frames+stamps shuffled (official)": {
+   "metrics": {
+    "n": 475,
+    "acc": 12.6,
+    "miou": 22.9,
+    "r05": 21.1,
+    "gq05": 4.4
+   },
+   "video - shuffled (paired)": {
+    "acc": "+0.8 [-1.7, +3.4]",
+    "miou": "+3.9 [+1.2, +6.6] *",
+    "gq05": "+0.0 [-2.1, +2.1]"
+   }
+  },
+  "frames+stamps shuffled (timeline)": {
+   "metrics": {
+    "n": 475,
+    "acc": 18.5,
+    "miou": 20.4,
+    "r05": 18.1,
+    "gq05": 5.1
+   },
+   "video - shuffled (paired)": {
+    "acc": "+0.0 [-4.0, +4.0]",
+    "miou": "+7.6 [+4.7, +10.4] *",
+    "gq05": "+3.6 [+0.8, +6.3] *"
+   }
+  },
+  "stamps only shuffled (official)": {
+   "metrics": {
+    "n": 475,
+    "acc": 14.7,
+    "miou": 20.4,
+    "r05": 20.0,
+    "gq05": 4.2
+   },
+   "predictions near the displayed (wrong) stamps of gold frames only %": 26.8,
+   "predictions near the true gold time only %": 6.8
+  }
+ }
+}

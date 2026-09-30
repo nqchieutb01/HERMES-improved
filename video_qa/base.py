@@ -447,6 +447,13 @@ def work(QA_CLASS):
         help="Uniform sampling: write the real question's attention per frame (before pruning) "
              "to qattn-<chunk>.jsonl (diagnostic)",
     )
+    parser.add_argument("--answer_attention", type=str2bool, default=False,
+                        help="Uniform sampling: write per-head gold-frame attention while reading the prompt and "
+                             "writing the answer to aattn-<chunk>.jsonl (diagnostic)")
+    parser.add_argument("--blind", type=str2bool, default=False,
+                        help="Diagnostic: answer without encoding any video frame")
+    parser.add_argument("--shuffle_mode", choices=("none", "frames", "stamps"), default="none",
+                        help="Diagnostic: permute frame pairs with their timestamps, or only the timestamps")
     parser.add_argument("--time_offset", type=float, default=0.0,
                         help="Diagnostic: add this many seconds to every Qwen3 timestamp")
     parser.add_argument("--drop_timestamps", type=str2bool, default=False,
@@ -669,6 +676,11 @@ def work(QA_CLASS):
     if args.retention_snapshot or args.question_attention:
         videoqa_model.force_token_provenance = True
     analyzer.question_attention = args.question_attention
+    analyzer.answer_attention = args.answer_attention
+    analyzer.blind = args.blind
+    analyzer.shuffle_mode = args.shuffle_mode
+    if args.answer_attention:
+        videoqa_model.force_token_provenance = True
     videoqa_model.time_offset = args.time_offset
     videoqa_model.drop_timestamps = args.drop_timestamps
     if not 0 <= args.uniform_start_frac < 1:

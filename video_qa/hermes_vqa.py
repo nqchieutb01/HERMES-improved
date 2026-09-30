@@ -1,6 +1,7 @@
 import bisect
 import math
 import json
+import random
 import os
 import torch
 from logzero import logger
@@ -81,6 +82,18 @@ class HermesVQA(BaseVQA):
                     duration=video_sample.get('duration'),
                 )
                 question_video = torch.from_numpy(video)
+                shuffle = getattr(self, 'shuffle_mode', 'none')
+                if shuffle != 'none':
+                    # Diagnostic: permute Qwen3's frame pairs (seeded per question). "frames": pairs move with
+                    # their timestamps; "stamps": frames stay in order and only the timestamps are permuted.
+                    pairs = list(range(len(question_video) // 2))
+                    order = pairs[:]
+                    random.Random(f"{video_sample['video_id']}-{sample.get('question_id')}").shuffle(order)
+                    idx = [2 * p + k for p in order for k in (0, 1)] + list(range(2 * len(pairs), len(question_video)))
+                    times = list(self.last_uniform_frame_times)
+                    if shuffle == 'frames':
+                        question_video = question_video[idx]
+                    self.last_uniform_frame_times = [times[i] for i in idx]
                 logger.debug(
                     "Uniform baseline selected %d source frames through %.3fs: %s",
                     len(selected_frame_indices),
@@ -90,6 +103,8 @@ class HermesVQA(BaseVQA):
                 # Frame ids keep counting across questions; ids first_frame + i <-> frame_times[i].
                 first_frame = getattr(self.qa_model, 'total_processed_frames', 0)
                 frame_times = list(getattr(self, 'last_uniform_frame_times', []))
+                if getattr(self, 'blind', False):
+                    question_video = question_video[:0]  # Diagnostic: answer without any video.
                 for start in range(0, len(question_video), encode_chunk_size):
                     stop = min(start + encode_chunk_size, len(question_video))
                     print(f"Encoding uniform frames {start} to {stop-1}")
@@ -205,6 +220,10 @@ class HermesVQA(BaseVQA):
                     record_entry['pred_raw'] = qa_results['pred_answer']
             else:
                 is_sember = sample.get('benchmark') == 'sember_grounding'
+                trace_answer = getattr(self, 'answer_attention', False) and frame_sampling == 'uniform'
+                if trace_answer:
+                    cache_len = self.qa_model._get_cache_seq_len_per_layer()[0]
+                    offsets = list(self.qa_model._get_next_global_offset_per_layer())
                 qa_results = self.video_open_qa(
                     question,
                     max_new_tokens=getattr(self, 'max_new_tokens', 256),
@@ -212,6 +231,19 @@ class HermesVQA(BaseVQA):
                     preserve_newlines=is_sember,
                 )
                 print("Pred Answer: ", qa_results['pred_answer'])
+                if trace_answer:
+                    # Diagnostic: gold-frame attention while reading the prompt and writing the answer.
+                    lo, hi = float(sample['answer_start_time']), float(sample['answer_end_time'])
+                    gold = [i for i, t in enumerate(frame_times) if lo <= t <= hi]
+                    if gold:
+                        prompt_text = self.qa_model.get_prompt(sample.get('prompt') or question)
+                        profile = self.qa_model.answer_attention_profile(
+                            prompt_text, qa_results['pred_answer'], cache_len, offsets, first_frame, gold)
+                        with open(os.path.join(self.save_dir, f"aattn-{self.chunk_idx}.jsonl"), "a") as out:
+                            out.write(json.dumps({"video_id": video_sample['video_id'],
+                                                  "question_id": sample.get('question_id'),
+                                                  "gold_frames": gold, "num_frames": len(frame_times),
+                                                  **profile}) + "\n")
 
                 record_entry = {
                     'video_id': video_sample['video_id'],

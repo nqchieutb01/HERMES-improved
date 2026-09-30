@@ -279,6 +279,12 @@ def inference_command(
         command.extend(["--retention_snapshot", "true"])
     if cfg.run.get("question_attention"):
         command.extend(["--question_attention", "true"])
+    if cfg.run.get("answer_attention"):
+        command.extend(["--answer_attention", "true"])
+    if cfg.run.get("blind"):
+        command.extend(["--blind", "true"])
+    if cfg.run.get("shuffle_mode", "none") != "none":
+        command.extend(["--shuffle_mode", str(cfg.run.shuffle_mode)])
     if float(cfg.run.get("time_offset", 0.0)) != 0.0:
         command.extend(["--time_offset", str(cfg.run.time_offset)])
     if cfg.run.get("drop_timestamps"):
