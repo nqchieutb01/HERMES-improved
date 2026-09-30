@@ -20,8 +20,22 @@ arXiv 2505.14321), evidence-position analysis (needle-in-a-haystack; S-EMBER rec
 | Counting | Undercounts 69% of the time even unpruned (median 3 vs gold 5); count = number of "Seen" lines in 79% of answers |
 | Answer right vs interval right | ~20% of questions have IoU ≥ 0.5 but a wrong answer |
 
-Pruning only costs what selection throws away: a perfect selector at 5–10% of tokens loses nothing. Everything
-above that ceiling is the model's perception and reasoning.
+Pruning only costs what selection throws away: a perfect selector at 5–10% of tokens loses nothing.
+
+**Evidence-window oracle (phase 16, upper bound on memory).** 64 frames sampled inside the gold interval,
+timestamp text alone every 5 s elsewhere (no pruning; `run.oracle_window=true`):
+
+| | Acc. | mIoU | R@0.5 | GQ@0.5 |
+|---|---|---|---|---|
+| Unpruned 64 frames, official / timeline | 13.5 / 18.5 | 26.9 / 28.0 | 25.3 / 26.7 | 4.4 / 8.6 |
+| Evidence window, official | 20.8 (+7.4*) | 34.3 (+7.4*) | 34.3 | 7.6 (+3.2*) |
+| Evidence window, timeline | 26.3 (+7.8*) | 35.3 (+7.2*) | 36.2 | 13.9 (+5.3*) |
+
+Denser evidence (all 64 frames inside the interval, no distractors) does raise the ceiling: the answer is
+limited by how densely the evidence is seen, not only by the model. Yet even here the model scores 26% accuracy
+and 35 mIoU, and 43% of its intervals extend outside the only region that has frames (27–40% start more than
+5 s before it): it still writes times from the text timeline and its early prior. By category (timeline):
+duration GQ@0.5 14.7 → 24.1, counting 6.5 → 9.8, location 1.0 → 2.0.
 
 ## 2. Why HERMES pruning collapses: recency concentration
 
