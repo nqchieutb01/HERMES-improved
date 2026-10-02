@@ -728,6 +728,44 @@ class QwenVL_Hermes(Qwen2_5_VLForConditionalGeneration, Abstract_Hermes):
             out[idx] = 1.0 - ranks.float() / max(order.numel(), 1) + 1e-3 * score[idx].float()
         return out.to(score.dtype)
 
+    def _quota_scores(self, score, start_idx, layer_idx, budget):
+        """Scores that make a top-``budget`` selection keep a fixed quota of tokens per frame.
+
+        Frames in ``self.zoom_frame_ids`` share ``self.zoom_share`` of the budget equally; all other frames share
+        the rest equally. Within a frame, tokens are ranked by ``score``. Tokens inside their frame's quota score
+        in (1, 2]; the others fall back to a within-frame rank in [0, 0.5], so any spare budget still spreads
+        evenly. Tokens without a frame (text) keep their score.
+        """
+        if self._token_frame_ids_per_layer is None:
+            raise RuntimeError("zoom pruning needs token provenance")
+        ids = self._token_frame_ids_per_layer[layer_idx][start_idx:start_idx + score.numel()].to(score.device)
+        frames = torch.unique(ids[ids >= 0]).tolist()
+        shares = getattr(self, "frame_budget_share", None)
+        if shares:
+            # Explicit per-frame budget shares (relevance-guided allocation); renormalised over present frames.
+            total = sum(shares.get(f, 0.0) for f in frames) or 1.0
+            quota = {f: budget * shares.get(f, 0.0) / total for f in frames}
+        else:
+            window = set(getattr(self, "zoom_frame_ids", set()))
+            inside = [f for f in frames if f in window]
+            outside = [f for f in frames if f not in window]
+            share = float(getattr(self, "zoom_share", 0.6))
+            if not inside or not outside:
+                quota = {f: budget / max(len(frames), 1) for f in frames}
+            else:
+                quota = {f: share * budget / len(inside) for f in inside}
+                quota.update({f: (1.0 - share) * budget / len(outside) for f in outside})
+        out = score.clone().float()
+        for frame in frames:
+            idx = torch.nonzero(ids == frame).flatten()
+            order = torch.argsort(score[idx].float(), descending=True)
+            pos = torch.empty_like(order)
+            pos[order] = torch.arange(order.numel(), device=order.device)
+            pos = pos.float()
+            q = max(quota[frame], 1e-6)
+            out[idx] = torch.where(pos < q, 2.0 - pos / q, 0.5 * (1.0 - pos / max(order.numel(), 1)))
+        return out.to(score.dtype)
+
     def apply_kv_cache_pruning_strict(self, keep_indices_all_layers):
         if self.kv_cache is None:
             logger.warning("No KV-Cache to prune")
@@ -927,6 +965,13 @@ class QwenVL_Hermes(Qwen2_5_VLForConditionalGeneration, Abstract_Hermes):
                 gold = torch.isin(ids, torch.as_tensor(sorted(getattr(self, "oracle_frame_ids", set())),
                                                        dtype=ids.dtype, device=s.device))
                 refined_scores.append(ranked + 2.0 * gold.to(ranked.dtype))
+        elif score_mode == "zoom":
+            # Coverage-then-zoom: frames inside the zoom window(s) share zoom_share of the layer budget,
+            # all other frames share the rest; inside each frame the most salient tokens (HERMES score) win.
+            refined_scores = [
+                self._quota_scores(s, layer_configs[i]["visual_start_idx"], i, layer_configs[i]["budget"])
+                for i, s in enumerate(refined_scores)
+            ]
         elif score_mode not in ("hermes", "hermes_exact"):
             raise ValueError(f"unknown prune_score {score_mode!r}")
 

@@ -1,0 +1,32 @@
+{
+ "slots": [
+  {
+   "partition": "long",
+   "qos": "gpu-debug-qos",
+   "max_jobs": 4
+  }
+ ],
+ "runs": [
+  {
+   "name": "g-dx-hrel-random-0.1",
+   "code": "/home/chieu.nguyen/HERMES",
+   "chunks": 4,
+   "env": {
+    "HERMES_QWEN3_ATTENTION_BACKEND": "flash_attention_2"
+   },
+   "overrides": [
+    "model=qwen3_vl_8b",
+    "dataset.max_videos=300",
+    "experiment=sember_grounding_uniform",
+    "run.uniform_num_frames=64",
+    "run.keep_time_tokens=surviving",
+    "dataset.grounding_prompt=timeline",
+    "run.max_new_tokens=8",
+    "run.offline_keep_ratio=0.1",
+    "run.prune_score=random",
+    "run.relevance_heads=/home/chieu.nguyen/HERMES/logs/phase17/heads_top8.json",
+    "paths.save_dir=/home/chieu.nguyen/HERMES/results/qwen3_vl_8b/sember_grounding/uniform-n64-time-count-location-dx-hrel-random-keep0.1-timeline-v300-native-time"
+   ]
+  }
+ ]
+}

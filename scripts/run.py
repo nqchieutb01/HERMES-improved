@@ -285,6 +285,23 @@ def inference_command(
         command.extend(["--blind", "true"])
     if cfg.run.get("oracle_window"):
         command.extend(["--oracle_window", "true"])
+    if cfg.run.get("contrastive_mode", "none") != "none":
+        command.extend(["--contrastive_mode", str(cfg.run.contrastive_mode),
+                        "--contrastive_alpha", str(cfg.run.get("contrastive_alpha", 1.0)),
+                        "--contrastive_beta", str(cfg.run.get("contrastive_beta", 0.1))])
+    if float(cfg.run.get("visual_attention_gain", 1.0)) != 1.0:
+        command.extend(["--visual_attention_gain", str(cfg.run.visual_attention_gain),
+                        "--visual_attention_layers", str(cfg.run.get("visual_attention_layers", "all"))])
+    if cfg.run.get("relevance_heads"):
+        command.extend(["--relevance_heads", str(cfg.run.relevance_heads)])
+    if cfg.run.get("relevance_zoom"):
+        command.extend(["--relevance_zoom", "true", "--zoom_mix", str(cfg.run.get("zoom_mix", 0.5)),
+                        "--zoom_temp", str(cfg.run.get("zoom_temp", 1.0)),
+                        "--zoom_frames", str(cfg.run.get("zoom_frames", 32))])
+    if cfg.run.get("zoom_windows"):
+        command.extend(["--zoom_windows", str(cfg.run.zoom_windows),
+                        "--zoom_frames", str(cfg.run.get("zoom_frames", 32)),
+                        "--zoom_share", str(cfg.run.get("zoom_share", 0.6))])
     if cfg.run.get("shuffle_mode", "none") != "none":
         command.extend(["--shuffle_mode", str(cfg.run.shuffle_mode)])
     if float(cfg.run.get("time_offset", 0.0)) != 0.0:

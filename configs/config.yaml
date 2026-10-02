@@ -35,6 +35,23 @@ run:
   answer_attention: false
   blind: false
   oracle_window: false
+  # Coverage-then-zoom (prune_score=zoom): windows JSON, extra frames in the windows, budget share.
+  zoom_windows: null
+  # Diagnostic: JSON list of [layer, head]; per-frame prompt attention after pruning (hrel-<chunk>.jsonl).
+  relevance_heads: null
+  # Relevance-guided importance sampling (needs relevance_heads and offline_keep_ratio < 1).
+  relevance_zoom: false
+  # Visual-attention rebalancing during answer generation (1.0 = off); layers 'all' or 'start-end'.
+  # Contrastive decoding against a counterfactual memory: none | stamps | blind.
+  contrastive_mode: none
+  contrastive_alpha: 1.0
+  contrastive_beta: 0.1
+  visual_attention_gain: 1.0
+  visual_attention_layers: all
+  zoom_mix: 0.5
+  zoom_temp: 1.0
+  zoom_frames: 32
+  zoom_share: 0.6
   shuffle_mode: none
   time_offset: 0.0
   drop_timestamps: false

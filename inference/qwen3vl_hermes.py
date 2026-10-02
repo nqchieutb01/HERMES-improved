@@ -7,6 +7,7 @@ M-RoPE, Q/K normalization, and DeepStack vision features.
 
 from __future__ import annotations
 
+import math
 import os
 
 import torch
@@ -346,6 +347,121 @@ class Qwen3VL_Hermes(QwenVL_Hermes):
         self._layer_position_ids.clear()
         torch.cuda.empty_cache()
 
+    # ----- Memory snapshots (for decoding against a counterfactual memory) -----
+    _STATE = ("kv_cache", "_position_ids_cache", "_token_frame_ids_per_layer", "_token_frame_summary_scores_per_layer",
+              "_encoded_tokens_per_frame", "visual_start_idx")
+
+    def memory_snapshot(self):
+        state = {k: getattr(self, k, None) for k in self._STATE}
+        state["_position_ids_cache"] = list(self._position_ids_cache)
+        return state
+
+    def memory_restore(self, state):
+        for k, v in state.items():
+            setattr(self, k, list(v) if k == "_position_ids_cache" else v)
+
+    def _forward_text(self, ids):
+        """Feed text token ids into the current memory (prefill or one decoding step); returns last-token logits."""
+        offsets = self._get_next_global_offset_per_layer()
+        q_len = ids.shape[1]
+        self._layer_position_ids.clear()
+        for layer_idx in range(self.num_layers):
+            self._layer_position_ids[layer_idx] = self._build_position_ids_3d_for_text(offsets[layer_idx], q_len, 1)
+        out = self.language_model(inputs_embeds=self.get_input_embeddings()(ids), use_cache=True,
+                                  past_key_values=self.kv_cache,
+                                  position_ids=self._build_position_ids_3d_for_text(offsets[0], q_len, 1))
+        self.kv_cache = out.past_key_values
+        for layer_idx in range(self.num_layers):
+            o = offsets[layer_idx]
+            self._append_position_ids_layer(layer_idx, [o, o, o], q_len)
+        self._layer_position_ids.clear()
+        return self.lm_head(out.last_hidden_state)[0, -1].float()
+
+    @torch.inference_mode()
+    def contrastive_answering(self, prompt, negative_state, alpha=1.0, beta=0.1, max_new_tokens=384,
+                              repetition_penalty=1.1):
+        """Greedy decoding contrasted against a counterfactual memory (VCD-style, Leng et al. CVPR 2024).
+
+        Both memories receive the same prompt and the same generated tokens. At each step the next token maximises
+        (1 + alpha) * log p(. | real memory) - alpha * log p(. | counterfactual memory), restricted to tokens whose
+        probability under the real memory is at least beta times the most likely one (adaptive plausibility).
+        Tokens the model would produce regardless of the real memory are thereby discounted.
+        """
+        tok = self.processor.tokenizer
+        ids = torch.as_tensor([tok(prompt).input_ids], device=self.device)
+        self._ensure_dynamic_cache()
+        positive = self.memory_snapshot()
+        logit_pos = self._forward_text(ids)
+        positive = self.memory_snapshot()
+        self.memory_restore(negative_state)
+        self._ensure_dynamic_cache()
+        logit_neg = self._forward_text(ids)
+        negative = self.memory_snapshot()
+        out_ids = []
+        for _ in range(max_new_tokens):
+            lp = torch.log_softmax(logit_pos, -1)
+            ln = torch.log_softmax(logit_neg, -1)
+            score = (1.0 + alpha) * lp - alpha * ln
+            score = score.masked_fill(lp < lp.max() + math.log(beta), float("-inf"))
+            for t in set(out_ids):  # repetition penalty on the contrasted score (as on logits in greedy decoding)
+                score[t] = score[t] - math.log(repetition_penalty)
+            token = int(torch.argmax(score))
+            out_ids.append(token)
+            if token == tok.eos_token_id:
+                break
+            step = torch.as_tensor([[token]], device=self.device)
+            self.memory_restore(positive)
+            logit_pos = self._forward_text(step)
+            positive = self.memory_snapshot()
+            self.memory_restore(negative)
+            logit_neg = self._forward_text(step)
+            negative = self.memory_snapshot()
+        self.memory_restore(positive)
+        return tok.decode(out_ids, skip_special_tokens=True, spaces_between_special_tokens=False,
+                          clean_up_tokenization_spaces=True)
+
+    def question_answering(self, input_text, *args, **kwargs):
+        """Answer generation; optionally with visual-attention rebalancing.
+
+        With ``visual_attention_gain`` = gamma != 1, every attention call during the prompt prefill and decoding
+        adds log(gamma) to the logits of visual-memory tokens in ``visual_attention_layers`` (all layers if None),
+        so their attention mass is multiplied by gamma before renormalisation (PAI-style, Liu et al. ECCV 2024).
+        """
+        gain = float(getattr(self, "visual_attention_gain", 1.0))
+        if gain == 1.0 or self._token_frame_ids_per_layer is None:
+            return super().question_answering(input_text, *args, **kwargs)
+        from transformers.modeling_utils import ALL_ATTENTION_FUNCTIONS
+        from transformers.models.qwen3_vl.modeling_qwen3_vl import repeat_kv
+
+        layers = getattr(self, "visual_attention_layers", None)
+        layers = set(range(self.num_layers)) if layers is None else set(int(l) for l in layers)
+        log_gain = math.log(gain)
+        visual = {l: (self._token_frame_ids_per_layer[l] >= 0).to(self.device) for l in layers}
+
+        def biased_attention(module, query, key, value, attention_mask, scaling, dropout=0.0, **_):
+            k = repeat_kv(key, module.num_key_value_groups)
+            v = repeat_kv(value, module.num_key_value_groups)
+            scores = torch.matmul(query.float(), k.float().transpose(2, 3)) * scaling
+            q_len, kv_len = scores.shape[-2], scores.shape[-1]
+            if attention_mask is not None and attention_mask.dim() == 4:
+                scores = scores + attention_mask[:, :, :, :kv_len].float()
+            elif q_len > 1:
+                causal = torch.ones(q_len, q_len, dtype=torch.bool, device=scores.device).triu(1)
+                scores[..., kv_len - q_len:] = scores[..., kv_len - q_len:].masked_fill(causal, float("-inf"))
+            mask = visual.get(module.layer_idx)
+            if mask is not None:
+                n = min(mask.numel(), kv_len)
+                scores[..., :n] = scores[..., :n] + log_gain * mask[:n].to(scores.dtype)
+            weights = torch.softmax(scores, dim=-1).to(v.dtype)
+            return torch.matmul(weights, v).transpose(1, 2).contiguous(), None
+
+        impl = self.language_model.config._attn_implementation
+        ALL_ATTENTION_FUNCTIONS[impl] = biased_attention
+        try:
+            return super().question_answering(input_text, *args, **kwargs)
+        finally:
+            del ALL_ATTENTION_FUNCTIONS[impl]
+
     @torch.no_grad()
     def encode_timestamp_text(self, times):
         """Diagnostics: append timestamp text only ("<t seconds>" per time, no frame) to the cache.
@@ -473,6 +589,43 @@ class Qwen3VL_Hermes(QwenVL_Hermes):
                 hidden_states = hidden_states + layer.mlp(layer.post_attention_layernorm(hidden_states))
 
         return attention_weights
+
+    def head_relevance(self, text, heads, first_frame=0):
+        """Per-frame attention mass from selected (layer, head) pairs while reading ``text`` over the current cache.
+
+        Exact propagation through all layers; for each listed head, attention is averaged over the text tokens
+        and summed over each frame's (kept) visual tokens, then averaged over the heads. Returns
+        {"mass": {frame: m}, "tokens": {frame: kept visual tokens}} with frame ids relative to ``first_frame``.
+        """
+        ids = torch.as_tensor([self.processor.tokenizer(text).input_ids], device=self.device)
+        by_layer = {}
+        for l, h in heads:
+            by_layer.setdefault(int(l), []).append(int(h))
+        kv_len = self._get_cache_seq_len_per_layer()[0]
+
+        def reduce(layer_idx, scores):
+            if layer_idx not in by_layer:
+                return None
+            m = scores[0, by_layer[layer_idx], :, :kv_len].float().mean(dim=1)  # heads x kv
+            return m.sum(dim=0)  # summed over this layer's selected heads
+
+        exact_before = getattr(self, "exact_attention", False)
+        self.exact_attention = True
+        try:
+            with torch.no_grad():
+                per_layer = self._compute_attention_scores_manually(ids, self.kv_cache, reduce=reduce)
+        finally:
+            self.exact_attention = exact_before
+        mass, tokens = {}, {}
+        for layer_idx, m in enumerate(per_layer):
+            if m is None:
+                continue
+            frame_ids = self._token_frame_ids_per_layer[layer_idx][:kv_len].to(m.device)
+            for frame in torch.unique(frame_ids[frame_ids >= 0]).tolist():
+                sel = frame_ids == frame
+                mass[frame - first_frame] = mass.get(frame - first_frame, 0.0) + float(m[sel].sum()) / len(heads)
+                tokens[frame - first_frame] = int(sel.sum())
+        return {"mass": {k: round(v, 6) for k, v in sorted(mass.items())}, "tokens": dict(sorted(tokens.items()))}
 
     def question_attention_profile(self, question, first_frame=0):
         """Diagnostics: attention from the real question to every frame of the current cache.

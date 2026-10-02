@@ -1,6 +1,7 @@
 import csv
 import warnings
 import random
+import json
 import os
 import math
 import argparse
@@ -432,7 +433,7 @@ def work(QA_CLASS):
     )
     parser.add_argument(
         "--prune_score",
-        choices=("hermes", "random", "recent", "stratified", "oracle", "hermes_exact"),
+        choices=("hermes", "random", "recent", "stratified", "oracle", "hermes_exact", "zoom"),
         default="hermes",
         help="Token score used by compression: HERMES attention+recency, random, or most recent; "
              "oracle keeps gold-interval frames first (diagnostic); hermes_exact propagates the "
@@ -454,6 +455,30 @@ def work(QA_CLASS):
     parser.add_argument("--answer_attention", type=str2bool, default=False,
                         help="Uniform sampling: write per-head gold-frame attention while reading the prompt and "
                              "writing the answer to aattn-<chunk>.jsonl (diagnostic)")
+    parser.add_argument("--relevance_heads", type=str, default=None,
+                        help="Diagnostic: JSON [[layer, head], ...]; write their per-frame prompt attention after pruning "
+                             "to hrel-<chunk>.jsonl")
+    parser.add_argument("--contrastive_mode", choices=("none", "stamps", "blind"), default="none",
+                        help="Grounding answers by contrastive decoding against a counterfactual memory: the same frames "
+                             "with permuted timestamps ('stamps') or no frames ('blind')")
+    parser.add_argument("--contrastive_alpha", type=float, default=1.0, help="Contrastive decoding strength")
+    parser.add_argument("--contrastive_beta", type=float, default=0.1, help="Adaptive plausibility cut-off")
+    parser.add_argument("--visual_attention_gain", type=float, default=1.0,
+                        help="Answer generation: multiply the attention mass on visual-memory tokens by this factor "
+                             "(additive log-gain on their logits; 1 = off)")
+    parser.add_argument("--visual_attention_layers", type=str, default="all",
+                        help="Layers for visual_attention_gain: 'all' or 'start-end' (inclusive)")
+    parser.add_argument("--relevance_zoom", type=str2bool, default=False,
+                        help="Relevance-guided importance sampling: after the coarse pruned pass, allocate extra frames and "
+                             "the token budget by q = mix/N + (1-mix) p^temp from the relevance heads")
+    parser.add_argument("--zoom_mix", type=float, default=0.5, help="Relevance zoom: weight of uniform coverage in q")
+    parser.add_argument("--zoom_temp", type=float, default=1.0, help="Relevance zoom: temperature on the head relevance")
+    parser.add_argument("--zoom_windows", type=str, default=None,
+                        help="Coverage-then-zoom: JSON {question_id: [[start, end], ...]} of zoom windows (seconds)")
+    parser.add_argument("--zoom_frames", type=int, default=32,
+                        help="Coverage-then-zoom: extra frames sampled inside the zoom window(s)")
+    parser.add_argument("--zoom_share", type=float, default=0.6,
+                        help="Coverage-then-zoom: share of the token budget given to frames inside the window(s)")
     parser.add_argument("--oracle_window", type=str2bool, default=False,
                         help="Diagnostic upper bound: sample the uniform frames only inside the gold evidence "
                              "interval; outside it, show timestamp text alone every 5 s (0.2 fps)")
@@ -678,7 +703,24 @@ def work(QA_CLASS):
     analyzer.offline_keep_ratio = args.offline_keep_ratio
     videoqa_model.prune_score = args.prune_score
     videoqa_model.exact_attention = args.prune_score == "hermes_exact"
-    if args.prune_score in ("stratified", "oracle"):
+    analyzer.zoom_windows = json.load(open(args.zoom_windows)) if args.zoom_windows else None
+    analyzer.zoom_frames = args.zoom_frames
+    analyzer.relevance_heads = json.load(open(args.relevance_heads)) if args.relevance_heads else None
+    analyzer.relevance_zoom, analyzer.zoom_mix, analyzer.zoom_temp = args.relevance_zoom, args.zoom_mix, args.zoom_temp
+    analyzer.contrastive_mode, analyzer.contrastive_alpha, analyzer.contrastive_beta = (
+        args.contrastive_mode, args.contrastive_alpha, args.contrastive_beta)
+    videoqa_model.visual_attention_gain = args.visual_attention_gain
+    if args.visual_attention_layers != "all":
+        lo, hi = (int(x) for x in args.visual_attention_layers.split("-"))
+        videoqa_model.visual_attention_layers = list(range(lo, hi + 1))
+    if args.visual_attention_gain != 1.0:
+        videoqa_model.force_token_provenance = True
+    if args.relevance_zoom and not (args.relevance_heads and args.offline_keep_ratio < 1):
+        parser.error("relevance_zoom needs relevance_heads and offline_keep_ratio < 1")
+    if args.relevance_heads:
+        videoqa_model.force_token_provenance = True
+    videoqa_model.zoom_share = args.zoom_share
+    if args.prune_score in ("stratified", "oracle", "zoom"):
         videoqa_model.force_token_provenance = True
     if args.retention_snapshot or args.question_attention:
         videoqa_model.force_token_provenance = True
