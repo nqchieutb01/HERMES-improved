@@ -349,16 +349,17 @@ class Qwen3VL_Hermes(QwenVL_Hermes):
 
     # ----- Memory snapshots (for decoding against a counterfactual memory) -----
     _STATE = ("kv_cache", "_position_ids_cache", "_token_frame_ids_per_layer", "_token_frame_summary_scores_per_layer",
-              "_encoded_tokens_per_frame", "visual_start_idx")
+              "_frame_summary_specs_per_layer", "_encoded_tokens_per_frame", "visual_start_idx", "conv_history")
 
     def memory_snapshot(self):
         state = {k: getattr(self, k, None) for k in self._STATE}
         state["_position_ids_cache"] = list(self._position_ids_cache)
+        state["conv_history"] = list(self.conv_history or [])
         return state
 
     def memory_restore(self, state):
         for k, v in state.items():
-            setattr(self, k, list(v) if k == "_position_ids_cache" else v)
+            setattr(self, k, list(v) if k in ("_position_ids_cache", "conv_history") and v is not None else v)
 
     def _forward_text(self, ids):
         """Feed text token ids into the current memory (prefill or one decoding step); returns last-token logits."""
@@ -390,7 +391,7 @@ class Qwen3VL_Hermes(QwenVL_Hermes):
         tok = self.processor.tokenizer
         ids = torch.as_tensor([tok(prompt).input_ids], device=self.device)
         self._ensure_dynamic_cache()
-        positive = self.memory_snapshot()
+        before = self._get_cache_seq_len_per_layer()
         logit_pos = self._forward_text(ids)
         positive = self.memory_snapshot()
         self.memory_restore(negative_state)
@@ -417,6 +418,12 @@ class Qwen3VL_Hermes(QwenVL_Hermes):
             logit_neg = self._forward_text(step)
             negative = self.memory_snapshot()
         self.memory_restore(positive)
+        # As in question_answering: drop the prompt and answer tokens so the memory is unchanged for later questions.
+        self._truncate_kv_cache(before)
+        for layer_idx in range(self.num_layers):
+            pos = self._position_ids_cache[layer_idx]
+            if pos is not None and pos.shape[1] > before[layer_idx]:
+                self._position_ids_cache[layer_idx] = pos[:, :before[layer_idx]].contiguous()
         return tok.decode(out_ids, skip_special_tokens=True, spaces_between_special_tokens=False,
                           clean_up_tokenization_spaces=True)
 

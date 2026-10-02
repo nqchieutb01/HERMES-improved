@@ -1,0 +1,4 @@
+qwen3_vl_8b/sember_grounding/uniform-n64-time-count-location-zoom-self-keep0.1-k32-a0.6-cd-blind-a0.5-timeline-v300-native-time
+qwen3_vl_8b/sember_grounding/uniform-n64-time-count-location-zoom-self-keep0.05-k32-a0.6-cd-blind-a0.5-timeline-v300-native-time
+qwen3_vl_8b/sember_grounding/time-count-location-fps0.2-kv6000-k0-attention_weighted-native-time-keepsurv-cd-blind-a0.5-timeline-v300
+qwen3_vl_8b/sember_grounding/time-count-location-fps0.2-kv4000-k0-attention_weighted-native-time-keepsurv-cd-blind-a0.5-timeline-v300

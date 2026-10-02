@@ -313,7 +313,7 @@ class HermesVQA(BaseVQA):
                             video_path, question_video, frame_times, rel, float(sample.get('end_time', frame_times[-1])),
                             keep_ratio, encode_chunk_size, video_sample, sample)
                 negative_memory = None
-                if getattr(self, 'contrastive_mode', 'none') != 'none' and sample.get('benchmark') == 'sember_grounding':
+                if getattr(self, 'contrastive_mode', 'none') == 'stamps' and sample.get('benchmark') == 'sember_grounding':
                     negative_memory = self._counterfactual_memory(question_video, frame_times, keep_ratio,
                                                                   encode_chunk_size, video_sample, sample)
             else:
@@ -399,6 +399,10 @@ class HermesVQA(BaseVQA):
                 if trace_answer:
                     cache_len = self.qa_model._get_cache_seq_len_per_layer()[0]
                     offsets = list(self.qa_model._get_next_global_offset_per_layer())
+                if (negative_memory is None and getattr(self, 'contrastive_mode', 'none') == 'blind'
+                        and sample.get('benchmark') == 'sember_grounding'):
+                    # The no-video memory does not depend on the frames: build it here (streaming and offline).
+                    negative_memory = self._counterfactual_memory(None, [], 1.0, encode_chunk_size, video_sample, sample)
                 if negative_memory is not None:
                     # Contrastive decoding against the counterfactual memory.
                     qa_results = {'pred_answer': self.qa_model.contrastive_answering(
