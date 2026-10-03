@@ -117,7 +117,7 @@ class HydraConfigTest(unittest.TestCase):
         self.assertEqual(cfg.model.name, "qwen3_vl_8b")
         self.assertEqual(
             _python(cfg, ROOT),
-            "/nfs-stor/chieu.nguyen/venvs/hermes-qwen/bin/python3",
+            "/l/users/chieu.nguyen/venvs/hermes-qwen/bin/python3",
         )
 
         command = inference_command(
@@ -129,12 +129,12 @@ class HydraConfigTest(unittest.TestCase):
         )
         self.assertEqual(
             command[0],
-            "/nfs-stor/chieu.nguyen/venvs/hermes-qwen/bin/python3",
+            "/l/users/chieu.nguyen/venvs/hermes-qwen/bin/python3",
         )
         self.assertEqual(command[command.index("--model") + 1], "qwen3_vl_8b")
         self.assertEqual(
             command[command.index("--model_path") + 1],
-            "/nfs-stor/chieu.nguyen/models/Qwen3-VL-8B-Instruct",
+            "/l/users/chieu.nguyen/models/Qwen3-VL-8B-Instruct",
         )
 
     def test_frame_summary_config_is_validated(self):

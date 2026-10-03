@@ -462,6 +462,8 @@ def work(QA_CLASS):
                         help="Grounding answers by contrastive decoding against a counterfactual memory: the same frames "
                              "with permuted timestamps ('stamps') or no frames ('blind')")
     parser.add_argument("--contrastive_alpha", type=float, default=1.0, help="Contrastive decoding strength")
+    parser.add_argument("--contrastive_adaptive", type=str2bool, default=False,
+                        help="Confidence-adaptive contrast: strength alpha * (1 - max p(. | real memory)) at each step")
     parser.add_argument("--contrastive_scope", choices=("all", "time", "time+answer"), default="all",
                         help="Tokens the contrast applies to: all, time values only, or time values and the answer line")
     parser.add_argument("--contrastive_beta", type=float, default=0.1, help="Adaptive plausibility cut-off")
@@ -712,6 +714,7 @@ def work(QA_CLASS):
     analyzer.contrastive_mode, analyzer.contrastive_alpha, analyzer.contrastive_beta = (
         args.contrastive_mode, args.contrastive_alpha, args.contrastive_beta)
     analyzer.contrastive_scope = args.contrastive_scope
+    analyzer.contrastive_adaptive = args.contrastive_adaptive
     videoqa_model.visual_attention_gain = args.visual_attention_gain
     if args.visual_attention_layers != "all":
         lo, hi = (int(x) for x in args.visual_attention_layers.split("-"))

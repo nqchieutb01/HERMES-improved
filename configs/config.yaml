@@ -48,6 +48,8 @@ run:
   contrastive_beta: 0.1
   # Tokens the contrast applies to: all | time | time+answer.
   contrastive_scope: all
+  # Confidence-adaptive contrast strength: alpha * (1 - max p(. | real memory)).
+  contrastive_adaptive: false
   visual_attention_gain: 1.0
   visual_attention_layers: all
   zoom_mix: 0.5

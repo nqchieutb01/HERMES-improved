@@ -378,7 +378,6 @@ class Qwen3VL_Hermes(QwenVL_Hermes):
         self._layer_position_ids.clear()
         return self.lm_head(out.last_hidden_state)[0, -1].float()
 
-    @torch.inference_mode()
     @staticmethod
     def _in_time_slot(text, scope):
         """Whether the next token writes a time value (the slot the temporal prior leaks into).
@@ -393,8 +392,9 @@ class Qwen3VL_Hermes(QwenVL_Hermes):
             return "]" not in line
         return scope == "time+answer" and line.startswith("Answer:")
 
+    @torch.inference_mode()
     def contrastive_answering(self, prompt, negative_state, alpha=1.0, beta=0.1, max_new_tokens=384,
-                              repetition_penalty=1.1, scope="all"):
+                              repetition_penalty=1.1, scope="all", adaptive=False):
         """Greedy decoding contrasted against a counterfactual memory (VCD-style, Leng et al. CVPR 2024).
 
         Both memories receive the same prompt and the same generated tokens. At each step the next token maximises
@@ -417,7 +417,9 @@ class Qwen3VL_Hermes(QwenVL_Hermes):
             lp = torch.log_softmax(logit_pos, -1)
             ln = torch.log_softmax(logit_neg, -1)
             if scope == "all" or self._in_time_slot(tok.decode(out_ids), scope):
-                score = (1.0 + alpha) * lp - alpha * ln
+                # Confidence-adaptive strength: contrast fades where the real memory is already confident.
+                a = alpha * (1.0 - float(lp.max().exp())) if adaptive else alpha
+                score = (1.0 + a) * lp - a * ln
                 score = score.masked_fill(lp < lp.max() + math.log(beta), float("-inf"))
             else:
                 score = lp.clone()  # outside the time slots: plain greedy decoding on the real memory

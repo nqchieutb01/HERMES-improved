@@ -421,7 +421,8 @@ class HermesVQA(BaseVQA):
                         beta=float(getattr(self, 'contrastive_beta', 0.1)),
                         max_new_tokens=getattr(self, 'max_new_tokens', 256),
                         repetition_penalty=getattr(self, 'repetition_penalty', 1.1),
-                        scope=getattr(self, 'contrastive_scope', 'all'))}
+                        scope=getattr(self, 'contrastive_scope', 'all'),
+                        adaptive=getattr(self, 'contrastive_adaptive', False))}
                 else:
                     qa_results = self.video_open_qa(
                         question,
