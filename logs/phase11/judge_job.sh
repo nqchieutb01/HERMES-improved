@@ -5,6 +5,8 @@
 cd /home/chieu.nguyen/HERMES
 echo host=$(hostname) start=$(date)
 J=/l/users/chieu.nguyen/HERMES/.venv
+# Some nodes do not mount /l: fail fast (the launcher retries elsewhere) instead of running without the judge venv.
+[ -x "$J/judge/bin/python" ] || { echo "judge venv missing on $(hostname)"; exit 3; }
 export HF_HOME=/nfs-stor/chieu.nguyen/.cache/huggingface
 export HF_HUB_CACHE="$HF_HOME/hub" HF_XET_CACHE="$HF_HOME/xet" TRANSFORMERS_CACHE="$HF_HOME/hub" HF_HUB_OFFLINE=1
 export VLLM_CACHE_ROOT=/nfs-stor/chieu.nguyen/.cache/vllm TRITON_CACHE_DIR=/nfs-stor/chieu.nguyen/.cache/triton

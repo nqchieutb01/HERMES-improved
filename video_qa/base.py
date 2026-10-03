@@ -80,7 +80,7 @@ MODELS = {
     },
     'qwen3_vl_8b': {
         'load_func': qwen3vl_hermes_load_model,
-        'model_path': '/nfs-stor/chieu.nguyen/models/Qwen3-VL-8B-Instruct',
+        'model_path': '/l/users/chieu.nguyen/models/Qwen3-VL-8B-Instruct',
     },
 }
 

@@ -16,6 +16,8 @@ pruning with its **temporal language prior**:
   that was never shown (18% unpruned); 38–41% of intervals start in the first 5% of the window even when frames
   start halfway through the window; with timestamps shifted the model keeps writing early times.
 - The leak grows as evidence shrinks, which is what a mixture p(y | memory) ∝ evidence · prior predicts.
+- The leak is strongest when the model reasons in timestamped steps (timeline prompt): 38% of its intervals start
+  in the first 5% of the video at 10% of the tokens, 56% with HERMES pruning.
 
 ## 2. Method: prior-contrastive decoding (PCD)
 
@@ -48,34 +50,50 @@ Implementation: `contrastive_answering` in `inference/qwen3vl_hermes.py`; the co
 | P4. The gain holds across selectors and memory types | HERMES / random / stratified pruning; HERMES streaming at 4k / 6k |
 | P5. The prior (no video) is the right counterfactual | contrast with a temporally corrupted memory (permuted timestamps) instead |
 
-## 4. Results so far (random pruning to 10% of the tokens, timeline prompt)
+## 4. Results
 
-| | Acc. | mIoU | R@0.5 | GQ@0.5 | first moment at 0 s | interval in first 5% |
-|---|---|---|---|---|---|---|
-| Random 10% | 15.2 | 25.8 | 24.2 | 7.2 | 22.5% | 38.0% |
-| **+ PCD (α = 0.5)** | 16.2 | **32.1** | **31.2** | **10.1** | **11.8%** | **19.4%** |
-| Unpruned 64 frames | 18.5 | 28.0 | 26.7 | 8.6 | 26.7% | 41.4% |
+Tables: `tables/pcd_main.tex`, `tables/pcd_ablation.tex` (`python3 tables/make_pcd_tables.py`); every paired comparison
+with intervals: `logs/phase18/report.md`. Timeline prompt; Δ is paired against the same memory; * = 95% interval excludes 0.
 
-PCD vs its baseline: mIoU +6.2 [+3.9, +8.5], GQ@0.5 +2.9 [+0.2, +5.7] (both significant), Acc. +1.1 (n.s.).
-PCD at 10% of the tokens exceeds the unpruned model on mIoU (+4.0, significant). P1 and P2 hold. Budgets, selectors,
-streaming, the official prompt and hyperparameters (P3–P4) are in `logs/phase18/report.md` as they complete.
+| Memory | Acc. | mIoU | R@0.5 | GQ@0.5 | Early start (%) |
+|---|---|---|---|---|---|
+| Random 5% → +PCD | 15.8 → 15.4 (−0.4) | 23.6 → 29.2 (+5.6*) | 21.1 → 27.4 (+6.3*) | 5.9 → 9.1 (+3.2*) | 39 → 20 |
+| Random 10% → +PCD | 15.2 → 16.2 (+1.1) | 25.8 → 32.1 (+6.2*) | 24.2 → 31.2 (+6.9*) | 7.2 → 10.1 (+2.9*) | 38 → 19 |
+| Random 25% → +PCD | 17.7 → 18.9 (+1.3) | 28.2 → 33.0 (+4.8*) | 27.4 → 33.5 (+6.1*) | 8.2 → 11.8 (+3.6*) | 37 → 21 |
+| Unpruned → +PCD | 18.5 → 19.8 (+1.3) | 28.0 → 31.5 (+3.5*) | 26.7 → 31.8 (+5.1*) | 8.6 → 11.2 (+2.5) | 41 → 23 |
+| HERMES 10% → +PCD | 13.1 → 15.4 (+2.3) | 18.3 → 22.6 (+4.3*) | 16.2 → 21.9 (+5.7*) | 4.0 → 7.2 (+3.2*) | 56 → 31 |
+| Stratified 10% → +PCD | 14.1 → 14.5 (+0.4) | 23.7 → 29.9 (+6.3*) | 21.7 → 29.9 (+8.2*) | 6.1 → 8.8 (+2.7*) | 36 → 17 |
+| HERMES streaming 6k → +PCD | 14.3 → 14.7 (+0.4) | 22.6 → 28.1 (+5.6*) | 21.1 → 28.8 (+7.8*) | 4.8 → 7.6 (+2.7*) | 46 → 24 |
+| HERMES streaming 4k → +PCD | 13.5 → 17.1 (+3.6) | 21.6 → 27.4 (+5.8*) | 20.6 → 28.4 (+7.8*) | 4.0 → 8.2 (+4.2*) | 45 → 24 |
 
-**P5 (counterfactual choice).** Contrasting with the same frames but permuted timestamps gives no grounding gain
-(mIoU +0.9 / +0.5 at α = 0.5 / 1) and makes 17% of answers run on without an answer line: the useful counterfactual is
-the prior, not a corrupted memory.
+- **P1 (leakage) holds everywhere**: PCD roughly halves early-start intervals (e.g. 38% → 19%), to below the
+  unpruned model (41%). The no-video prior itself is at 90%.
+- **P2 holds**: grounding improves significantly in every pruned setting (mIoU +4.3 to +6.3, R@0.5 +5.7 to +8.2,
+  GQ@0.5 +2.7 to +4.2) and answer accuracy is never significantly hurt (−0.4 to +3.6).
+- **P3 holds**: the gain on pruned memory (+4.3 to +6.3 mIoU) exceeds the gain on unpruned memory (+3.5).
+- **P4 holds**: HERMES, random and stratified selectors and HERMES streaming at 6k / 4k all improve. Random 10% + PCD
+  (mIoU 32.1, GQ@0.5 10.1) and random 25% + PCD (Acc. 18.9, mIoU 33.0, GQ@0.5 11.8) exceed the unpruned model
+  (18.5 / 28.0 / 8.6) with 10–25% of its visual tokens.
+- **P5 holds**: contrasting with a temporally corrupted memory (permuted timestamps) does not help (mIoU +0.9 n.s.);
+  the useful counterfactual is the prior.
+- **Robust to its hyperparameters**: α ∈ {0.25, 0.5, 1.0} gives mIoU +5.0 / +6.2 / +6.1, β = 0.2 gives +5.7.
+- **Boundary: the official (direct-answer) prompt does not benefit** (mIoU +0.4, GQ@0.5 −0.2 n.s.). With the timeline
+  prompt the model writes timestamped moments before answering, and that listing is where the early-time prior shows
+  (38% early starts vs 22% with the official prompt). Timeline reasoning improves answers (phase 13) but brings the
+  prior in; PCD removes it. The two are complementary, and the contribution is their combination.
 
 ## 5. What did not work (reported as negative results)
 
-| Method | Idea | Result at 10% |
+| Method (10%, random) | Idea | Result |
 |---|---|---|
-| Visual-attention gain (γ = 4, PAI-style) | rebalance attention toward visual tokens while decoding | mIoU +1.3, GQ +0.8 (n.s.) |
-| Relevance-guided temporal importance sampling | allocate frames and tokens by grounding-head relevance | mIoU −1.5, Acc. −1.7 (n.s.); head relevance localises weakly (median lift 1.07) |
-| Coverage-then-zoom, gold window | dense frames in the gold interval at the same budget | mIoU +2.4, Acc. −0.7: re-allocation at a fixed budget is near its ceiling |
-| Coverage-then-zoom, self window | dense frames around the model's own first answer | Acc. +4.6 (significant), mIoU +0.4; ablations pending, mechanism unclear (gain appears even when the window misses the evidence) |
+| Visual-attention gain (γ = 4, PAI-style) | rebalance attention toward visual tokens while decoding | mIoU +1.3, GQ +0.8 (n.s.); does not reduce the early-start prior (38 → 42%) |
+| Relevance-guided temporal importance sampling | allocate frames and tokens by grounding-head relevance | mIoU −1.5, Acc. −1.7 (n.s.); the heads localise weakly (median lift 1.07) |
+| Coverage-then-zoom, gold window | dense frames in the gold interval at the same budget | mIoU +2.3, Acc. −0.6 (n.s.): re-allocation at a fixed budget is near its ceiling |
+| Coverage-then-zoom, self window | dense frames around the model's own first answer | Acc. +4.6* at share 0.6 and 0.8, but not robust (margin 0.5×: +0.4; gold window with the same margin: +0.8; official prompt: +1.1); no grounding gain; combined with PCD it is worse than PCD alone (mIoU 28.3 vs 32.1) |
 
 ## 6. Limitations
 
 - One model (Qwen3-VL-8B) and one benchmark subset (300 videos, three question types), by design of this study.
-- 3% of PCD answers keep listing moments until the token limit (the prior expects lists to stop early); the
-  plausibility cut-off β is the lever, ablated in the report.
+- 3% of PCD answers keep listing moments until the token limit (the prior expects lists to stop early).
+- PCD needs a reasoning-style answer (timeline prompt); it does not help direct answers.
 - The judge is a local Qwen3.8-27B with the official S-EMBER judge prompt, not the official Gemini judge.
