@@ -288,7 +288,8 @@ def inference_command(
     if cfg.run.get("contrastive_mode", "none") != "none":
         command.extend(["--contrastive_mode", str(cfg.run.contrastive_mode),
                         "--contrastive_alpha", str(cfg.run.get("contrastive_alpha", 1.0)),
-                        "--contrastive_beta", str(cfg.run.get("contrastive_beta", 0.1))])
+                        "--contrastive_beta", str(cfg.run.get("contrastive_beta", 0.1)),
+                        "--contrastive_scope", str(cfg.run.get("contrastive_scope", "all"))])
     if float(cfg.run.get("visual_attention_gain", 1.0)) != 1.0:
         command.extend(["--visual_attention_gain", str(cfg.run.visual_attention_gain),
                         "--visual_attention_layers", str(cfg.run.get("visual_attention_layers", "all"))])

@@ -379,8 +379,22 @@ class Qwen3VL_Hermes(QwenVL_Hermes):
         return self.lm_head(out.last_hidden_state)[0, -1].float()
 
     @torch.inference_mode()
+    @staticmethod
+    def _in_time_slot(text, scope):
+        """Whether the next token writes a time value (the slot the temporal prior leaks into).
+
+        "time": inside a `Seen: <t>` moment before its description, or on the `Time: [...]` line.
+        "time+answer": also anywhere on the `Answer:` line (durations and counts are stated there).
+        """
+        line = text.rsplit("\n", 1)[-1].lstrip()
+        if line.startswith("Seen:"):
+            return "," not in line and "second" not in line
+        if line.startswith("Time:"):
+            return "]" not in line
+        return scope == "time+answer" and line.startswith("Answer:")
+
     def contrastive_answering(self, prompt, negative_state, alpha=1.0, beta=0.1, max_new_tokens=384,
-                              repetition_penalty=1.1):
+                              repetition_penalty=1.1, scope="all"):
         """Greedy decoding contrasted against a counterfactual memory (VCD-style, Leng et al. CVPR 2024).
 
         Both memories receive the same prompt and the same generated tokens. At each step the next token maximises
@@ -402,8 +416,11 @@ class Qwen3VL_Hermes(QwenVL_Hermes):
         for _ in range(max_new_tokens):
             lp = torch.log_softmax(logit_pos, -1)
             ln = torch.log_softmax(logit_neg, -1)
-            score = (1.0 + alpha) * lp - alpha * ln
-            score = score.masked_fill(lp < lp.max() + math.log(beta), float("-inf"))
+            if scope == "all" or self._in_time_slot(tok.decode(out_ids), scope):
+                score = (1.0 + alpha) * lp - alpha * ln
+                score = score.masked_fill(lp < lp.max() + math.log(beta), float("-inf"))
+            else:
+                score = lp.clone()  # outside the time slots: plain greedy decoding on the real memory
             for t in set(out_ids):  # repetition penalty on the contrasted score (as on logits in greedy decoding)
                 score[t] = score[t] - math.log(repetition_penalty)
             token = int(torch.argmax(score))

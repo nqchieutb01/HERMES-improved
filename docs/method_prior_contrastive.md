@@ -97,3 +97,27 @@ with intervals: `logs/phase18/report.md`. Timeline prompt; Δ is paired against 
 - 3% of PCD answers keep listing moments until the token limit (the prior expects lists to stop early).
 - PCD needs a reasoning-style answer (timeline prompt); it does not help direct answers.
 - The judge is a local Qwen3.8-27B with the official S-EMBER judge prompt, not the official Gemini judge.
+
+## 7. Error analysis of PCD and what it suggests (phase 19)
+
+`logs/phase19/error_analysis.py`, random 10%, timeline prompt.
+
+| Observation | Evidence | Implication |
+|---|---|---|
+| PCD rewrites almost every answer | answer text changes in 85% of questions; 43 wrong→right but 38 right→wrong | the contrast acts on content words too, adding noise to answers |
+| Contrasting structure tokens prolongs lists | answers with more than 8 `Seen` lines: 12 → 56; over-counting 14% → 34% of counting questions; counting accuracy 14.7 → 13.6 | the prior says "stop listing"; contrasting against it keeps the list going |
+| The gain is temporal | duration GQ@0.5 11.5 → 17.3, accuracy 17.8 → 22.0; mIoU up in all three tasks | the leak is in time values, as diagnosed |
+| Remaining error 1: too short | 22.5% of questions; predicted length a median 20% of gold; 27% name a single moment | the model finds the event but under-enumerates its extent |
+| Remaining error 2: wrong occurrence | 17.7% end before the gold interval; 87% of them have evidence in the second half of the window, often "the second time", "after I…", "now"; median gap 70 s; only 14% start at 0 s | not the early prior: the model picks an earlier similar event instead of the referenced one |
+| Location stays near zero | GQ@0.5 0 → 1% | ambiguous labels (annotator IoU 0.50) and point-like answers |
+
+**Refinement 1 (phase 19): time-scoped PCD.** Apply the contrast only while writing time values (`Seen:` times and the
+`Time: [...]` interval); decode every other token greedily from the real memory. Predicted: grounding gains stay,
+list run-on and over-counting disappear, answer churn drops. Variant: also contrast the answer line (stock
+durations). **Baseline (phase 19): Visual Contrastive Decoding** with noised frames (same timestamps and budget) instead
+of the prior, to test whether the prior is the right counterfactual against the published approach.
+
+**Next directions suggested by the remaining errors.** (i) Extent: the model stops after one or two moments;
+evidence-wise enumeration (asking the model about each shown timestamp) targets the too-short case. (ii) Occurrence
+reference: ordinal and relative references ("second time", "after…") are resolved to the wrong instance; listing
+all occurrences before choosing is the natural fix within the timeline format.

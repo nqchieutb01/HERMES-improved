@@ -458,10 +458,12 @@ def work(QA_CLASS):
     parser.add_argument("--relevance_heads", type=str, default=None,
                         help="Diagnostic: JSON [[layer, head], ...]; write their per-frame prompt attention after pruning "
                              "to hrel-<chunk>.jsonl")
-    parser.add_argument("--contrastive_mode", choices=("none", "stamps", "blind"), default="none",
+    parser.add_argument("--contrastive_mode", choices=("none", "stamps", "blind", "noise"), default="none",
                         help="Grounding answers by contrastive decoding against a counterfactual memory: the same frames "
                              "with permuted timestamps ('stamps') or no frames ('blind')")
     parser.add_argument("--contrastive_alpha", type=float, default=1.0, help="Contrastive decoding strength")
+    parser.add_argument("--contrastive_scope", choices=("all", "time", "time+answer"), default="all",
+                        help="Tokens the contrast applies to: all, time values only, or time values and the answer line")
     parser.add_argument("--contrastive_beta", type=float, default=0.1, help="Adaptive plausibility cut-off")
     parser.add_argument("--visual_attention_gain", type=float, default=1.0,
                         help="Answer generation: multiply the attention mass on visual-memory tokens by this factor "
@@ -709,6 +711,7 @@ def work(QA_CLASS):
     analyzer.relevance_zoom, analyzer.zoom_mix, analyzer.zoom_temp = args.relevance_zoom, args.zoom_mix, args.zoom_temp
     analyzer.contrastive_mode, analyzer.contrastive_alpha, analyzer.contrastive_beta = (
         args.contrastive_mode, args.contrastive_alpha, args.contrastive_beta)
+    analyzer.contrastive_scope = args.contrastive_scope
     videoqa_model.visual_attention_gain = args.visual_attention_gain
     if args.visual_attention_layers != "all":
         lo, hi = (int(x) for x in args.visual_attention_layers.split("-"))

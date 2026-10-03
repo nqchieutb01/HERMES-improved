@@ -2,6 +2,7 @@ import bisect
 import math
 import json
 import random
+import zlib
 import os
 import torch
 from logzero import logger
@@ -107,12 +108,21 @@ class HermesVQA(BaseVQA):
         qa.clear_cache()
         qa.encode_init_prompt()
         mode = getattr(self, 'contrastive_mode', 'stamps')
-        if mode == 'stamps':
-            pairs = list(range(len(frame_times) // 2))
-            order = pairs[:]
-            random.Random(f"cf-{video_sample['video_id']}-{sample.get('question_id')}").shuffle(order)
-            idx = [2 * p + k for p in order for k in (0, 1)] + list(range(2 * len(pairs), len(frame_times)))
-            times = [frame_times[i] for i in idx]
+        if mode in ('stamps', 'noise'):
+            if mode == 'stamps':
+                pairs = list(range(len(frame_times) // 2))
+                order = pairs[:]
+                random.Random(f"cf-{video_sample['video_id']}-{sample.get('question_id')}").shuffle(order)
+                idx = [2 * p + k for p in order for k in (0, 1)] + list(range(2 * len(pairs), len(frame_times)))
+                times = [frame_times[i] for i in idx]
+            else:
+                # Visual Contrastive Decoding baseline (Leng et al., CVPR 2024): the same frames and timestamps,
+                # distorted by Gaussian noise (noise_level of the signal replaced by noise).
+                times = list(frame_times)
+                gen = torch.Generator().manual_seed(zlib.crc32(f"cf-{video_sample['video_id']}".encode()))
+                level = float(getattr(self, 'contrastive_noise', 0.5))
+                noise = torch.randn(question_video.shape, generator=gen) * 64.0 + 127.5
+                question_video = ((1.0 - level) * question_video.float() + level * noise).clamp(0, 255).to(torch.uint8)
             for start in range(0, len(question_video), encode_chunk_size):
                 stop = min(start + encode_chunk_size, len(question_video))
                 qa.next_frame_times = times[start:stop]
@@ -313,7 +323,7 @@ class HermesVQA(BaseVQA):
                             video_path, question_video, frame_times, rel, float(sample.get('end_time', frame_times[-1])),
                             keep_ratio, encode_chunk_size, video_sample, sample)
                 negative_memory = None
-                if getattr(self, 'contrastive_mode', 'none') == 'stamps' and sample.get('benchmark') == 'sember_grounding':
+                if getattr(self, 'contrastive_mode', 'none') in ('stamps', 'noise') and sample.get('benchmark') == 'sember_grounding':
                     negative_memory = self._counterfactual_memory(question_video, frame_times, keep_ratio,
                                                                   encode_chunk_size, video_sample, sample)
             else:
@@ -410,7 +420,8 @@ class HermesVQA(BaseVQA):
                         alpha=float(getattr(self, 'contrastive_alpha', 1.0)),
                         beta=float(getattr(self, 'contrastive_beta', 0.1)),
                         max_new_tokens=getattr(self, 'max_new_tokens', 256),
-                        repetition_penalty=getattr(self, 'repetition_penalty', 1.1))}
+                        repetition_penalty=getattr(self, 'repetition_penalty', 1.1),
+                        scope=getattr(self, 'contrastive_scope', 'all'))}
                 else:
                     qa_results = self.video_open_qa(
                         question,
