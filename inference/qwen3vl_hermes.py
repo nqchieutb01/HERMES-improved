@@ -394,13 +394,19 @@ class Qwen3VL_Hermes(QwenVL_Hermes):
 
     @torch.inference_mode()
     def contrastive_answering(self, prompt, negative_state, alpha=1.0, beta=0.1, max_new_tokens=384,
-                              repetition_penalty=1.1, scope="all", adaptive=False):
+                              repetition_penalty=1.1, scope="all", adaptive=False, rule="pmi", trace=None):
         """Greedy decoding contrasted against a counterfactual memory (VCD-style, Leng et al. CVPR 2024).
 
         Both memories receive the same prompt and the same generated tokens. At each step the next token maximises
         (1 + alpha) * log p(. | real memory) - alpha * log p(. | counterfactual memory), restricted to tokens whose
         probability under the real memory is at least beta times the most likely one (adaptive plausibility).
         Tokens the model would produce regardless of the real memory are thereby discounted.
+
+        ``rule="against"`` keeps only the penalty half: log p(. | M) - alpha * max(0, log p(. | C) - log p(. | M)).
+        log p(y | M) - log p(y | C) is the log-likelihood ratio of the real memory for token y; the rule discounts
+        tokens the memory provides evidence against (ratio < 1) and leaves tokens it supports ranked by p(. | M),
+        without rewarding tokens merely for being improbable under the counterfactual. ``trace`` (a list) receives,
+        at every contrasted step, the top tokens under the real memory with both log-probabilities.
         """
         tok = self.processor.tokenizer
         ids = torch.as_tensor([tok(prompt).input_ids], device=self.device)
@@ -419,13 +425,20 @@ class Qwen3VL_Hermes(QwenVL_Hermes):
             if scope == "all" or self._in_time_slot(tok.decode(out_ids), scope):
                 # Confidence-adaptive strength: contrast fades where the real memory is already confident.
                 a = alpha * (1.0 - float(lp.max().exp())) if adaptive else alpha
-                score = (1.0 + a) * lp - a * ln
+                if rule == "against":
+                    score = lp - a * torch.clamp(ln - lp, min=0.0)
+                else:
+                    score = (1.0 + a) * lp - a * ln
                 score = score.masked_fill(lp < lp.max() + math.log(beta), float("-inf"))
             else:
                 score = lp.clone()  # outside the time slots: plain greedy decoding on the real memory
             for t in set(out_ids):  # repetition penalty on the contrasted score (as on logits in greedy decoding)
                 score[t] = score[t] - math.log(repetition_penalty)
             token = int(torch.argmax(score))
+            if trace is not None and self._in_time_slot(tok.decode(out_ids), "time"):
+                top = torch.topk(lp, 20).indices.tolist()
+                trace.append({"step": len(out_ids), "prefix": tok.decode(out_ids)[-40:], "chosen": tok.decode([token]),
+                              "top": [[tok.decode([t]), round(float(lp[t]), 3), round(float(ln[t]), 3)] for t in top]})
             out_ids.append(token)
             if token == tok.eos_token_id:
                 break

@@ -415,6 +415,7 @@ class HermesVQA(BaseVQA):
                     negative_memory = self._counterfactual_memory(None, [], 1.0, encode_chunk_size, video_sample, sample)
                 if negative_memory is not None:
                     # Contrastive decoding against the counterfactual memory.
+                    cd_trace = [] if getattr(self, 'contrastive_trace', False) else None
                     qa_results = {'pred_answer': self.qa_model.contrastive_answering(
                         self.qa_model.get_prompt(sample.get('prompt') or question), negative_memory,
                         alpha=float(getattr(self, 'contrastive_alpha', 1.0)),
@@ -422,7 +423,11 @@ class HermesVQA(BaseVQA):
                         max_new_tokens=getattr(self, 'max_new_tokens', 256),
                         repetition_penalty=getattr(self, 'repetition_penalty', 1.1),
                         scope=getattr(self, 'contrastive_scope', 'all'),
-                        adaptive=getattr(self, 'contrastive_adaptive', False))}
+                        adaptive=getattr(self, 'contrastive_adaptive', False),
+                        rule=getattr(self, 'contrastive_rule', 'pmi'), trace=cd_trace)}
+                    if cd_trace is not None:
+                        with open(os.path.join(self.save_dir, f"cdtrace-{self.chunk_idx}.jsonl"), "a") as out:
+                            out.write(json.dumps({"question_id": sample.get('question_id'), "steps": cd_trace}) + "\n")
                 else:
                     qa_results = self.video_open_qa(
                         question,

@@ -40,6 +40,19 @@ BLOCKS = [
         ("permuted timestamps, alpha 0.5", "offline-random-keep0.1-timeline", "random10-cd-stamps-a0.5-timeline"),
         ("permuted timestamps, alpha 1", "offline-random-keep0.1-timeline", "random10-cd-stamps-a1-timeline"),
         ("visual-attention gain 4 (no contrast)", "offline-random-keep0.1-timeline", "random10-vag4-timeline")]),
+    ("Time-scoped PCD: contrast only on time values (timeline prompt)", [
+        ("Random 10%, all tokens", "offline-random-keep0.1-timeline", "random10-cd-blind-a0.5-timeline"),
+        ("Random 10%, time", "offline-random-keep0.1-timeline", "random10-cd-blind-a0.5-scopetime-timeline"),
+        ("Random 10%, time + answer", "offline-random-keep0.1-timeline", "random10-cd-blind-a0.5-scopetime_answer-timeline"),
+        ("Random 25%, time", "offline-random-keep0.25-timeline", "random25-cd-blind-a0.5-scopetime-timeline"),
+        ("Unpruned, time", "timeline", "unpruned-cd-blind-a0.5-scopetime-timeline"),
+        ("HERMES 10%, time", "offline-hermes-keep0.1-timeline", "hermes10-cd-blind-a0.5-scopetime-timeline"),
+        ("Streaming KV 4k, time", "@" + S.format(4000, "timeline-"), "@" + S.format(4000, "cd-blind-a0.5-scopetime-timeline-")),
+        ("Random 10%, time, official prompt", "offline-random-keep0.1", "random10-cd-blind-a0.5-scopetime")]),
+    ("VCD baseline: noised frames as the counterfactual (random 10%, timeline prompt)", [
+        ("no video (PCD), all tokens", "offline-random-keep0.1-timeline", "random10-cd-blind-a0.5-timeline"),
+        ("noised frames (VCD), all tokens", "offline-random-keep0.1-timeline", "random10-cd-noise-a0.5-scopeall-timeline"),
+        ("noised frames (VCD), time", "offline-random-keep0.1-timeline", "random10-cd-noise-a0.5-scopetime-timeline")]),
     ("Self-window zoom and its combination with PCD (timeline prompt)", [
         ("zoom, 10%", "offline-random-keep0.1-timeline", "zoom-self-keep0.1-k32-a0.6-timeline"),
         ("zoom + PCD, 10%", "offline-random-keep0.1-timeline", "zoom-self-keep0.1-k32-a0.6-cd-blind-a0.5-timeline"),

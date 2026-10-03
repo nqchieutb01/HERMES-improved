@@ -50,6 +50,10 @@ run:
   contrastive_scope: all
   # Confidence-adaptive contrast strength: alpha * (1 - max p(. | real memory)).
   contrastive_adaptive: false
+  # Scoring rule: pmi = (1+a) log p_M - a log p_C; against = log p_M - a max(0, log p_C - log p_M).
+  contrastive_rule: pmi
+  # Diagnostic: top tokens with both log-probabilities at time-value steps (cdtrace-<chunk>.jsonl).
+  contrastive_trace: false
   visual_attention_gain: 1.0
   visual_attention_layers: all
   zoom_mix: 0.5

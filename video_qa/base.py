@@ -464,6 +464,10 @@ def work(QA_CLASS):
     parser.add_argument("--contrastive_alpha", type=float, default=1.0, help="Contrastive decoding strength")
     parser.add_argument("--contrastive_adaptive", type=str2bool, default=False,
                         help="Confidence-adaptive contrast: strength alpha * (1 - max p(. | real memory)) at each step")
+    parser.add_argument("--contrastive_rule", choices=("pmi", "against"), default="pmi",
+                        help="pmi: (1+a) log p_M - a log p_C; against: log p_M - a max(0, log p_C - log p_M)")
+    parser.add_argument("--contrastive_trace", type=str2bool, default=False,
+                        help="Write top tokens with both log-probabilities at time-value steps to cdtrace-<chunk>.jsonl")
     parser.add_argument("--contrastive_scope", choices=("all", "time", "time+answer"), default="all",
                         help="Tokens the contrast applies to: all, time values only, or time values and the answer line")
     parser.add_argument("--contrastive_beta", type=float, default=0.1, help="Adaptive plausibility cut-off")
@@ -715,6 +719,7 @@ def work(QA_CLASS):
         args.contrastive_mode, args.contrastive_alpha, args.contrastive_beta)
     analyzer.contrastive_scope = args.contrastive_scope
     analyzer.contrastive_adaptive = args.contrastive_adaptive
+    analyzer.contrastive_rule, analyzer.contrastive_trace = args.contrastive_rule, args.contrastive_trace
     videoqa_model.visual_attention_gain = args.visual_attention_gain
     if args.visual_attention_layers != "all":
         lo, hi = (int(x) for x in args.visual_attention_layers.split("-"))
