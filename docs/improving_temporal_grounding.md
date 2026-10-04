@@ -114,17 +114,33 @@ What this shows:
 
 ## 6. Refinements and what each one taught us
 
-### 6.1 Is "no video" the right thing to contrast against? Yes.
+### 6.1 What should the model be compared against? The no-video input is the right choice
 
-| Counterfactual (random 10%) | mIoU | GQ@0.5 | Early start |
-|---|---|---|---|
-| none (baseline) | 25.8 | 7.2 | 38% |
-| **no video (PCD)** | **32.1 (+6.2\*)** | **10.1 (+2.9\*)** | **19%** |
-| noised frames (Visual Contrastive Decoding, CVPR 2024) | 26.3 (+0.5) | 7.8 (+0.6) | 30% |
-| same frames, permuted timestamps | +0.9 (n.s.) | — | — |
+**How contrastive decoding works.** While the answer is written, the model runs twice in parallel on every word:
 
-Noised frames keep the prior *and* weaken the video, so contrasting against them removes little prior. The
-published VCD recipe does not address this failure; contrasting against the prior does.
+- **Main input**: the question and the real (pruned) video memory. This is the same in every row below.
+- **Reference input**: the question and a *damaged* version of the memory. The model prefers words the main input
+  supports *more than* the reference input does.
+
+The reference input decides what gets removed: whatever the model still says with the damaged memory is treated as
+"not coming from the video" and pushed down. This experiment only changes the **reference input**:
+
+| Reference input (main input: random 10% memory in every row) | What the reference input contains | mIoU | GQ@0.5 | Early start |
+|---|---|---|---|---|
+| none: plain decoding, no contrast (baseline) | — | 25.8 | 7.2 | 38% |
+| **no video (our PCD)** | the question only, no visual tokens at all | **32.1 (+6.2\*)** | **10.1 (+2.9\*)** | **19%** |
+| noised frames (Visual Contrastive Decoding, CVPR 2024) | the same frames and timestamps, each frame blended 50/50 with random noise | 26.3 (+0.5) | 7.8 (+0.6) | 30% |
+| permuted timestamps | the same frames, but the timestamps shuffled between frames | +0.9 (n.s.) | — | — |
+
+Note: "no video" here is **not** the model answering without video. The model always answers *with* the video;
+"no video" only describes the reference input it is compared against.
+
+**Why the no-video reference works best.** With no video, the model can only use its habit, so the comparison
+removes exactly the habit ("evidence is at the start"): early starts drop from 38% to 19%. With noised frames, the
+damaged memory still produces the same habit *and* still shows some of the video, so the two runs disagree mainly about
+video content, not about the habit; little of the habit is removed (early starts 30%) and grounding barely changes.
+Shuffled timestamps likewise leave the habit in place. So the published VCD recipe (noised frames) does not fix this
+failure, and the no-video reference does.
 
 ### 6.2 Time-scoped PCD: contrast only the time values
 
