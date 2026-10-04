@@ -235,6 +235,14 @@ class BaseVQA:
         start_time=None,
     ):
         """Decode uniform source frames from time zero (or ``start_time``) through a question time."""
+        frames, frame_idx, times = self.uniform_frames(video_path, num_frames=num_frames, end_time=end_time,
+                                                       video_fps=video_fps, duration=duration, start_time=start_time)
+        self.last_uniform_frame_times = times
+        return frames, frame_idx
+
+    def uniform_frames(self, video_path, *, num_frames, end_time=None, video_fps=None, duration=None,
+                       start_time=None):
+        """``load_uniform_video`` without side effects (safe in worker threads); also returns the frame times."""
         if video_path.endswith('.npy'):
             source = np.load(video_path, mmap_mode='r')
             total_frames = len(source)
@@ -256,8 +264,7 @@ class BaseVQA:
                 num_frames=num_frames,
                 end_frame_exclusive=end_frame,
             )
-            self.last_uniform_frame_times = [i / float(source_fps) for i in frame_idx]
-            return np.asarray(source[frame_idx]), frame_idx
+            return np.asarray(source[frame_idx]), frame_idx, [i / float(source_fps) for i in frame_idx]
 
         if os.path.isdir(video_path):
             if video_fps is None:
@@ -284,8 +291,7 @@ class BaseVQA:
                 img_path = os.path.join(video_path, img_files[index])
                 with Image.open(img_path) as image:
                     frames.append(np.array(image.convert('RGB')))
-            self.last_uniform_frame_times = [i / float(video_fps) for i in frame_idx]
-            return np.stack(frames, axis=0), frame_idx
+            return np.stack(frames, axis=0), frame_idx, [i / float(video_fps) for i in frame_idx]
 
         reader = self._open_reader(video_path)
         source_fps = float(reader.get_avg_fps())
@@ -308,8 +314,7 @@ class BaseVQA:
             raise ValueError(
                 f"No frames are available through time {end_time!r} in {video_path}"
             )
-        self.last_uniform_frame_times = [i / source_fps for i in frame_idx]
-        return reader.get_batch(frame_idx).asnumpy(), frame_idx
+        return reader.get_batch(frame_idx).asnumpy(), frame_idx, [i / source_fps for i in frame_idx]
     
     def format_mcqa_prompt(self, question, candidates):
         assert len(question) > 0, f"Q: {question}"
@@ -399,6 +404,8 @@ class BaseVQA:
         for video_sample in tqdm(video_annos):
             logger.debug(f'video_id: {video_sample["video_id"]}')
             self.analyze_a_video(video_sample)
+        if hasattr(self, '_flush_answers'):
+            self._flush_answers()  # answers still waiting for batched decoding
 
         final_df = pd.DataFrame(self.record)
         final_df.to_csv(f'{self.save_dir}/{self.num_chunks}_{self.chunk_idx}.csv', index=False, quoting=csv.QUOTE_NONNUMERIC)
@@ -470,6 +477,15 @@ def work(QA_CLASS):
                         help="Write top tokens with both log-probabilities at time-value steps to cdtrace-<chunk>.jsonl")
     parser.add_argument("--contrastive_scope", choices=("all", "time", "time+answer"), default="all",
                         help="Tokens the contrast applies to: all, time values only, or time values and the answer line")
+    parser.add_argument("--batch_size", type=int, default=1,
+                        help="Decode the answers of this many questions together (memories are built one at a time)")
+    parser.add_argument("--prefetch_videos", type=int, default=0,
+                        help="Uniform sampling: decode the frames of this many upcoming questions in background threads")
+    parser.add_argument("--force_batched_decoder", type=str2bool, default=False,
+                        help="Diagnostic: use the batched decoder even with batch_size 1")
+    parser.add_argument("--decode_log", type=str2bool, default=False,
+                        help="Diagnostic (batched decoder): write answer token ids and top-1/top-2 score margins per step "
+                             "to decode-<chunk>.jsonl")
     parser.add_argument("--contrastive_beta", type=float, default=0.1, help="Adaptive plausibility cut-off")
     parser.add_argument("--visual_attention_gain", type=float, default=1.0,
                         help="Answer generation: multiply the attention mass on visual-memory tokens by this factor "
@@ -720,6 +736,15 @@ def work(QA_CLASS):
     analyzer.contrastive_scope = args.contrastive_scope
     analyzer.contrastive_adaptive = args.contrastive_adaptive
     analyzer.contrastive_rule, analyzer.contrastive_trace = args.contrastive_rule, args.contrastive_trace
+    if args.batch_size < 1:
+        parser.error("batch_size must be positive")
+    if args.batch_size > 1 and args.frame_sampling != "uniform" and args.use_history:
+        parser.error("batched answering in streaming needs use_history false (later questions would see the answers)")
+    analyzer.batch_size = args.batch_size
+    analyzer.force_batched_decoder, analyzer.decode_log = args.force_batched_decoder, args.decode_log
+    if args.prefetch_videos < 0:
+        parser.error("prefetch_videos must be nonnegative")
+    analyzer.prefetch_videos = args.prefetch_videos
     videoqa_model.visual_attention_gain = args.visual_attention_gain
     if args.visual_attention_layers != "all":
         lo, hi = (int(x) for x in args.visual_attention_layers.split("-"))

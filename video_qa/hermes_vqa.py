@@ -4,10 +4,12 @@ import json
 import random
 import zlib
 import os
+from concurrent.futures import ThreadPoolExecutor
 import torch
 from logzero import logger
 from tqdm import tqdm
 
+from inference import batched_decoding
 from video_qa.base import BaseVQA, work
 
 
@@ -19,6 +21,82 @@ class HermesVQA(BaseVQA):
     if a sample has 'end_time', frames are encoded up to that timestamp;
     otherwise all frames are encoded before answering.
     """
+
+    def _batched_answers(self, sample, trace_answer):
+        """Whether this question's answer is deferred to batched decoding (batch_size > 1, open-ended answers)."""
+        batched = getattr(self, 'batch_size', 1) > 1 or getattr(self, 'force_batched_decoder', False)
+        return (batched and 'choices' not in sample and not trace_answer
+                and not getattr(self, 'contrastive_trace', False)
+                and float(getattr(self.qa_model, 'visual_attention_gain', 1.0)) == 1.0)
+
+    def _flush_answers(self):
+        """Decode the deferred questions together and fill their answers into their records."""
+        pending, self._pending = getattr(self, '_pending', []), []
+        if not pending:
+            return
+        token_log = [] if getattr(self, 'decode_log', False) else None
+        answers = batched_decoding.batched_answering(
+            self.qa_model, [job for job, _, _ in pending], token_log=token_log,
+            max_new_tokens=getattr(self, 'max_new_tokens', 256),
+            repetition_penalty=getattr(self, 'repetition_penalty', 1.1),
+            alpha=float(getattr(self, 'contrastive_alpha', 1.0)), beta=float(getattr(self, 'contrastive_beta', 0.1)),
+            scope=getattr(self, 'contrastive_scope', 'all'), adaptive=getattr(self, 'contrastive_adaptive', False),
+            rule=getattr(self, 'contrastive_rule', 'pmi'))
+        if token_log is not None:
+            with open(os.path.join(self.save_dir, f"decode-{self.chunk_idx}.jsonl"), "a") as out:
+                for (_, record, _), entry in zip(pending, token_log):
+                    out.write(json.dumps({"question_id": record.get('question_id'), **entry}) + "\n")
+        for (_, record, keep_newlines), answer in zip(pending, answers):
+            print("Pred Answer: ", answer)
+            record['pred_answer'] = answer if keep_newlines else answer.replace('\n', '')
+            if 'pred_raw' in record:
+                record['pred_raw'] = answer
+
+    def analyze(self, debug=False):
+        self._pending = []
+        workers = int(getattr(self, 'prefetch_videos', 0))
+        if workers <= 0 or getattr(self, 'frame_sampling', 'incremental') != 'uniform':
+            return super().analyze(debug=debug)
+        # Prefetch: the frames of the next questions are decoded in background threads while the GPU works. Only the
+        # standard uniform request is prefetched (diagnostics that change the window load synchronously).
+        videos = self.anno[:1] if debug else self.anno
+        self._prefetch_queue = [
+            (v['video_path'], dict(num_frames=self.uniform_num_frames, end_time=s.get('end_time'), video_fps=v.get('fps'),
+                                   duration=v.get('duration'), start_time=None))
+            for v in videos for s in v['conversations']]
+        self._prefetched = {}
+        with ThreadPoolExecutor(workers) as pool:
+            self._prefetch_pool = pool
+            self._prefetch_more(workers)
+            try:
+                super().analyze(debug=debug)
+            finally:
+                self._prefetch_pool = None
+                for future in self._prefetched.values():
+                    future.cancel()
+
+    @staticmethod
+    def _prefetch_key(video_path, kwargs):
+        return (video_path, *sorted(kwargs.items()))
+
+    def _prefetch_more(self, n):
+        while self._prefetch_queue and n > 0:
+            video_path, kwargs = self._prefetch_queue.pop(0)
+            key = self._prefetch_key(video_path, kwargs)
+            if key not in self._prefetched:
+                self._prefetched[key] = self._prefetch_pool.submit(self.uniform_frames, video_path, **kwargs)
+                n -= 1
+
+    def load_uniform_video(self, video_path, **kwargs):
+        future = None
+        if getattr(self, '_prefetch_pool', None) is not None:
+            future = self._prefetched.pop(self._prefetch_key(video_path, kwargs), None)
+            self._prefetch_more(1 if future is not None else 0)
+        if future is None:
+            return super().load_uniform_video(video_path, **kwargs)
+        frames, frame_idx, times = future.result()
+        self.last_uniform_frame_times = times
+        return frames, frame_idx
 
     def _relevance_zoom(self, video_path, coarse_video, coarse_times, rel, q_end, keep_ratio, encode_chunk_size,
                         video_sample, sample):
@@ -413,7 +491,14 @@ class HermesVQA(BaseVQA):
                         and sample.get('benchmark') == 'sember_grounding'):
                     # The no-video memory does not depend on the frames: build it here (streaming and offline).
                     negative_memory = self._counterfactual_memory(None, [], 1.0, encode_chunk_size, video_sample, sample)
-                if negative_memory is not None:
+                deferred = None
+                if self._batched_answers(sample, trace_answer):
+                    # Batched decoding: read the prompt now, decode later together with other questions.
+                    deferred = batched_decoding.prefill_job(
+                        self.qa_model, self.qa_model.get_prompt(sample.get('prompt') or question), negative_memory,
+                        clone=frame_sampling != 'uniform')
+                    qa_results = {'pred_answer': None}
+                elif negative_memory is not None:
                     # Contrastive decoding against the counterfactual memory.
                     cd_trace = [] if getattr(self, 'contrastive_trace', False) else None
                     qa_results = {'pred_answer': self.qa_model.contrastive_answering(
@@ -435,7 +520,8 @@ class HermesVQA(BaseVQA):
                         prompt=sample.get('prompt'),
                         preserve_newlines=is_sember,
                     )
-                print("Pred Answer: ", qa_results['pred_answer'])
+                if deferred is None:
+                    print("Pred Answer: ", qa_results['pred_answer'])
                 if trace_answer:
                     # Diagnostic: gold-frame attention while reading the prompt and writing the answer.
                     lo, hi = float(sample['answer_start_time']), float(sample['answer_end_time'])
@@ -537,6 +623,10 @@ class HermesVQA(BaseVQA):
                 )
 
             self.record.append(record_entry)
+            if 'choices' not in sample and deferred is not None:
+                self._pending.append((deferred, record_entry, is_sember))
+                if len(self._pending) >= self.batch_size:
+                    self._flush_answers()
 
 
 if __name__ == "__main__":

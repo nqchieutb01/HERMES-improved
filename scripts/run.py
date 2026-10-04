@@ -293,6 +293,8 @@ def inference_command(
                         "--contrastive_adaptive", "true" if cfg.run.get("contrastive_adaptive") else "false",
                         "--contrastive_rule", str(cfg.run.get("contrastive_rule", "pmi")),
                         "--contrastive_trace", "true" if cfg.run.get("contrastive_trace") else "false"])
+    if int(cfg.run.get("batch_size", 1)) != 1:
+        command.extend(["--batch_size", str(cfg.run.batch_size)])
     if float(cfg.run.get("visual_attention_gain", 1.0)) != 1.0:
         command.extend(["--visual_attention_gain", str(cfg.run.visual_attention_gain),
                         "--visual_attention_layers", str(cfg.run.get("visual_attention_layers", "all"))])

@@ -54,6 +54,8 @@ run:
   contrastive_rule: pmi
   # Diagnostic: top tokens with both log-probabilities at time-value steps (cdtrace-<chunk>.jsonl).
   contrastive_trace: false
+  # Answers of this many questions are decoded together (memories are still built one question at a time).
+  batch_size: 1
   visual_attention_gain: 1.0
   visual_attention_layers: all
   zoom_mix: 0.5

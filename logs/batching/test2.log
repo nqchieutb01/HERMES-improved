@@ -1,0 +1,46 @@
+srun: Interactive job detected (srun/salloc). Routed to QoS='gpu-debug-qos'.
+srun: job 295967 queued and waiting for resources
+srun: job 295967 has been allocated resources
+host=gpu-38
+NVIDIA A100-SXM4-40GB
+## base: original bs1 vs batched decoder bs1
+logs/batching/out/base-bs1 vs /home/chieu.nguyen/HERMES/logs/batching/out2/base-forced1: 21/21 answers identical
+## base: original bs1 vs bs8 (rerun)
+logs/batching/out/base-bs1 vs /home/chieu.nguyen/HERMES/logs/batching/out2/base-bs8: 15/21 answers identical
+## base: bs8 run 1 vs bs8 run 2
+logs/batching/out/base-bs8 vs /home/chieu.nguyen/HERMES/logs/batching/out2/base-bs8: 21/21 answers identical
+## base: bs8 vs bs8 + prefetch (expected identical)
+/home/chieu.nguyen/HERMES/logs/batching/out2/base-bs8 vs /home/chieu.nguyen/HERMES/logs/batching/out2/base-bs8-prefetch: 21/21 answers identical
+## base bs8 profile
+=== PROFILE ===
+peak GPU memory 26.8 GB
+TOTAL                        total    305.7s  calls    1  per call 305.70s
+per-video loop (incl. flushes) total    300.3s  calls   12  per call  25.02s
+## base bs8-prefetch profile
+=== PROFILE ===
+peak GPU memory 26.8 GB
+TOTAL                        total    131.9s  calls    1  per call 131.86s
+per-video loop (incl. flushes) total    126.6s  calls   12  per call  10.55s
+/home/chieu.nguyen/HERMES/logs/batching/out2/base-bs8: 6 of 21 answers diverge from the reference; margin at the divergence step: median 0.000, max 0.250 (all steps: median 13.12, share < 0.15: 3.2%)
+/home/chieu.nguyen/HERMES/logs/batching/out2/base-forced1: 0 of 21 answers diverge from the reference; margin at the divergence step: median nan, max nan (all steps: median 12.12, share < 0.15: 2.9%)
+## pcd: original bs1 vs batched decoder bs1
+logs/batching/out/pcd-bs1 vs /home/chieu.nguyen/HERMES/logs/batching/out2/pcd-forced1: 10/21 answers identical
+## pcd: original bs1 vs bs8 (rerun)
+logs/batching/out/pcd-bs1 vs /home/chieu.nguyen/HERMES/logs/batching/out2/pcd-bs8: 7/21 answers identical
+## pcd: bs8 run 1 vs bs8 run 2
+logs/batching/out/pcd-bs8 vs /home/chieu.nguyen/HERMES/logs/batching/out2/pcd-bs8: 21/21 answers identical
+## pcd: bs8 vs bs8 + prefetch (expected identical)
+/home/chieu.nguyen/HERMES/logs/batching/out2/pcd-bs8 vs /home/chieu.nguyen/HERMES/logs/batching/out2/pcd-bs8-prefetch: 21/21 answers identical
+## pcd bs8 profile
+=== PROFILE ===
+peak GPU memory 27.4 GB
+TOTAL                        total    310.1s  calls    1  per call 310.11s
+per-video loop (incl. flushes) total    296.3s  calls   12  per call  24.69s
+## pcd bs8-prefetch profile
+=== PROFILE ===
+peak GPU memory 27.4 GB
+TOTAL                        total    142.6s  calls    1  per call 142.56s
+per-video loop (incl. flushes) total    129.9s  calls   12  per call  10.82s
+/home/chieu.nguyen/HERMES/logs/batching/out2/pcd-bs8: 14 of 21 answers diverge from the reference; margin at the divergence step: median 0.098, max 0.280 (all steps: median 19.90, share < 0.15: 1.5%)
+/home/chieu.nguyen/HERMES/logs/batching/out2/pcd-forced1: 11 of 21 answers diverge from the reference; margin at the divergence step: median 0.116, max 0.250 (all steps: median 19.97, share < 0.15: 1.3%)
+TEST2 FINISHED
