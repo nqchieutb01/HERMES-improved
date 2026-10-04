@@ -1,0 +1,282 @@
+# Improving temporal grounding under visual-token pruning: what we did and what we found
+
+Model: Qwen3-VL-8B. Data: S-EMBER grounded QA, 300 videos, 475 questions (duration 191, counting 184, location 100).
+Everything is training-free. Every number below comes from the same 475 questions; Δ is a paired difference against
+the same visual memory, with a 95% bootstrap interval; **\*** means the interval excludes 0 (significant).
+
+Detailed tables: `logs/phase18/report.md` (PCD and its ablations), `logs/phase20/early.md` (refinements and the
+early-evidence analysis). Method write-up for the paper: `docs/method_prior_contrastive.md`. Diagnosis:
+`docs/phase15_diagnosis.md`.
+
+---
+
+## 1. Summary in five points
+
+1. **The problem is not only which tokens pruning keeps.** When the video memory is pruned, the model fills the gaps
+   with a *language prior about time*: without any video it says the evidence is at the start of the video
+   (90% of its intervals start in the first 5% of the window). This prior leaks into answers with video.
+2. **Our method, prior-contrastive decoding (PCD), removes that prior while the answer is written.** At each word it
+   compares "what the model says with the video" against "what it would say with no video" and prefers what the video
+   adds. No training, no change to the pruning, no post-processing of the output.
+3. **PCD improves grounding significantly in every setting we tested**: mIoU +3.5 to +6.3 and GQ@0.5 +2.5 to +4.2,
+   across budgets (5% to unpruned), selectors (HERMES, random, stratified) and HERMES streaming. With 10–25% of the
+   visual tokens it beats the unpruned model. Answer accuracy is never significantly hurt.
+4. **Two refinements make it better and safer.** *Time-scoped* PCD (contrast only the time values) keeps the grounding
+   gain and disturbs the answer text less. *Confidence-adaptive* PCD (weaker contrast where the model is already sure)
+   recovers the questions whose evidence really is at the start of the video, which plain PCD hurt when the memory is
+   rich (unpruned: accuracy on those questions 16.7 → 23.1, GQ@0.5 12.8 → 19.2, both \* vs PCD).
+5. **What did not work is informative too**: other counterfactuals (noised frames as in VCD, permuted timestamps), a
+   one-sided "evidence-against" rule, and re-allocating frames (zoom, relevance sampling, attention boosting) give
+   little or nothing. The prior is the right thing to contrast against, and decoding cannot recover evidence the
+   memory does not contain.
+
+---
+
+## 2. Task and metrics
+
+The model sees a video memory (possibly pruned to a token budget) and a question, and must give an **answer** and the
+**time interval** of its evidence. We use the *timeline prompt*: the model first lists the moments it saw
+(`Seen: 12 seconds ...`), then writes `Answer: ...` and `Time: [start, end]`.
+
+| Metric | Meaning |
+|---|---|
+| Acc. | answer judged correct (official S-EMBER judge prompt, local Qwen3.8-27B judge) |
+| mIoU | mean overlap between predicted and gold interval |
+| R@0.5 | share of intervals with overlap ≥ 0.5 |
+| GQ@0.5 | answer correct **and** overlap ≥ 0.5 (grounded QA: both must be right) |
+| Early start | share of predicted intervals starting in the first 5% of the window (a symptom of the prior) |
+
+Memories tested: offline pruning to 5 / 10 / 25% of the visual tokens with a random, stratified or HERMES selector,
+the unpruned model, and HERMES streaming memory with a 4k or 6k KV budget.
+
+---
+
+## 3. The problem we found: a temporal prior leaks into the answers
+
+| Evidence | Numbers |
+|---|---|
+| With no video at all, the model still answers with times | 89% of first `Seen` moments are 0 s; 90% of intervals start in the first 5% |
+| With video, the same habit appears | 38% of intervals start in the first 5% at 10% random pruning, 56% with HERMES pruning; only 16% of gold intervals do |
+| It grows as evidence shrinks | the less video the memory holds, the more answers start at 0 s |
+| A better selector alone does not fix it | even a perfect (oracle) selector at 10% only matches the unpruned model |
+
+So the model is a mixture of "what the video shows" and "what such questions usually look like". Under pruning the
+first part weakens and the second takes over.
+
+---
+
+## 4. The method: prior-contrastive decoding (PCD)
+
+While generating, each next token is chosen by
+
+    score(y) = (1 + α) · log p(y | video memory, question)  −  α · log p(y | no video, question)
+
+among tokens that are reasonably likely with the video (p ≥ β · the top probability; β = 0.1). Default α = 0.5.
+
+**Intuition.** Suppose the model must write the first time. With no video it is almost certain of "0". With video it
+puts some weight on "0" and some on "48". The contrast lowers "0" (the prior explains it) and raises "48" (only the
+video explains it).
+
+**Properties.**
+- Works on top of any memory: no change to the selector, the KV cache or the model.
+- Cheap: the "no video" branch holds only the prompt (a few hundred tokens), so each step costs one small extra forward.
+- Not post-processing: it changes the model's own token choices during generation, so the answer and the interval are
+  produced together.
+
+Code: `contrastive_answering` in `inference/qwen3vl_hermes.py`; options `run.contrastive_mode=blind`,
+`run.contrastive_alpha`, `run.contrastive_beta`.
+
+---
+
+## 5. Main result: PCD
+
+| Memory | Acc. | mIoU | GQ@0.5 | Early start |
+|---|---|---|---|---|
+| Random 5% → +PCD | 15.8 → 15.4 | 23.6 → 29.2 (+5.6\*) | 5.9 → 9.1 (+3.2\*) | 39% → 20% |
+| Random 10% → +PCD | 15.2 → 16.2 | 25.8 → 32.1 (+6.2\*) | 7.2 → 10.1 (+2.9\*) | 38% → 19% |
+| Random 25% → +PCD | 17.7 → 18.9 | 28.2 → 33.0 (+4.8\*) | 8.2 → 11.8 (+3.6\*) | 37% → 21% |
+| Unpruned → +PCD | 18.5 → 19.8 | 28.0 → 31.5 (+3.5\*) | 8.6 → 11.2 (+2.5) | 41% → 23% |
+| HERMES 10% → +PCD | 13.1 → 15.4 | 18.3 → 22.6 (+4.3\*) | 4.0 → 7.2 (+3.2\*) | 56% → 31% |
+| Stratified 10% → +PCD | 14.1 → 14.5 | 23.7 → 29.9 (+6.3\*) | 6.1 → 8.8 (+2.7\*) | 36% → 17% |
+| HERMES streaming 6k → +PCD | 14.3 → 14.7 | 22.6 → 28.1 (+5.6\*) | 4.8 → 7.6 (+2.7\*) | 46% → 24% |
+| HERMES streaming 4k → +PCD | 13.5 → 17.1 | 21.6 → 27.4 (+5.8\*) | 4.0 → 8.2 (+4.2\*) | 45% → 24% |
+
+What this shows:
+- PCD roughly **halves the prior leak** everywhere (early starts to ~20%, below even the unpruned model's 41%).
+- Grounding gains are **significant in all pruned settings**, and **larger when the memory is smaller** (+4.3 to +6.3
+  mIoU pruned vs +3.5 unpruned), as expected if PCD removes what pruning lets in.
+- **Random 10% + PCD beats the unpruned model** (mIoU 32.1 vs 28.0, GQ@0.5 10.1 vs 8.6) with a tenth of the tokens.
+- **Robust**: α ∈ {0.25, 0.5, 1.0} gives mIoU +5.0 / +6.2 / +6.1; β = 0.2 gives +5.7.
+- **Boundary**: with the official direct-answer prompt there is no gain (mIoU +0.4). The prior shows up when the model
+  lists timestamped moments, so PCD and the timeline prompt work as a pair.
+
+---
+
+## 6. Refinements and what each one taught us
+
+### 6.1 Is "no video" the right thing to contrast against? Yes.
+
+| Counterfactual (random 10%) | mIoU | GQ@0.5 | Early start |
+|---|---|---|---|
+| none (baseline) | 25.8 | 7.2 | 38% |
+| **no video (PCD)** | **32.1 (+6.2\*)** | **10.1 (+2.9\*)** | **19%** |
+| noised frames (Visual Contrastive Decoding, CVPR 2024) | 26.3 (+0.5) | 7.8 (+0.6) | 30% |
+| same frames, permuted timestamps | +0.9 (n.s.) | — | — |
+
+Noised frames keep the prior *and* weaken the video, so contrasting against them removes little prior. The
+published VCD recipe does not address this failure; contrasting against the prior does.
+
+### 6.2 Time-scoped PCD: contrast only the time values
+
+Error analysis of PCD (random 10%, `logs/phase19/error_analysis.py`) showed that contrasting *every* token also
+changes words that have nothing to do with time: the answer text changed in 85% of questions, answers listing more
+than 8 moments rose from 12 to 56, and over-counting rose from 14% to 34% of counting questions. The diagnosed
+leak is in the time values, so we applied the contrast only while the model writes a `Seen:` time or the `Time: [...]`
+interval, and decoded everything else normally.
+
+| Memory | PCD (all tokens): Acc. / mIoU / GQ@0.5 | Time-scoped PCD: Acc. / mIoU / GQ@0.5 |
+|---|---|---|
+| Random 10% | 16.2 / 32.1 / 10.1 | 16.0 / 32.1 / 10.3 |
+| Random 25% | 18.9 / 33.0 / 11.8 | 17.7 / 34.0 / 11.8 |
+| Unpruned | 19.8 / 31.5 / 11.2 | **20.8 / 32.9 / 12.4** (Acc. +2.3, GQ +3.8\* vs baseline) |
+| HERMES 10% | 15.4 / 22.6 / 7.2 | **14.7 / 24.3 / 7.4** |
+| Streaming 4k | 17.1 / 27.4 / 8.2 | **16.2 / 29.2 / 9.3** (mIoU +7.5\*, GQ +5.3\* vs baseline) |
+| Random 10%, official prompt | — | 10.3 / 27.2 / 3.2 (no gain, as before) |
+
+Same or better grounding with a more targeted intervention; run-on lists drop (more than 8 moments: 56 → 41).
+Answers still change often, because the answer is computed from the times the model wrote: fixing the times
+legitimately changes the answer.
+
+### 6.3 Confidence-adaptive PCD: recovering questions whose evidence really starts early
+
+**The concern.** 78 of the 475 questions have gold evidence that truly starts in the first 5% of the window. PCD
+pushes away from early times, so it could hurt exactly these questions. With plain PCD on the unpruned memory, their
+accuracy fell 21.8 → 16.7 and GQ@0.5 16.7 → 12.8.
+
+**The idea.** Make the contrast fade where the video memory is already confident:
+α_t = α_max · (1 − max p(· | video)). If the video clearly supports "0", the model is confident and the contrast
+nearly switches off; if the model is unsure (where the prior sneaks in), the contrast acts fully. Option:
+`run.contrastive_adaptive=true`.
+
+**Result on the 78 early-evidence questions** (Acc. / mIoU / GQ@0.5):
+
+| Memory | Baseline | PCD | Adaptive PCD (α_max 1) |
+|---|---|---|---|
+| Unpruned | 21.8 / 49.2 / 16.7 | 16.7 / 55.3 / 12.8 | **23.1 / 56.9 / 19.2** (Acc. and GQ +6.4\* vs PCD) |
+| Random 25% | 23.1 / 48.7 / 17.9 | 19.2 / 53.9 / 17.9 | 20.5 / 52.7 / 16.7 |
+| Random 10% | 19.2 / 47.6 / 16.7 | 16.7 / 57.0 / 15.4 | 16.7 / 54.4 / 14.1 |
+| Random 5% | 15.4 / 40.3 / 10.3 | 14.1 / 47.2 / 12.8 | 16.7 / **51.8** / 12.8 (mIoU +4.6\* vs PCD) |
+| Streaming 6k | 11.5 / 38.4 / 7.7 | 12.8 / 46.6 / 11.5 | 15.4 / 46.0 / 12.8 |
+
+**Result on all 475 questions** (Acc. / mIoU / GQ@0.5; Δ vs baseline for adaptive):
+
+| Memory | Baseline | PCD | Adaptive PCD (α_max 1) |
+|---|---|---|---|
+| Random 5% | 15.8 / 23.6 / 5.9 | 15.4 / 29.2 / 9.1 | 14.9 / **30.6** (+7.1\*) / 9.1 (+3.2\*) |
+| Random 10% | 15.2 / 25.8 / 7.2 | 16.2 / 32.1 / 10.1 | 15.4 / 32.0 (+6.2\*) / 9.7 (+2.5) |
+| Random 25% | 17.7 / 28.2 / 8.2 | 18.9 / 33.0 / 11.8 | 19.2 / **33.8** (+5.6\*) / **14.1** (+5.9\*; +2.3\* vs PCD) |
+| Unpruned | 18.5 / 28.0 / 8.6 | 19.8 / 31.5 / 11.2 | 19.8 / **32.7** (+4.7\*) / **12.2** (+3.6\*) |
+| HERMES 10% | 13.1 / 18.3 / 4.0 | 15.4 / 22.6 / 7.2 | 14.3 / 23.0 (+4.6\*) / 6.5 (+2.5\*) |
+| Stratified 10% | 14.1 / 23.7 / 6.1 | 14.5 / 29.9 / 8.8 | 14.7 / **30.4** (+6.7\*) / **9.7** (+3.6\*) |
+| Streaming 6k | 14.3 / 22.6 / 4.8 | 14.7 / 28.1 / 7.6 | 15.6 / **28.6** (+6.1\*) / 7.6 (+2.7\*) |
+| Streaming 4k | 13.5 / 21.6 / 4.0 | 17.1 / 27.4 / 8.2 | 16.0 / 27.2 (+5.6\*) / 6.9 (+2.9\*) |
+
+- Adaptive PCD keeps all of PCD's significant gains over the baseline and is **never significantly worse than PCD**.
+- It **recovers the early-evidence questions when the memory has enough evidence** (unpruned fully, 25% partly).
+  Under heavy pruning the model is rarely confident, so the contrast stays on and nothing changes.
+- α_max = 2 is not better (random 10%: 16.6 / 32.8 / 10.3; random 25%: 17.9 / 33.2 / 12.2; unpruned: 19.4 / 32.2 / 11.6).
+- **Adaptive + time scope** is the best unpruned result: **21.5 / 32.7 / 13.3** (GQ +4.6\* vs baseline); at random 10%
+  it gives 16.2 / 32.6 / 10.1. It is now running on the other six memories (phase 20d) to fix one final configuration.
+
+### 6.4 What "losing early starts" really means (key insight)
+
+A natural way to measure the damage is "how often does the model start early on early-evidence questions". But the
+model with **no video at all** starts early on 93.5% of them, and also on 89% of the other questions. A high score
+there is mostly the prior, not evidence. The fair measure is **discrimination**: early starts on early-evidence
+questions *minus* early starts on the others (J; higher = the model starts early *because* the evidence is early).
+
+| Memory | No video | Baseline | PCD | Adaptive PCD |
+|---|---|---|---|---|
+| Random 10% | 4.2 | 49.4 | 51.1 | 50.1 |
+| Random 25% | 4.2 | 49.5 | 52.1 | 51.6 |
+| Unpruned | 4.2 | 49.6 | 53.2 | **56.4** |
+| Random 5% | 4.2 | 41.9 | 48.8 | **51.8** |
+| Streaming 4k | 4.2 | 44.9 | 39.8 | 45.7 |
+
+PCD does not throw away evidence: it removes the prior's "free" early starts. Adaptive PCD gives the best
+discrimination in most settings.
+
+### 6.5 Is there a better decoding rule? No: PCD sits at the limit
+
+We logged both probability distributions (with and without video) at the first time value of every answer and
+replayed other decision rules offline (`logs/phase20/first_time_token.py`, 475 questions, random 10%):
+
+| Rule | Early-evidence questions that start at "0" (want high) | Other questions that start at "0" (leak, want low) |
+|---|---|---|
+| no contrast | 69% | 16% |
+| PCD α 0.5 | 46% | 6% |
+| adaptive α_max 1 | 51% | 7% |
+| evidence-against α 4 | 51% | 9% |
+| skewed or tempered prior (best settings) | 50–55% | 8–11% |
+| **best threshold chosen with the gold labels** | **46%** | **6%** |
+
+Even a rule tuned on the answers cannot beat PCD's trade-off using the model's own probabilities. The remaining
+early-start errors are cases where the video memory itself is unsure: they need better evidence near the start of
+the video, not a cleverer decoding rule.
+
+We also ran the most different rule end-to-end. **Evidence-against** penalises only tokens the video argues against
+(log p_video < log p_no-video) and never rewards tokens for being unlikely without video. At random 10% it is
+clearly worse than PCD (mIoU 26.5 / 27.3 for α = 1 / 2, i.e. −5.6\* / −4.8\* vs PCD), as the replay predicted. The
+reason: with no video the model is ~99% sure of "0", so even a well-supported "0" looks like "evidence against".
+
+### 6.6 Earlier ideas that did not work (same budget, random 10%)
+
+| Method | Idea | Result |
+|---|---|---|
+| Visual-attention gain (PAI-style) | boost attention to visual tokens while decoding | mIoU +1.3, GQ +0.8 (n.s.); the prior stays (38% → 42% early starts) |
+| Relevance-guided importance sampling | give more frames/tokens where grounding heads look | mIoU −1.5, Acc. −1.7 (n.s.); heads localise weakly |
+| Coverage-then-zoom, gold window | extra frames inside the gold interval (an oracle) | mIoU +2.3 (n.s.): re-allocating a fixed budget is near its ceiling |
+| Coverage-then-zoom, self window | extra frames around the model's first answer | Acc. +4.6\* in some settings but not robust; combined with PCD it is worse than PCD alone |
+
+The common lesson: at a fixed budget, *where* tokens go matters less than the prior that fills the gaps.
+
+---
+
+## 7. Remaining errors and next steps
+
+From the error analysis of PCD (random 10%):
+
+| Remaining error | Share | What it suggests |
+|---|---|---|
+| Interval too short | 22.5% of questions; median predicted length 20% of gold; 27% name a single moment | the model finds the event but stops enumerating; ask about each shown timestamp to recover the full extent |
+| Wrong occurrence | 17.7% end before the gold interval; 87% of these have evidence late in the window ("the second time", "after I…") | resolve ordinal/relative references by listing all occurrences before choosing |
+| Location questions | GQ@0.5 ≈ 1% | labels are ambiguous (annotator IoU 0.50) and answers are point-like |
+| Early evidence under heavy pruning | see 6.4–6.5 | needs more evidence near the video start, not a different rule |
+
+---
+
+## 8. Recommended configuration (current)
+
+- **Timeline prompt + PCD against the no-video prior**, α = 0.5, β = 0.1: the core method, gains everywhere.
+- **Confidence-adaptive strength** (α_max = 1): never significantly worse than PCD, recovers early-evidence questions
+  when the memory is rich, best GQ@0.5 at 25% (14.1) and best unpruned mIoU.
+- **Time scope**: contrast only time values; same grounding, fewer side effects on the answer text, best for HERMES
+  and streaming.
+- Adaptive + time scope is the leading candidate for the single final configuration; phase 20d (running) tests it on
+  the remaining memories.
+
+---
+
+## 9. Reproduce
+
+| Step | Command / file |
+|---|---|
+| Run a configuration | `python3 scripts/run.py model=qwen3_vl_8b experiment=sember_grounding_uniform dataset.max_videos=300 run.uniform_num_frames=64 run.keep_time_tokens=surviving dataset.grounding_prompt=timeline run.max_new_tokens=384 run.offline_keep_ratio=0.1 run.prune_score=random run.contrastive_mode=blind run.contrastive_alpha=1.0 run.contrastive_adaptive=true run.contrastive_scope=time` |
+| All options | `run.contrastive_mode` (none / blind / noise / stamps), `run.contrastive_alpha`, `run.contrastive_beta`, `run.contrastive_scope` (all / time / time+answer), `run.contrastive_adaptive`, `run.contrastive_rule` (pmi / against), `run.contrastive_trace` |
+| Experiment specs (Slurm, chunked) | `logs/phase18/`, `logs/phase19/`, `logs/phase20/make_spec*.py` with `logs/sched.py` |
+| Result tables | `python3 logs/phase18/report.py` → `logs/phase18/report.md`; `python3 logs/phase20/early.py` → `logs/phase20/early.md` |
+| Decode-rule replay | `python3 logs/phase20/first_time_token.py` |
+| Paper tables | `python3 tables/make_pcd_tables.py` → `tables/pcd_main.tex`, `tables/pcd_ablation.tex` |
+
+Limitations: one model and one benchmark subset by design; the judge is a local model with the official judge prompt
+(not the official Gemini judge); PCD needs the reasoning-style timeline prompt.

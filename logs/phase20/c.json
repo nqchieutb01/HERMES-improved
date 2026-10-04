@@ -1,0 +1,204 @@
+{
+ "slots": [
+  {
+   "partition": "long",
+   "qos": "gpu-debug-qos",
+   "max_jobs": 8
+  },
+  {
+   "partition": "cscc-gpu-p",
+   "qos": "cscc-gpu-qos",
+   "max_jobs": 2
+  }
+ ],
+ "runs": [
+  {
+   "name": "g-random25-cd-blind-adapt2.0-timeline",
+   "code": "/home/chieu.nguyen/HERMES",
+   "chunks": 4,
+   "env": {
+    "HERMES_QWEN3_ATTENTION_BACKEND": "flash_attention_2"
+   },
+   "overrides": [
+    "model=qwen3_vl_8b",
+    "dataset.max_videos=300",
+    "experiment=sember_grounding_uniform",
+    "run.uniform_num_frames=64",
+    "run.keep_time_tokens=surviving",
+    "dataset.grounding_prompt=timeline",
+    "run.max_new_tokens=384",
+    "run.offline_keep_ratio=0.25",
+    "run.prune_score=random",
+    "run.contrastive_mode=blind",
+    "run.contrastive_alpha=2.0",
+    "run.contrastive_adaptive=true",
+    "run.contrastive_scope=all",
+    "paths.save_dir=/home/chieu.nguyen/HERMES/results/qwen3_vl_8b/sember_grounding/uniform-n64-time-count-location-random25-cd-blind-adapt2.0-timeline-v300-native-time"
+   ]
+  },
+  {
+   "name": "g-unpruned-cd-blind-adapt2.0-timeline",
+   "code": "/home/chieu.nguyen/HERMES",
+   "chunks": 4,
+   "env": {
+    "HERMES_QWEN3_ATTENTION_BACKEND": "flash_attention_2"
+   },
+   "overrides": [
+    "model=qwen3_vl_8b",
+    "dataset.max_videos=300",
+    "experiment=sember_grounding_uniform",
+    "run.uniform_num_frames=64",
+    "run.keep_time_tokens=surviving",
+    "dataset.grounding_prompt=timeline",
+    "run.max_new_tokens=384",
+    "run.contrastive_mode=blind",
+    "run.contrastive_alpha=2.0",
+    "run.contrastive_adaptive=true",
+    "run.contrastive_scope=all",
+    "paths.save_dir=/home/chieu.nguyen/HERMES/results/qwen3_vl_8b/sember_grounding/uniform-n64-time-count-location-unpruned-cd-blind-adapt2.0-timeline-v300-native-time"
+   ]
+  },
+  {
+   "name": "g-unpruned-cd-blind-adapt1.0-scopetime-timeline",
+   "code": "/home/chieu.nguyen/HERMES",
+   "chunks": 4,
+   "env": {
+    "HERMES_QWEN3_ATTENTION_BACKEND": "flash_attention_2"
+   },
+   "overrides": [
+    "model=qwen3_vl_8b",
+    "dataset.max_videos=300",
+    "experiment=sember_grounding_uniform",
+    "run.uniform_num_frames=64",
+    "run.keep_time_tokens=surviving",
+    "dataset.grounding_prompt=timeline",
+    "run.max_new_tokens=384",
+    "run.contrastive_mode=blind",
+    "run.contrastive_alpha=1.0",
+    "run.contrastive_adaptive=true",
+    "run.contrastive_scope=time",
+    "paths.save_dir=/home/chieu.nguyen/HERMES/results/qwen3_vl_8b/sember_grounding/uniform-n64-time-count-location-unpruned-cd-blind-adapt1.0-scopetime-timeline-v300-native-time"
+   ]
+  },
+  {
+   "name": "g-hermes10-cd-blind-adapt1.0-timeline",
+   "code": "/home/chieu.nguyen/HERMES",
+   "chunks": 4,
+   "env": {
+    "HERMES_QWEN3_ATTENTION_BACKEND": "flash_attention_2"
+   },
+   "overrides": [
+    "model=qwen3_vl_8b",
+    "dataset.max_videos=300",
+    "experiment=sember_grounding_uniform",
+    "run.uniform_num_frames=64",
+    "run.keep_time_tokens=surviving",
+    "dataset.grounding_prompt=timeline",
+    "run.max_new_tokens=384",
+    "run.offline_keep_ratio=0.1",
+    "run.prune_score=hermes",
+    "run.contrastive_mode=blind",
+    "run.contrastive_alpha=1.0",
+    "run.contrastive_adaptive=true",
+    "run.contrastive_scope=all",
+    "paths.save_dir=/home/chieu.nguyen/HERMES/results/qwen3_vl_8b/sember_grounding/uniform-n64-time-count-location-hermes10-cd-blind-adapt1.0-timeline-v300-native-time"
+   ]
+  },
+  {
+   "name": "g-stratified10-cd-blind-adapt1.0-timeline",
+   "code": "/home/chieu.nguyen/HERMES",
+   "chunks": 4,
+   "env": {
+    "HERMES_QWEN3_ATTENTION_BACKEND": "flash_attention_2"
+   },
+   "overrides": [
+    "model=qwen3_vl_8b",
+    "dataset.max_videos=300",
+    "experiment=sember_grounding_uniform",
+    "run.uniform_num_frames=64",
+    "run.keep_time_tokens=surviving",
+    "dataset.grounding_prompt=timeline",
+    "run.max_new_tokens=384",
+    "run.offline_keep_ratio=0.1",
+    "run.prune_score=stratified",
+    "run.contrastive_mode=blind",
+    "run.contrastive_alpha=1.0",
+    "run.contrastive_adaptive=true",
+    "run.contrastive_scope=all",
+    "paths.save_dir=/home/chieu.nguyen/HERMES/results/qwen3_vl_8b/sember_grounding/uniform-n64-time-count-location-stratified10-cd-blind-adapt1.0-timeline-v300-native-time"
+   ]
+  },
+  {
+   "name": "g-random5-cd-blind-adapt1.0-timeline",
+   "code": "/home/chieu.nguyen/HERMES",
+   "chunks": 4,
+   "env": {
+    "HERMES_QWEN3_ATTENTION_BACKEND": "flash_attention_2"
+   },
+   "overrides": [
+    "model=qwen3_vl_8b",
+    "dataset.max_videos=300",
+    "experiment=sember_grounding_uniform",
+    "run.uniform_num_frames=64",
+    "run.keep_time_tokens=surviving",
+    "dataset.grounding_prompt=timeline",
+    "run.max_new_tokens=384",
+    "run.offline_keep_ratio=0.05",
+    "run.prune_score=random",
+    "run.contrastive_mode=blind",
+    "run.contrastive_alpha=1.0",
+    "run.contrastive_adaptive=true",
+    "run.contrastive_scope=all",
+    "paths.save_dir=/home/chieu.nguyen/HERMES/results/qwen3_vl_8b/sember_grounding/uniform-n64-time-count-location-random5-cd-blind-adapt1.0-timeline-v300-native-time"
+   ]
+  },
+  {
+   "name": "g-stream4000-cd-blind-adapt1.0",
+   "code": "/home/chieu.nguyen/HERMES",
+   "chunks": 4,
+   "env": {
+    "HERMES_QWEN3_ATTENTION_BACKEND": "flash_attention_2"
+   },
+   "overrides": [
+    "model=qwen3_vl_8b",
+    "dataset.max_videos=300",
+    "experiment=sember_grounding_time_count_location",
+    "run.sample_fps=0.2",
+    "run.kv_size=4000",
+    "run.min_tokens_per_frame=0",
+    "run.frame_summary_strategy=attention_weighted",
+    "run.keep_time_tokens=surviving",
+    "dataset.grounding_prompt=timeline",
+    "run.max_new_tokens=384",
+    "run.contrastive_mode=blind",
+    "run.contrastive_adaptive=true",
+    "run.contrastive_alpha=1.0",
+    "paths.save_dir=/home/chieu.nguyen/HERMES/results/qwen3_vl_8b/sember_grounding/time-count-location-fps0.2-kv4000-k0-attention_weighted-native-time-keepsurv-cd-blind-adapt1.0-timeline-v300"
+   ]
+  },
+  {
+   "name": "g-stream6000-cd-blind-adapt1.0",
+   "code": "/home/chieu.nguyen/HERMES",
+   "chunks": 4,
+   "env": {
+    "HERMES_QWEN3_ATTENTION_BACKEND": "flash_attention_2"
+   },
+   "overrides": [
+    "model=qwen3_vl_8b",
+    "dataset.max_videos=300",
+    "experiment=sember_grounding_time_count_location",
+    "run.sample_fps=0.2",
+    "run.kv_size=6000",
+    "run.min_tokens_per_frame=0",
+    "run.frame_summary_strategy=attention_weighted",
+    "run.keep_time_tokens=surviving",
+    "dataset.grounding_prompt=timeline",
+    "run.max_new_tokens=384",
+    "run.contrastive_mode=blind",
+    "run.contrastive_adaptive=true",
+    "run.contrastive_alpha=1.0",
+    "paths.save_dir=/home/chieu.nguyen/HERMES/results/qwen3_vl_8b/sember_grounding/time-count-location-fps0.2-kv6000-k0-attention_weighted-native-time-keepsurv-cd-blind-adapt1.0-timeline-v300"
+   ]
+  }
+ ]
+}

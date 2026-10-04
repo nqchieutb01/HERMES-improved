@@ -1,0 +1,8 @@
+qwen3_vl_8b/sember_grounding/uniform-n64-time-count-location-random25-cd-blind-adapt2.0-timeline-v300-native-time
+qwen3_vl_8b/sember_grounding/uniform-n64-time-count-location-unpruned-cd-blind-adapt2.0-timeline-v300-native-time
+qwen3_vl_8b/sember_grounding/uniform-n64-time-count-location-unpruned-cd-blind-adapt1.0-scopetime-timeline-v300-native-time
+qwen3_vl_8b/sember_grounding/uniform-n64-time-count-location-hermes10-cd-blind-adapt1.0-timeline-v300-native-time
+qwen3_vl_8b/sember_grounding/uniform-n64-time-count-location-stratified10-cd-blind-adapt1.0-timeline-v300-native-time
+qwen3_vl_8b/sember_grounding/uniform-n64-time-count-location-random5-cd-blind-adapt1.0-timeline-v300-native-time
+qwen3_vl_8b/sember_grounding/time-count-location-fps0.2-kv4000-k0-attention_weighted-native-time-keepsurv-cd-blind-adapt1.0-timeline-v300
+qwen3_vl_8b/sember_grounding/time-count-location-fps0.2-kv6000-k0-attention_weighted-native-time-keepsurv-cd-blind-adapt1.0-timeline-v300

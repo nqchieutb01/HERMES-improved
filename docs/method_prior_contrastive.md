@@ -2,6 +2,8 @@
 
 Qwen3-VL-8B, S-EMBER grounded QA (475 questions on 300 videos), training-free. Full, auto-generated result tables:
 `logs/phase18/report.md` (`python3 logs/phase18/report.py`). Diagnosis behind the method: `docs/phase15_diagnosis.md`.
+Plain-language overview of everything tried, including the phase 19–20 refinements (time scope, confidence-adaptive
+contrast, early-evidence analysis): `docs/improving_temporal_grounding.md`.
 
 ## 1. Problem and finding
 

@@ -10,7 +10,7 @@ import sys
 sys.path.insert(0, "logs/phase15")
 sys.path.insert(0, "logs/phase18")
 from diagnose_gpu import metrics, paired, rows_of  # noqa: E402
-from report import load  # noqa: E402
+from report import S, load  # noqa: E402
 
 SETTINGS = [
     ("Random 10%", "offline-random-keep0.1-timeline", "random10-cd-blind-a0.5-timeline", [
@@ -19,15 +19,26 @@ SETTINGS = [
         ("adaptive, α_max 1, time scope", "random10-cd-blind-adapt1.0-scopetime-timeline"),
         ("time scope", "random10-cd-blind-a0.5-scopetime-timeline"),
         ("evidence-against, α 1", "random10-cd-blind-against1.0-timeline"),
-        ("evidence-against, α 2", "random10-cd-blind-against2.0-timeline"),
-        ("evidence-against, α 4", "random10-cd-blind-against4.0-timeline")]),
+        ("evidence-against, α 2", "random10-cd-blind-against2.0-timeline")]),
     ("Random 25%", "offline-random-keep0.25-timeline", "random25-cd-blind-a0.5-timeline", [
         ("adaptive, α_max 1", "random25-cd-blind-adapt1.0-timeline"),
+        ("adaptive, α_max 2", "random25-cd-blind-adapt2.0-timeline"),
         ("time scope", "random25-cd-blind-a0.5-scopetime-timeline")]),
     ("Unpruned", "timeline", "unpruned-cd-blind-a0.5-timeline", [
         ("adaptive, α_max 1", "unpruned-cd-blind-adapt1.0-timeline"),
-        ("time scope", "unpruned-cd-blind-a0.5-scopetime-timeline"),
-        ("evidence-against, α 2", "unpruned-cd-blind-against2.0-timeline")]),
+        ("adaptive, α_max 2", "unpruned-cd-blind-adapt2.0-timeline"),
+        ("adaptive, α_max 1, time scope", "unpruned-cd-blind-adapt1.0-scopetime-timeline"),
+        ("time scope", "unpruned-cd-blind-a0.5-scopetime-timeline")]),
+    ("Random 5%", "offline-random-keep0.05-timeline", "random5-cd-blind-a0.5-timeline", [
+        ("adaptive, α_max 1", "random5-cd-blind-adapt1.0-timeline")]),
+    ("HERMES 10%", "offline-hermes-keep0.1-timeline", "hermes10-cd-blind-a0.5-timeline", [
+        ("adaptive, α_max 1", "hermes10-cd-blind-adapt1.0-timeline")]),
+    ("Stratified 10%", "offline-stratified-keep0.1-timeline", "stratified10-cd-blind-a0.5-timeline", [
+        ("adaptive, α_max 1", "stratified10-cd-blind-adapt1.0-timeline")]),
+    ("Streaming KV 4k", "@" + S.format(4000, "timeline-"), "@" + S.format(4000, "cd-blind-a0.5-timeline-"), [
+        ("adaptive, α_max 1", "@" + S.format(4000, "cd-blind-adapt1.0-timeline-"))]),
+    ("Streaming KV 6k", "@" + S.format(6000, "timeline-"), "@" + S.format(6000, "cd-blind-a0.5-timeline-"), [
+        ("adaptive, α_max 1", "@" + S.format(6000, "cd-blind-adapt1.0-timeline-"))]),
 ]
 
 
@@ -78,7 +89,7 @@ def main():
         # not for the rest. J = early-start rate (early evidence) - early-start rate (later evidence).
         out += [f"### Early-start discrimination", "", "| Run | early evidence | later evidence (leak) | J |", "|---|---|---|---|"]
         for name, tag in [("no video", "dx-blind-timeline"), ("baseline", btag), ("PCD α 0.5", ptag)] + list(variants):
-            rows = load(tag) or rows_of(tag)
+            rows = load(tag) or (None if tag.startswith("@") else rows_of(tag))
             if rows is None:
                 continue
             e, l = starts_early(sub(rows, early)), starts_early(sub(rows, lambda r: not early(r)))
