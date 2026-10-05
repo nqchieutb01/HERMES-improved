@@ -224,8 +224,9 @@ with plain PCD.
 | Streaming 6k | 14.3 / 22.6 / 4.8 | 14.7 / 28.1 / 7.6 | **15.4 / 29.8 (+7.2\*) / 8.4 (+3.6\*)** | +0.6 / +1.7\* / +0.8 |
 | **Mean of 8** | 15.3 / 24.0 / 6.1 | 16.5 / 29.2 / 9.3 | **16.6 / 30.7 / 10.0** | +0.1 / +1.5 / +0.7 |
 
-- Best mIoU on **all 8** memories (significantly above PCD on 4), best or tied GQ@0.5 on 6 of 8, never significantly
-  worse than PCD on any metric.
+- Higher mIoU than plain PCD on **all 8** memories (significantly on 4), higher or equal GQ@0.5 on 6 of 8, never
+  significantly worse than PCD on any metric. Constant-strength time-scoped PCD has a slightly higher mIoU on three
+  memories (unpruned 32.9, HERMES 10% 24.3, streaming 4k 29.2), within noise.
 - The two exceptions are HERMES 10% and streaming 4k, the memories with the strongest prior leak (56% and 45% early
   starts): there constant-strength time-scoped PCD is a little better (14.7 / 24.3 / 7.4 and 16.2 / 29.2 / 9.3),
   consistent with the adaptive rule easing off when the model is (wrongly) confident about a leaked early time.
@@ -305,7 +306,8 @@ From the error analysis of PCD (random 10%):
 only to time values** (`run.contrastive_mode=blind run.contrastive_alpha=1.0 run.contrastive_adaptive=true
 run.contrastive_scope=time`).
 
-- One configuration for every memory: best mIoU on all 8, mean mIoU +6.7 and GQ@0.5 +3.9 over the baseline (6.3a).
+- One configuration for every memory: higher mIoU than plain PCD on all 8, mean mIoU +6.7 and GQ@0.5 +3.9 over the
+  baseline (6.3a).
 - Each part has its own evidence: the no-video reference removes the prior (6.1), the time scope keeps the answer
   text intact (6.2), the adaptive strength protects evidence-supported early starts (6.3–6.4).
 - Plain PCD (α = 0.5, all tokens) remains the simplest version and keeps most of the gain (mean mIoU 29.2, GQ@0.5 9.3);
