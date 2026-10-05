@@ -98,7 +98,7 @@ SEMBER_MCQ_METADATA_FIELDS = (
 )
 
 
-GROUNDING_PROMPT_STYLES = ("official", "full_span", "timeline", "events")
+GROUNDING_PROMPT_STYLES = ("official", "full_span", "timeline", "events", "events_merged")
 # Models predict intervals ~3x shorter than the annotated evidence; ask for the whole event span.
 FULL_SPAN_INSTRUCTION = (
     "The time interval must cover the whole event, from the moment it begins until it has "
@@ -145,6 +145,14 @@ EVENTS_PROMPT = (
 )
 
 
+# Under PCD the events prompt still splits one continuing action into back-to-back, fixed-length events (80% of the
+# lists that hit the token limit); state that an event lasts until the action stops.
+EVENTS_MERGED_PROMPT = EVENTS_PROMPT.replace(
+    "List an occurrence once, however long it lasts.",
+    "List an occurrence once, however long it lasts: consecutive or overlapping moments of the same continuing "
+    "action are one event, which ends only when the action stops.")
+
+
 def sember_grounding_prompt(question: str, style: str = "official") -> str:
     """Return the S-EMBER grounded VideoQA prompt (``official``, ``full_span``, ``timeline`` or ``events``)."""
     if style == "official":
@@ -155,6 +163,8 @@ def sember_grounding_prompt(question: str, style: str = "official") -> str:
         return f"{TIMELINE_PROMPT}\n\n{question}"
     if style == "events":
         return f"{EVENTS_PROMPT}\n\n{question}"
+    if style == "events_merged":
+        return f"{EVENTS_MERGED_PROMPT}\n\n{question}"
     raise ValueError(f"Unknown S-EMBER grounding prompt style: {style!r}")
 
 
