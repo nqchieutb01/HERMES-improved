@@ -24,7 +24,10 @@ early-evidence analysis). Method write-up for the paper: `docs/method_prior_cont
 4. **Two refinements make it better and safer.** *Time-scoped* PCD (contrast only the time values) keeps the grounding
    gain and disturbs the answer text less. *Confidence-adaptive* PCD (weaker contrast where the model is already sure)
    recovers the questions whose evidence really is at the start of the video, which plain PCD hurt when the memory is
-   rich (unpruned: accuracy on those questions 16.7 → 23.1, GQ@0.5 12.8 → 19.2, both \* vs PCD).
+   rich (unpruned: accuracy on those questions 16.7 → 23.1, GQ@0.5 12.8 → 19.2, both \* vs PCD). **Combined
+   (adaptive strength, contrast only on time values) they give the best overall result**: averaged over the 8 memories,
+   mIoU 24.0 → 30.7 and GQ@0.5 6.1 → 10.0 (plain PCD: 29.2 / 9.3), significant against the baseline in all 8 for mIoU
+   and in 7 of 8 for GQ@0.5 (section 6.3a).
 5. **What did not work is informative too**: other counterfactuals (noised frames as in VCD, permuted timestamps), a
    one-sided "evidence-against" rule, and re-allocating frames (zoom, relevance sampling, attention boosting) give
    little or nothing. The prior is the right thing to contrast against, and decoding cannot recover evidence the
@@ -201,8 +204,33 @@ nearly switches off; if the model is unsure (where the prior sneaks in), the con
 - It **recovers the early-evidence questions when the memory has enough evidence** (unpruned fully, 25% partly).
   Under heavy pruning the model is rarely confident, so the contrast stays on and nothing changes.
 - α_max = 2 is not better (random 10%: 16.6 / 32.8 / 10.3; random 25%: 17.9 / 33.2 / 12.2; unpruned: 19.4 / 32.2 / 11.6).
-- **Adaptive + time scope** is the best unpruned result: **21.5 / 32.7 / 13.3** (GQ +4.6\* vs baseline); at random 10%
-  it gives 16.2 / 32.6 / 10.1. It is now running on the other six memories (phase 20d) to fix one final configuration.
+- **Adaptive + time scope** gives the best unpruned result: **21.5 / 32.7 / 13.3** (GQ +4.6\* vs baseline). Its
+  results on every memory are in 6.3a.
+
+### 6.3a Final configuration on every memory: adaptive strength + time scope
+
+Acc. / mIoU / GQ@0.5 on all 475 questions; Δ vs the baseline in brackets (\* significant). The last column compares
+with plain PCD.
+
+| Memory | Baseline | PCD | **Adaptive + time scope** | vs PCD (Acc. / mIoU / GQ) |
+|---|---|---|---|---|
+| Random 5% | 15.8 / 23.6 / 5.9 | 15.4 / 29.2 / 9.1 | **16.4 / 31.5 (+8.0\*) / 9.9 (+4.0\*)** | +1.1 / +2.3\* / +0.8 |
+| Random 10% | 15.2 / 25.8 / 7.2 | 16.2 / 32.1 / 10.1 | **16.2 / 32.6 (+6.8\*) / 10.1 (+2.9)** | +0.0 / +0.6 / +0.0 |
+| Random 25% | 17.7 / 28.2 / 8.2 | 18.9 / 33.0 / 11.8 | **18.9 / 34.9 (+6.7\*) / 13.3 (+5.1\*)** | +0.0 / +1.9\* / +1.5 |
+| Unpruned | 18.5 / 28.0 / 8.6 | 19.8 / 31.5 / 11.2 | **21.5 / 32.7 (+4.6\*) / 13.3 (+4.6\*)** | +1.7 / +1.2 / +2.1 |
+| HERMES 10% | 13.1 / 18.3 / 4.0 | 15.4 / 22.6 / 7.2 | 13.3 / **24.1 (+5.7\*)** / 5.9 (+1.9) | −2.1 / +1.5\* / −1.3 |
+| Stratified 10% | 14.1 / 23.7 / 6.1 | 14.5 / 29.9 / 8.8 | **15.8 / 31.0 (+7.3\*) / 10.5 (+4.4\*)** | +1.3 / +1.0 / +1.7 |
+| Streaming 4k | 13.5 / 21.6 / 4.0 | 17.1 / 27.4 / 8.2 | 15.4 / **28.6 (+6.9\*)** / 8.2 (+4.2\*) | −1.7 / +1.2 / +0.0 |
+| Streaming 6k | 14.3 / 22.6 / 4.8 | 14.7 / 28.1 / 7.6 | **15.4 / 29.8 (+7.2\*) / 8.4 (+3.6\*)** | +0.6 / +1.7\* / +0.8 |
+| **Mean of 8** | 15.3 / 24.0 / 6.1 | 16.5 / 29.2 / 9.3 | **16.6 / 30.7 / 10.0** | +0.1 / +1.5 / +0.7 |
+
+- Best mIoU on **all 8** memories (significantly above PCD on 4), best or tied GQ@0.5 on 6 of 8, never significantly
+  worse than PCD on any metric.
+- The two exceptions are HERMES 10% and streaming 4k, the memories with the strongest prior leak (56% and 45% early
+  starts): there constant-strength time-scoped PCD is a little better (14.7 / 24.3 / 7.4 and 16.2 / 29.2 / 9.3),
+  consistent with the adaptive rule easing off when the model is (wrongly) confident about a leaked early time.
+- On the early-evidence questions, the combination keeps most of the adaptive gain where the memory is rich (unpruned
+  GQ@0.5 17.9 vs PCD 12.8; stratified 15.4 vs 11.5; streaming 4k 14.1 vs 11.5).
 
 ### 6.4 What "losing early starts" really means (key insight)
 
@@ -271,15 +299,23 @@ From the error analysis of PCD (random 10%):
 
 ---
 
-## 8. Recommended configuration (current)
+## 8. Recommended configuration (final)
 
-- **Timeline prompt + PCD against the no-video prior**, α = 0.5, β = 0.1: the core method, gains everywhere.
-- **Confidence-adaptive strength** (α_max = 1): never significantly worse than PCD, recovers early-evidence questions
-  when the memory is rich, best GQ@0.5 at 25% (14.1) and best unpruned mIoU.
-- **Time scope**: contrast only time values; same grounding, fewer side effects on the answer text, best for HERMES
-  and streaming.
-- Adaptive + time scope is the leading candidate for the single final configuration; phase 20d (running) tests it on
-  the remaining memories.
+**Timeline prompt + PCD against the no-video prior, with confidence-adaptive strength (α_max = 1, β = 0.1), applied
+only to time values** (`run.contrastive_mode=blind run.contrastive_alpha=1.0 run.contrastive_adaptive=true
+run.contrastive_scope=time`).
+
+- One configuration for every memory: best mIoU on all 8, mean mIoU +6.7 and GQ@0.5 +3.9 over the baseline (6.3a).
+- Each part has its own evidence: the no-video reference removes the prior (6.1), the time scope keeps the answer
+  text intact (6.2), the adaptive strength protects evidence-supported early starts (6.3–6.4).
+- Plain PCD (α = 0.5, all tokens) remains the simplest version and keeps most of the gain (mean mIoU 29.2, GQ@0.5 9.3);
+  it is the natural ablation baseline in the paper.
+- For memories with a very strong leak (HERMES 10%, streaming 4k) constant-strength time-scoped PCD is marginally
+  better; the difference is within noise.
+
+Inference speed: `run.batch_size=8 run.prefetch_videos=4` decodes the answers of 8 questions together and loads video
+frames in background threads (2.8× faster for greedy decoding, 4.0× for PCD on an A100-40GB, same metrics: mIoU
+25.8 vs 25.6 and 32.6 vs 32.6 on all 475 questions; `logs/batching/`).
 
 ---
 

@@ -3,7 +3,7 @@
   {
    "partition": "long",
    "qos": "gpu-debug-qos",
-   "max_jobs": 8
+   "max_jobs": 5
   },
   {
    "partition": "cscc-gpu-p",

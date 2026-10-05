@@ -23,22 +23,30 @@ SETTINGS = [
     ("Random 25%", "offline-random-keep0.25-timeline", "random25-cd-blind-a0.5-timeline", [
         ("adaptive, α_max 1", "random25-cd-blind-adapt1.0-timeline"),
         ("adaptive, α_max 2", "random25-cd-blind-adapt2.0-timeline"),
-        ("time scope", "random25-cd-blind-a0.5-scopetime-timeline")]),
+        ("time scope", "random25-cd-blind-a0.5-scopetime-timeline"),
+        ("adaptive, α_max 1, time scope", "random25-cd-blind-adapt1.0-scopetime-timeline")]),
     ("Unpruned", "timeline", "unpruned-cd-blind-a0.5-timeline", [
         ("adaptive, α_max 1", "unpruned-cd-blind-adapt1.0-timeline"),
         ("adaptive, α_max 2", "unpruned-cd-blind-adapt2.0-timeline"),
         ("adaptive, α_max 1, time scope", "unpruned-cd-blind-adapt1.0-scopetime-timeline"),
         ("time scope", "unpruned-cd-blind-a0.5-scopetime-timeline")]),
     ("Random 5%", "offline-random-keep0.05-timeline", "random5-cd-blind-a0.5-timeline", [
-        ("adaptive, α_max 1", "random5-cd-blind-adapt1.0-timeline")]),
+        ("adaptive, α_max 1", "random5-cd-blind-adapt1.0-timeline"),
+        ("adaptive, α_max 1, time scope", "random5-cd-blind-adapt1.0-scopetime-timeline")]),
     ("HERMES 10%", "offline-hermes-keep0.1-timeline", "hermes10-cd-blind-a0.5-timeline", [
-        ("adaptive, α_max 1", "hermes10-cd-blind-adapt1.0-timeline")]),
+        ("adaptive, α_max 1", "hermes10-cd-blind-adapt1.0-timeline"),
+        ("time scope", "hermes10-cd-blind-a0.5-scopetime-timeline"),
+        ("adaptive, α_max 1, time scope", "hermes10-cd-blind-adapt1.0-scopetime-timeline")]),
     ("Stratified 10%", "offline-stratified-keep0.1-timeline", "stratified10-cd-blind-a0.5-timeline", [
-        ("adaptive, α_max 1", "stratified10-cd-blind-adapt1.0-timeline")]),
+        ("adaptive, α_max 1", "stratified10-cd-blind-adapt1.0-timeline"),
+        ("adaptive, α_max 1, time scope", "stratified10-cd-blind-adapt1.0-scopetime-timeline")]),
     ("Streaming KV 4k", "@" + S.format(4000, "timeline-"), "@" + S.format(4000, "cd-blind-a0.5-timeline-"), [
-        ("adaptive, α_max 1", "@" + S.format(4000, "cd-blind-adapt1.0-timeline-"))]),
+        ("adaptive, α_max 1", "@" + S.format(4000, "cd-blind-adapt1.0-timeline-")),
+        ("time scope", "@" + S.format(4000, "cd-blind-a0.5-scopetime-timeline-")),
+        ("adaptive, α_max 1, time scope", "@" + S.format(4000, "cd-blind-adapt1.0-scopetime-timeline-"))]),
     ("Streaming KV 6k", "@" + S.format(6000, "timeline-"), "@" + S.format(6000, "cd-blind-a0.5-timeline-"), [
-        ("adaptive, α_max 1", "@" + S.format(6000, "cd-blind-adapt1.0-timeline-"))]),
+        ("adaptive, α_max 1", "@" + S.format(6000, "cd-blind-adapt1.0-timeline-")),
+        ("adaptive, α_max 1, time scope", "@" + S.format(6000, "cd-blind-adapt1.0-scopetime-timeline-"))]),
 ]
 
 
