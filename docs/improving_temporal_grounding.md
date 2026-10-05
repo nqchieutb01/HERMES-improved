@@ -316,8 +316,15 @@ run.contrastive_scope=time`).
   better; the difference is within noise.
 
 Inference speed: `run.batch_size=8 run.prefetch_videos=4` decodes the answers of 8 questions together and loads video
-frames in background threads (2.8× faster for greedy decoding, 4.0× for PCD on an A100-40GB, same metrics: mIoU
-25.8 vs 25.6 and 32.6 vs 32.6 on all 475 questions; `logs/batching/`).
+frames in background threads (2.8× faster for greedy decoding, 4.0× for PCD on an A100-40GB; `logs/batching/`).
+Batch size 8 vs 1 on all 475 questions (Acc. / mIoU / GQ@0.5): plain decoding 15.8 / 25.6 / 6.5 vs 15.2 / 25.8 / 7.2;
+adaptive time-scoped PCD 18.1 / 32.6 / 10.9 vs 16.2 / 32.6 / 10.1; no paired difference is significant. Answers
+differ only where the two best tokens are within bf16 rounding (near-ties), which still changes the wording of 38%
+(greedy) and 52% (PCD) of the answers.
+
+**Noise floor.** The same configuration decoded with a different matrix shape moves accuracy by up to ~2 points and
+GQ@0.5 by ~1 point, with mIoU stable to ±0.3. Differences between methods of that size in accuracy or GQ@0.5 should be
+read as decoding noise; mIoU differences are much more reliable.
 
 ---
 
