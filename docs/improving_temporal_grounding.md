@@ -287,16 +287,87 @@ The common lesson: at a fixed budget, *where* tokens go matters less than the pr
 
 ---
 
-## 7. Remaining errors and next steps
+## 7. Error analysis of the final method and what to do next
 
-From the error analysis of PCD (random 10%):
+Script and full tables: `logs/phase21/error_analysis.py` → `logs/phase21/error_analysis.md`. All 8 memories pooled
+(3,800 question instances); Δ with a cluster bootstrap over questions (\* significant).
 
-| Remaining error | Share | What it suggests |
-|---|---|---|
-| Interval too short | 22.5% of questions; median predicted length 20% of gold; 27% name a single moment | the model finds the event but stops enumerating; ask about each shown timestamp to recover the full extent |
-| Wrong occurrence | 17.7% end before the gold interval; 87% of these have evidence late in the window ("the second time", "after I…") | resolve ordinal/relative references by listing all occurrences before choosing |
-| Location questions | GQ@0.5 ≈ 1% | labels are ambiguous (annotator IoU 0.50) and answers are point-like |
-| Early evidence under heavy pruning | see 6.4–6.5 | needs more evidence near the video start, not a different rule |
+### 7.1 Where answers fail, before and after
+
+| Outcome of a question | Baseline | Final | Δ |
+|---|---|---|---|
+| IoU ≥ 0.5 and answer correct (GQ) | 6.1% | 9.9% | +3.8\* |
+| IoU ≥ 0.5 but answer wrong | 16.3% | **20.7%** | +4.4\* |
+| partial overlap (IoU < 0.5) | 17.0% | 15.7% | −1.3 |
+| interval inside gold but too short | 22.2% | **18.5%** | −3.7\* |
+| interval entirely **before** gold | **33.1%** | **18.9%** | **−14.2\*** |
+| interval entirely after gold | 2.7% | 5.7% | +3.0\* |
+| interval covers gold, too long | 2.2% | 2.5% | +0.3 |
+| no `Answer:` line (list runs on) or unparsed interval | 0.5% | **8.1%** | +7.6\* |
+
+- **The method works where it was aimed**: "before gold" (the prior pulling the interval to the start) drops from
+  the largest error to a third of its size, and intervals starting early although the evidence is later fall from
+  34.7% to 14.0%. It fixes 13.8% of instances (IoU < 0.5 → ≥ 0.5) and breaks 5.5%.
+- **The bottleneck has moved from grounding to answering**: twice as many answers are well grounded but wrong (20.7%)
+  as grounded and right (9.9%).
+
+### 7.2 Which questions are hard
+
+| Slice | mIoU base → final | GQ@0.5 base → final | Reading |
+|---|---|---|---|
+| Duration | 32.5 → 37.0 | 10.4 → **17.6** (+7.2\*) | the main beneficiary |
+| Counting | 26.1 → **36.8** (+10.7\*) | 4.8 → 6.8 | grounding improves a lot, the count does not (accuracy 15.6 → 13.7) |
+| Location | 3.9 → 7.2 | 0.4 → 1.1 | essentially unsolved |
+| Evidence starts in the last third of the window | 13.4 → 16.3 | 1.2 → 4.4 | recent events are the hardest |
+| Evidence shorter than 10% of the window | ≤ 12.7 | ≤ 2.8 | short events are rarely grounded |
+| Fewer than 4 of the 64 sampled frames fall in the evidence | 6.0 → 8.4 | 0.5 → 1.6 | the evidence is barely in the input |
+| ≥ 16 frames in the evidence | 33.1 → **43.2** | 10.4 → 14.8 | gains are largest when evidence is visible |
+| Annotators disagree (pairwise IoU < 0.6, 98 questions) | ~8 → ~11 | ~2 → ~3 | label ambiguity caps these |
+| HERMES 10% memory | — | — | most "before gold" errors (26.7%): pruning removed the evidence |
+
+### 7.3 Five insights, each with a concrete next step
+
+1. **The contrast fragments continuous events.** The new run-on failure (6.2% of answers, half of them counting
+   questions) has one shape: a list of one ongoing activity at one-second steps ("5.5 s holds the pens, 6.5 s
+   continues to hold…", median 22 lines; times non-decreasing in 96%, descriptions repeated in 96%). The no-video
+   prior prefers coarse, round jumps; the contrast rewards the fine steps the prior finds unlikely. The same
+   mechanism fits the rise in over-counting (14% → 35% of counting answers) and plausibly the extra "after gold"
+   errors (2.7% → 5.7%).
+   **Next step: an event-interval timeline**, where the model lists distinct events with start and end
+   (`Seen: 5–15 s, …`) and the contrast acts on those boundaries. One line per event removes per-second
+   enumeration, gives the count directly as the number of listed events, and states each event's extent, which also
+   targets the next error.
+2. **Extents are under-enumerated.** Intervals inside the gold but too short remain 18.5%: a median 19% of the gold
+   length, 25% a single moment. The model finds the event but reports one moment of it. **Next step**: the same
+   start–end format; beyond it, ask about each sampled timestamp near the found event whether the event is still
+   ongoing (evidence-wise extent).
+3. **The wrong occurrence is chosen for recent events.** 18.9% of intervals still end before the gold; 81% of these
+   have their evidence in the second half of the window, with a median gap of 110 s. These questions refer to a
+   specific instance ("the second time", "after I…", "until now"), and an earlier similar event is picked; evidence in
+   the last third of the window has GQ@0.5 of only 4.4. **Next step**: list all occurrences first, then resolve the
+   reference among them; the analysis gives the selection target (latest vs ordinal instance) per question.
+4. **Short or sparsely sampled evidence is a perception limit, not a decoding one.** With fewer than 4 of 64 frames
+   inside the evidence, GQ@0.5 is about 1–2% with or without the method; with 16 or more it is 15%. No decoding
+   rule recovers evidence that is not in the input (section 6.5 shows the same for early starts). **Next step**: an
+   evidence-adaptive second pass that adds frames around the model's own candidate moments for short events. The
+   earlier global zoom (6.6) re-allocated a fixed budget across all questions; this would target only short evidence.
+   HERMES pruning, which loses the most evidence (26.7% "before gold"), would benefit from a coverage floor as in
+   stratified selection (31.0 vs 24.1 mIoU with the same method).
+5. **Answers, not intervals, now limit GQ@0.5.** For counting, 31.5% of answers have a good interval and a wrong count
+   (61% under, 39% over): the count is not taken from the events the model itself listed. For duration, half of the
+   well-grounded but wrong answers are within 25% of the gold duration, and the stated duration matches the model's
+   own interval 97% of the time. So duration errors follow from interval precision (an IoU of 0.5 still allows a 2×
+   length error), and counting errors from enumeration. **Next step**: the event-interval format makes both the
+   count and the duration follow from the listed events inside the model's own answer. Rule-based rewriting of
+   answers is excluded by design.
+
+### 7.4 Evaluation caveats found along the way
+
+- **Label ambiguity**: on the 98 questions where annotators' intervals overlap little (mean pairwise IoU < 0.6), every
+  method scores near zero (GQ@0.5 ≤ 3%). 62 of them are location questions, i.e. 63% of all location questions, which
+  largely explains why location stays unsolved. We report agreement-stratified results.
+- **Decoding noise**: the same configuration decoded with another matrix shape moves accuracy by up to ~2 points and
+  GQ@0.5 by ~1 point, with mIoU stable to ±0.3 (section 8), so mIoU is the most reliable metric for small differences.
 
 ---
 
