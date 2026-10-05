@@ -382,11 +382,12 @@ class Qwen3VL_Hermes(QwenVL_Hermes):
     def _in_time_slot(text, scope):
         """Whether the next token writes a time value (the slot the temporal prior leaks into).
 
-        "time": inside a `Seen: <t>` moment before its description, or on the `Time: [...]` line.
+        "time": inside a `Seen: <t>` moment or an `Event: <start> - <end>` line before its description, or on the
+        `Time: [...]` line.
         "time+answer": also anywhere on the `Answer:` line (durations and counts are stated there).
         """
         line = text.rsplit("\n", 1)[-1].lstrip()
-        if line.startswith("Seen:"):
+        if line.startswith(("Seen:", "Event:")):
             return "," not in line and "second" not in line
         if line.startswith("Time:"):
             return "]" not in line

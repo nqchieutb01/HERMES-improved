@@ -1,0 +1,12 @@
+qwen3_vl_8b/sember_grounding/uniform-n64-time-count-location-p21-random10-base-events-v300-native-time
+qwen3_vl_8b/sember_grounding/uniform-n64-time-count-location-p21-random10-final-events-v300-native-time
+qwen3_vl_8b/sember_grounding/uniform-n64-time-count-location-p21-unpruned-base-events-v300-native-time
+qwen3_vl_8b/sember_grounding/uniform-n64-time-count-location-p21-unpruned-final-events-v300-native-time
+qwen3_vl_8b/sember_grounding/uniform-n64-time-count-location-p21-random10-base-timeline-ablategold-v300-native-time
+qwen3_vl_8b/sember_grounding/uniform-n64-time-count-location-p21-random10-base-timeline-ablatecontrol-v300-native-time
+qwen3_vl_8b/sember_grounding/uniform-n64-time-count-location-p21-random10-final-timeline-ablategold-v300-native-time
+qwen3_vl_8b/sember_grounding/uniform-n64-time-count-location-p21-random10-final-timeline-ablatecontrol-v300-native-time
+qwen3_vl_8b/sember_grounding/uniform-n64-time-count-location-p21-unpruned-base-timeline-ablategold-v300-native-time
+qwen3_vl_8b/sember_grounding/uniform-n64-time-count-location-p21-unpruned-base-timeline-ablatecontrol-v300-native-time
+qwen3_vl_8b/sember_grounding/uniform-n64-time-count-location-p21-unpruned-final-timeline-ablategold-v300-native-time
+qwen3_vl_8b/sember_grounding/uniform-n64-time-count-location-p21-unpruned-final-timeline-ablatecontrol-v300-native-time

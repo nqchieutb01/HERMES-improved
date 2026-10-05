@@ -260,6 +260,38 @@ def main():
                    f"{f('disjoint, before gold')} | {f('disjoint, after gold')} | {f('partial overlap')} | "
                    f"{f('covers gold, too long')} | {f('interval missing or unparsed', 'no answer line (list runs on)')} |")
     out.append("")
+    # 8. Origin of the interval errors: is the final interval the span of the listed moments (so errors are born in
+    # which moments get listed), or does the model change the span when writing the Time line?
+    times = re.compile(r"^\s*(?:Seen|Event):\s*([\d.]+)(?:\s*-\s*([\d.]+))?", re.M)
+    out += ["## 8. Origin of the interval errors (final method)", "",
+            "Whether the `Time:` interval is the span of the listed moments (first to last `Seen:` time, ±1 s).", "",
+            "| Outcome | instances | interval = span of listed moments | other |", "|---|---|---|---|"]
+    for mode in ("IoU>=0.5, answer correct", "IoU>=0.5, answer wrong", "disjoint, before gold",
+                 "inside gold, too short", "partial overlap", "disjoint, after gold"):
+        sel = [m for _, _, m in pairs if failure_mode(m) == mode]
+        span = 0
+        for m in sel:
+            ts = [float(x) for a, bb in times.findall(m["pred_raw"] or "") for x in (a, bb) if x]
+            iv = interval(m)
+            span += bool(ts) and iv is not None and abs(iv[0] - min(ts)) <= 1 and abs(iv[1] - max(ts)) <= 1
+        out.append(f"| {mode} | {len(sel)} | {100 * span / max(len(sel), 1):.0f}% | "
+                   f"{100 * (len(sel) - span) / max(len(sel), 1):.0f}% |")
+    out.append("")
+
+    # 9. Case studies (random 10%, first two instances of each failure mode in question order).
+    out += ["## 9. Case studies (random 10%, final method)", ""]
+    shown = collections.Counter()
+    for q, b, m in per_memory["Random 10%"]:
+        mode = failure_mode(m)
+        if mode.startswith("IoU>=0.5, answer correct") or shown[mode] >= 2:
+            continue
+        shown[mode] += 1
+        raw = (m["pred_raw"] or "").strip().replace("\n", " ⏎ ")
+        braw = (b["pred_raw"] or "").strip().replace("\n", " ⏎ ")
+        out += [f"**{mode}** — {CATS[m['question_category']]}: *{m['question']}* (question at {m['_qt']:.0f} s; gold "
+                f"[{m['_gs']:.0f}, {m['_ge']:.0f}] s, \"{m['answer']}\")",
+                f"- baseline (IoU {b['_iou']:.2f}): {braw[:260]}{'…' if len(braw) > 260 else ''}",
+                f"- final (IoU {m['_iou']:.2f}): {raw[:260]}{'…' if len(raw) > 260 else ''}", ""]
     open("logs/phase21/error_analysis.md", "w").write("\n".join(out) + "\n")
     print("\n".join(out))
 

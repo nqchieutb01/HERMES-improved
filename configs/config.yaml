@@ -58,6 +58,8 @@ run:
   batch_size: 1
   # Uniform sampling: decode the frames of this many upcoming questions in background threads (0 = off).
   prefetch_videos: 0
+  # Diagnostic: drop the frames inside the gold evidence (gold) or as many outside it (control).
+  evidence_ablation: none
   visual_attention_gain: 1.0
   visual_attention_layers: all
   zoom_mix: 0.5

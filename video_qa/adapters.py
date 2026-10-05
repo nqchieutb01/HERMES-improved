@@ -98,7 +98,7 @@ SEMBER_MCQ_METADATA_FIELDS = (
 )
 
 
-GROUNDING_PROMPT_STYLES = ("official", "full_span", "timeline")
+GROUNDING_PROMPT_STYLES = ("official", "full_span", "timeline", "events")
 # Models predict intervals ~3x shorter than the annotated evidence; ask for the whole event span.
 FULL_SPAN_INSTRUCTION = (
     "The time interval must cover the whole event, from the moment it begins until it has "
@@ -125,14 +125,36 @@ TIMELINE_PROMPT = (
 )
 
 
+# The timeline lists moments; under prior-contrastive decoding it breaks one ongoing activity into a moment per second
+# (run-on lists, over-counting) and reports single moments for long events. Here each distinct occurrence is listed
+# once with its start and end, so counts, durations and the interval follow from the listed events.
+EVENTS_PROMPT = (
+    "After reviewing the video, answer the following question.\n"
+    "Step 1: list each distinct occurrence of the relevant object, action or event, one per line starting with "
+    "\"Event:\", with its start and end time from the timestamps shown in the video (start: when it begins, end: "
+    "when it has ended) and a short description. List an occurrence once, however long it lasts.\n"
+    "Step 2: work out the answer from those events: for a duration, use the start and end times; for a count, "
+    "count the listed events.\n"
+    "Step 3: give the answer on a line starting with \"Answer:\", then the time interval from the start of the "
+    "first relevant event to the end of the last one on a line starting with \"Time:\".\n\n"
+    "Example of the format (for a different question, \"How many times did I open the drawer?\"):\n"
+    "Event: 12.0 - 15.5 seconds, the drawer is opened and closed\n"
+    "Event: 48.0 - 61.0 seconds, the drawer is opened again and stays open\n"
+    "Answer: You opened the drawer 2 times.\n"
+    "Time: [12.0, 61.0]"
+)
+
+
 def sember_grounding_prompt(question: str, style: str = "official") -> str:
-    """Return the S-EMBER grounded VideoQA prompt (``official``, ``full_span`` or ``timeline``)."""
+    """Return the S-EMBER grounded VideoQA prompt (``official``, ``full_span``, ``timeline`` or ``events``)."""
     if style == "official":
         return f"{SEMBER_GROUNDING_PROMPT}\n\n{question}"
     if style == "full_span":
         return f"{SEMBER_GROUNDING_PROMPT}\n{FULL_SPAN_INSTRUCTION}\n\n{question}"
     if style == "timeline":
         return f"{TIMELINE_PROMPT}\n\n{question}"
+    if style == "events":
+        return f"{EVENTS_PROMPT}\n\n{question}"
     raise ValueError(f"Unknown S-EMBER grounding prompt style: {style!r}")
 
 

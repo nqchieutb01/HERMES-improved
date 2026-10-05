@@ -481,6 +481,9 @@ def work(QA_CLASS):
                         help="Decode the answers of this many questions together (memories are built one at a time)")
     parser.add_argument("--prefetch_videos", type=int, default=0,
                         help="Uniform sampling: decode the frames of this many upcoming questions in background threads")
+    parser.add_argument("--evidence_ablation", choices=("none", "gold", "control"), default="none",
+                        help="Diagnostic (uniform sampling): drop the frames inside the gold evidence interval, or as "
+                             "many frames outside it")
     parser.add_argument("--force_batched_decoder", type=str2bool, default=False,
                         help="Diagnostic: use the batched decoder even with batch_size 1")
     parser.add_argument("--decode_log", type=str2bool, default=False,
@@ -617,7 +620,7 @@ def work(QA_CLASS):
     )
     parser.add_argument(
         "--grounding_prompt",
-        choices=("official", "full_span", "timeline"),
+        choices=("official", "full_span", "timeline", "events"),
         default="official",
         help="S-EMBER grounding prompt: official; full_span (ask for the whole event span); or timeline "
         "(list the relevant timestamped moments first, then derive the answer and interval)",
@@ -745,6 +748,7 @@ def work(QA_CLASS):
     if args.prefetch_videos < 0:
         parser.error("prefetch_videos must be nonnegative")
     analyzer.prefetch_videos = args.prefetch_videos
+    analyzer.evidence_ablation = args.evidence_ablation
     videoqa_model.visual_attention_gain = args.visual_attention_gain
     if args.visual_attention_layers != "all":
         lo, hi = (int(x) for x in args.visual_attention_layers.split("-"))

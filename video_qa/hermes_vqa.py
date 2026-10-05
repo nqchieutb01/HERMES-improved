@@ -302,6 +302,24 @@ class HermesVQA(BaseVQA):
                     if shuffle == 'frames':
                         question_video = question_video[idx]
                     self.last_uniform_frame_times = [times[i] for i in idx]
+                ablation = getattr(self, 'evidence_ablation', 'none')
+                if ablation != 'none' and 'answer_start_time' in sample:
+                    # Diagnostic (motivation for PCD): remove the frames showing the gold evidence ("gold"), or as
+                    # many frames outside it ("control", evenly spaced), keeping every other frame and its timestamp.
+                    lo, hi = float(sample['answer_start_time']), float(sample['answer_end_time'])
+                    times = list(self.last_uniform_frame_times)
+                    inside = [i for i, t in enumerate(times) if lo <= t <= hi]
+                    if ablation == 'gold':
+                        drop = set(inside)
+                    else:
+                        outside = [i for i, t in enumerate(times) if not lo <= t <= hi]
+                        k = min(len(inside), len(outside))
+                        drop = {outside[int((j + 0.5) * len(outside) / k)] for j in range(k)} if k else set()
+                    keep = [i for i in range(len(times)) if i not in drop]
+                    question_video = question_video[keep]
+                    self.last_uniform_frame_times = [times[i] for i in keep]
+                    selected_frame_indices = [selected_frame_indices[i] for i in keep]
+                    print(f"Evidence ablation ({ablation}): dropped {len(drop)} of {len(times)} frames")
                 zoom_windows = (getattr(self, 'zoom_windows', None) or {}).get(sample.get('question_id'))
                 if zoom_windows:
                     # Coverage-then-zoom: add zoom_frames frames sampled densely inside the zoom window(s)
@@ -374,7 +392,7 @@ class HermesVQA(BaseVQA):
                         first_frame + i for i, t in enumerate(frame_times)
                         if any(s <= t <= e for s, e in (zoom_windows or []))}
                 keep_ratio = float(getattr(self, 'offline_keep_ratio', 1.0))
-                if keep_ratio < 1.0:
+                if keep_ratio < 1.0 and len(question_video) > 0:  # nothing to prune if ablation removed every frame
                     # Offline token pruning: one compression pass over all encoded frames,
                     # keeping keep_ratio of the visual tokens (the budget counts visual tokens).
                     lengths = self.qa_model._get_cache_seq_len_per_layer()

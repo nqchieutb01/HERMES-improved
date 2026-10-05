@@ -295,6 +295,8 @@ def inference_command(
                         "--contrastive_trace", "true" if cfg.run.get("contrastive_trace") else "false"])
     if int(cfg.run.get("batch_size", 1)) != 1:
         command.extend(["--batch_size", str(cfg.run.batch_size)])
+    if cfg.run.get("evidence_ablation", "none") != "none":
+        command.extend(["--evidence_ablation", str(cfg.run.evidence_ablation)])
     if int(cfg.run.get("prefetch_videos", 0)) > 0:
         command.extend(["--prefetch_videos", str(cfg.run.prefetch_videos)])
     if float(cfg.run.get("visual_attention_gain", 1.0)) != 1.0:
