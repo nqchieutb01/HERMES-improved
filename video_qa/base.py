@@ -440,11 +440,12 @@ def work(QA_CLASS):
     )
     parser.add_argument(
         "--prune_score",
-        choices=("hermes", "random", "recent", "stratified", "oracle", "hermes_exact", "zoom"),
+        choices=("hermes", "random", "recent", "stratified", "oracle", "hermes_exact", "zoom", "fastvid"),
         default="hermes",
         help="Token score used by compression: HERMES attention+recency, random, or most recent; "
              "oracle keeps gold-interval frames first (diagnostic); hermes_exact propagates the "
-             "probe questions through every layer when scoring",
+             "probe questions through every layer when scoring; fastvid prunes before the LLM (FastVID, NeurIPS 2025; "
+             "uniform sampling only)",
     )
     parser.add_argument(
         "--retention_snapshot",

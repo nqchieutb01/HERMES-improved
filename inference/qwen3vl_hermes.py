@@ -164,7 +164,7 @@ class Qwen3VL_Hermes(QwenVL_Hermes):
         )
 
     def _build_native_video_sequence(
-        self, video_features, grid_thw, frame_times, *, first_frame, num_real_frames
+        self, video_features, grid_thw, frame_times, *, first_frame, num_real_frames, keep=None
     ):
         """Lay out a chunk the way Qwen3-VL was trained to see video.
 
@@ -176,6 +176,9 @@ class Qwen3VL_Hermes(QwenVL_Hermes):
         Returns embeddings, positions relative to the cache end (3 x L),
         the visual-token mask and each token's source frame id
         (a time_token_tag of the group's first frame for the timestamp/marker text).
+        With ``keep`` (one index tensor per group, input-level pruning), ``video_features`` is a list of the kept
+        tokens of each group; groups without a kept token are left out entirely (timestamp text included) and every
+        kept token keeps the position it has in the full sequence.
         """
         temporal, height, width = (int(v) for v in grid_thw)
         vision_config = self.config.vision_config
@@ -183,7 +186,7 @@ class Qwen3VL_Hermes(QwenVL_Hermes):
         patch = int(getattr(vision_config, "temporal_patch_size", 2))
         llm_h, llm_w = height // merge, width // merge
         frame_len = llm_h * llm_w
-        if temporal * frame_len != video_features.shape[0]:
+        if keep is None and temporal * frame_len != video_features.shape[0]:
             raise ValueError(
                 f"Qwen3-VL grid {grid_thw} does not match "
                 f"{video_features.shape[0]} encoded video tokens"
@@ -195,7 +198,8 @@ class Qwen3VL_Hermes(QwenVL_Hermes):
         start_id = tokenizer.convert_tokens_to_ids("<|vision_start|>")
         end_id = tokenizer.convert_tokens_to_ids("<|vision_end|>")
         embed = self.get_input_embeddings()
-        device = video_features.device
+        reference = video_features[0] if keep is not None else video_features
+        device, dtype = reference.device, reference.dtype
         rows = torch.arange(llm_h, device=device).repeat_interleave(llm_w)
         cols = torch.arange(llm_w, device=device).repeat(llm_h)
 
@@ -205,7 +209,7 @@ class Qwen3VL_Hermes(QwenVL_Hermes):
         def add_text(ids, group_first_frame):
             nonlocal cursor
             ids = torch.tensor(ids, device=device)
-            pieces.append(embed(ids).to(video_features.dtype))
+            pieces.append(embed(ids).to(dtype))
             positions.append(
                 torch.arange(cursor, cursor + len(ids), device=device)
                 .float()
@@ -227,24 +231,33 @@ class Qwen3VL_Hermes(QwenVL_Hermes):
             text_ids = [] if getattr(self, "drop_timestamps", False) else tokenizer(
                 f"<{stamp:.1f} seconds>", add_special_tokens=False
             ).input_ids
+            if keep is not None and keep[group].numel() == 0:
+                # Pruned group: nothing is fed, but later groups keep their positions.
+                cursor += len(text_ids) + 1 + max(llm_h, llm_w) + 1
+                continue
             add_text(text_ids + [start_id], real[0])
 
-            pieces.append(video_features[group * frame_len:(group + 1) * frame_len])
+            idx = (torch.arange(frame_len, device=device) if keep is None else keep[group].to(device))
+            pieces.append(video_features[group * frame_len:(group + 1) * frame_len] if keep is None
+                          else video_features[group])
             positions.append(
                 torch.stack(
                     (
-                        torch.full_like(rows, cursor),
-                        rows + cursor,
-                        cols + cursor,
+                        torch.full_like(rows[idx], cursor),
+                        rows[idx] + cursor,
+                        cols[idx] + cursor,
                     )
                 ).float()
             )
-            masks.append(torch.ones(frame_len, dtype=torch.bool, device=device))
-            frame_ids.extend(real[i * patch // frame_len] for i in range(frame_len))
+            masks.append(torch.ones(idx.numel(), dtype=torch.bool, device=device))
+            frame_ids.extend(real[i * patch // frame_len] for i in idx.tolist())
             cursor += max(llm_h, llm_w)
 
             add_text([end_id], real[0])
 
+        self._last_sequence_span = cursor  # positions used by the full (unpruned) sequence of this chunk
+        if not pieces:
+            return None, None, None, None
         return (
             torch.cat(pieces, dim=0).unsqueeze(0),
             torch.cat(positions, dim=1),
@@ -264,6 +277,21 @@ class Qwen3VL_Hermes(QwenVL_Hermes):
 
         num_frames = video_chunk.shape[0]
         frame_times = self._consume_frame_times(num_frames)
+        video_features, deepstack_features, grid = self._encode_visual(video_chunk)
+        inputs_embeds, rel_pos_ids, visual_pos_masks, frame_ids = (
+            self._build_native_video_sequence(
+                video_features,
+                grid,
+                frame_times,
+                first_frame=self.total_processed_frames,
+                num_real_frames=num_frames,
+            )
+        )
+        self._prefill_visual(inputs_embeds, rel_pos_ids, visual_pos_masks, frame_ids, deepstack_features, num_frames)
+
+    @torch.inference_mode()
+    def _encode_visual(self, video_chunk):
+        """Vision encoder on one chunk: merged visual tokens, DeepStack features and the temporal x spatial grid."""
         temporal_patch_size = int(
             getattr(self.config.vision_config, "temporal_patch_size", 2)
         )
@@ -278,6 +306,7 @@ class Qwen3VL_Hermes(QwenVL_Hermes):
         ).to(self.device, self.dtype)
         pixel_values_videos = video_input["pixel_values_videos"]
         video_grid_thw = video_input["video_grid_thw"]
+        self._last_video_grid = video_grid_thw[0].tolist()
         if self.total_processed_frames == 0:
             t, h, w = video_grid_thw[0].tolist()
             logger.info(f"video grid {t}x{h}x{w}: {h * w // 4} visual tokens per temporal group")
@@ -289,18 +318,15 @@ class Qwen3VL_Hermes(QwenVL_Hermes):
             feature.to(device=self.device, dtype=video_features.dtype)
             for feature in deepstack_features
         ]
-        inputs_embeds, rel_pos_ids, visual_pos_masks, frame_ids = (
-            self._build_native_video_sequence(
-                video_features,
-                video_grid_thw[0].tolist(),
-                frame_times,
-                first_frame=self.total_processed_frames,
-                num_real_frames=num_frames,
-            )
-        )
+        return video_features, deepstack_features, video_grid_thw[0].tolist()
 
+    @torch.inference_mode()
+    def _prefill_visual(self, inputs_embeds, rel_pos_ids, visual_pos_masks, frame_ids, deepstack_features, num_frames,
+                        offsets=None):
+        """Feed a native video sequence into the memory (positions relative to the current cache end, or to the
+        given per-layer ``offsets``)."""
         self._ensure_dynamic_cache()
-        global_offset_per_layer = self._get_next_global_offset_per_layer()
+        global_offset_per_layer = offsets or self._get_next_global_offset_per_layer()
         batch = inputs_embeds.shape[0]
         base_offset = global_offset_per_layer[0]
         grid_pos_ids = rel_pos_ids + base_offset
@@ -346,6 +372,82 @@ class Qwen3VL_Hermes(QwenVL_Hermes):
         self.total_processed_frames += num_frames
         self._layer_position_ids.clear()
         torch.cuda.empty_cache()
+
+    @torch.inference_mode()
+    def encode_video_fastvid(self, video, frame_times, retention, chunk_size):
+        """Encode a whole (uniformly sampled) video with FastVID input-level pruning (inference/fastvid.py).
+
+        Every chunk goes through the vision encoder first, collecting merged tokens, DeepStack features and the
+        FastVID salience (last vision block: mean frame query attending to keys pooled per merged token). FastVID then
+        segments the whole video and keeps / merges ``retention`` of the tokens; only those are fed to the language
+        model, chunk by chunk, each at the position it has in the full sequence (groups with nothing kept are left
+        out, timestamp text included). ``retention`` >= 1 keeps every token (the same memory as plain encoding).
+        """
+        from transformers.models.qwen3_vl.modeling_qwen3_vl import apply_rotary_pos_emb_vision
+
+        from inference.fastvid import DEFAULTS, fastvid
+
+        if len(video.shape) == 4 and video.shape[-1] == 3:
+            video = video.permute(0, 3, 1, 2)
+        salience = []
+
+        def hook(module, args, kwargs):
+            hidden = args[0] if args else kwargs["hidden_states"]
+            seq = hidden.shape[0]
+            q, k, _ = module.qkv(hidden).reshape(seq, 3, module.num_heads, -1).permute(1, 0, 2, 3).unbind(0)
+            q, k = apply_rotary_pos_emb_vision(q, k, *kwargs["position_embeddings"])
+            t, h, w = self._last_video_grid
+            q = q.transpose(0, 1).reshape(module.num_heads, t, h * w, -1).mean(-2, keepdim=True)
+            k = k.transpose(0, 1).reshape(module.num_heads, t, h * w // 4, 4, -1).mean(-2)
+            a = torch.softmax(q.float() @ k.float().transpose(-2, -1) / math.sqrt(module.head_dim), dim=-1)
+            salience.append(a.mean(2).mean(0))
+
+        chunks = []
+        handle = self.visual.blocks[-1].attn.register_forward_pre_hook(hook, with_kwargs=True)
+        try:
+            for start in range(0, video.shape[0], chunk_size):
+                frames = video[start:start + chunk_size]
+                feats, deep, grid = self._encode_visual(frames)
+                chunks.append((frames.shape[0], feats, deep, grid, list(frame_times[start:start + chunk_size])))
+        finally:
+            handle.remove()
+        n = chunks[0][3][1] * chunks[0][3][2] // 4
+        features = torch.cat([c[1] for c in chunks]).view(-1, n, chunks[0][1].shape[-1])
+        deep = [torch.cat([c[2][i] for c in chunks]).view(features.shape[0], n, -1) for i in range(len(chunks[0][2]))]
+        if retention >= 1.0:
+            keep = [torch.arange(n) for _ in range(features.shape[0])]
+            kept_feats, kept_deep = list(features), [list(d) for d in deep]
+        else:
+            keep, apply = fastvid(features, torch.cat(salience).float(), retention, **DEFAULTS)
+            kept_feats, kept_deep = apply(features), [apply(d) for d in deep]
+        self.last_fastvid_kept = sum(k.numel() for k in keep)
+
+        base = self._get_next_global_offset_per_layer()
+        span, g0 = 0, 0
+        patch = int(getattr(self.config.vision_config, "temporal_patch_size", 2))
+        for num_frames, _, _, grid, times in chunks:
+            groups = range(g0, g0 + grid[0])
+            g0 += grid[0]
+            first_frame = self.total_processed_frames
+            inputs_embeds, rel, masks, frame_ids = self._build_native_video_sequence(
+                [kept_feats[g] for g in groups], grid, times, first_frame=first_frame, num_real_frames=num_frames,
+                keep=[keep[g] for g in groups])
+            offsets = [o + span for o in base]
+            span += self._last_sequence_span
+            if inputs_embeds is None:
+                self.total_processed_frames += num_frames
+                continue
+            ds = [torch.cat([kept_deep[i][g] for g in groups]) for i in range(len(deep))]
+            self._prefill_visual(inputs_embeds, rel, masks, frame_ids, ds, num_frames, offsets=offsets)
+            if self.token_provenance_enabled:
+                # Count the pruned tokens as encoded too, so retention reads as kept / sampled.
+                enc = self._encoded_tokens_per_frame
+                for j, g in enumerate(groups):
+                    real = [first_frame + min(j * patch + q, num_frames - 1) for q in range(patch)]
+                    dropped = set(range(n)) - set(keep[g].tolist())
+                    for i in dropped:
+                        f = real[i * patch // n]
+                        enc[f] = enc.get(f, 0) + 1
 
     # ----- Memory snapshots (for decoding against a counterfactual memory) -----
     _STATE = ("kv_cache", "_position_ids_cache", "_token_frame_ids_per_layer", "_token_frame_summary_scores_per_layer",

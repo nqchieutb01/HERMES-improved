@@ -357,7 +357,14 @@ class HermesVQA(BaseVQA):
                     # Timestamp text alone every 5 s (0.2 fps) before the evidence window.
                     self.qa_model.encode_timestamp_text([5.0 * k for k in range(int(math.ceil(window_start / 5.0)))
                                                          if 5.0 * k < window_start])
-                for start in range(0, len(question_video), encode_chunk_size):
+                fastvid_mode = getattr(self.qa_model, 'prune_score', 'hermes') == 'fastvid'
+                if fastvid_mode and len(question_video) > 0:
+                    # FastVID prunes at the input: the memory holds only the kept / merged tokens.
+                    self.qa_model.encode_video_fastvid(question_video, self.last_uniform_frame_times,
+                                                       float(getattr(self, 'offline_keep_ratio', 1.0)),
+                                                       encode_chunk_size)
+                    print(f"FastVID: kept {self.qa_model.last_fastvid_kept} visual tokens")
+                for start in range(0, 0 if fastvid_mode else len(question_video), encode_chunk_size):
                     stop = min(start + encode_chunk_size, len(question_video))
                     print(f"Encoding uniform frames {start} to {stop-1}")
                     # Models that encode time (Qwen) need the real source times of
@@ -392,7 +399,7 @@ class HermesVQA(BaseVQA):
                         first_frame + i for i, t in enumerate(frame_times)
                         if any(s <= t <= e for s, e in (zoom_windows or []))}
                 keep_ratio = float(getattr(self, 'offline_keep_ratio', 1.0))
-                if keep_ratio < 1.0 and len(question_video) > 0:  # nothing to prune if ablation removed every frame
+                if keep_ratio < 1.0 and len(question_video) > 0 and not fastvid_mode:  # (empty: ablation removed all)
                     # Offline token pruning: one compression pass over all encoded frames,
                     # keeping keep_ratio of the visual tokens (the budget counts visual tokens).
                     lengths = self.qa_model._get_cache_seq_len_per_layer()

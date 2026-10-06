@@ -1,0 +1,28 @@
+srun: Interactive job detected (srun/salloc). Routed to QoS='gpu-debug-qos'.
+srun: job 303015 queued and waiting for resources
+srun: job 303015 has been allocated resources
+host=gpu-20
+## plain vs fastvid r=1.0 (must be identical)
+/home/chieu.nguyen/HERMES/logs/phase21/fastvid_test/plain vs /home/chieu.nguyen/HERMES/logs/phase21/fastvid_test/fv100: 9/9 answers identical
+ 25%|██▌       | 1/4 [00:17<00:51, 17.06s/it]FastVID: kept 2112 visual tokens
+ 50%|█████     | 2/4 [01:07<01:13, 36.79s/it]FastVID: kept 1895 visual tokens
+FastVID: kept 2099 visual tokens
+FastVID: kept 2112 visual tokens
+ 75%|███████▌  | 3/4 [01:52<00:40, 40.43s/it]FastVID: kept 2112 visual tokens
+Offline pruning: keeping 2142 of 21428 visual tokens
+Offline pruning: keeping 2141 of 21415 visual tokens
+Offline pruning: keeping 2143 of 21430 visual tokens
+Offline pruning: keeping 2143 of 21432 visual tokens
+Offline pruning: keeping 2143 of 21432 visual tokens
+Answering Cache lengths: min=2254, max=2254
+Answering Cache lengths: min=1994, max=1994
+Answering Cache lengths: min=2230, max=2230
+Answering Cache lengths: min=2157, max=2157
+Answering Cache lengths: min=2156, max=2156
+Answering Cache lengths: min=2158, max=2158
+Pred Answer:  Seen: 137.5 seconds, the person starts using the paper cutter
+Pred Answer:  Seen: 103.5 seconds, the plastic is shown wrapped around the outside of the box
+Pred Answer:  Seen: 15.0 seconds, the cat is sitting next to my right foot
+Pred Answer:  Seen: 137.5 seconds, the person removes a part from the sprue
+FASTVID TEST DONE
+SUBMIT DONE
