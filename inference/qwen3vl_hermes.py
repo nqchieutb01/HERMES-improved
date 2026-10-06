@@ -385,10 +385,16 @@ class Qwen3VL_Hermes(QwenVL_Hermes):
         "time": inside a `Seen: <t>` moment or an `Event: <start> - <end>` line before its description, or on the
         `Time: [...]` line.
         "time+answer": also anywhere on the `Answer:` line (durations and counts are stated there).
+        "time_start" / "time_end": as "time", but on `Event:` lines only the start / only the end time.
         """
         line = text.rsplit("\n", 1)[-1].lstrip()
         if line.startswith(("Seen:", "Event:")):
-            return "," not in line and "second" not in line
+            if "," in line or "second" in line:
+                return False
+            if line.startswith("Event:") and scope in ("time_start", "time_end"):
+                # Event lines read "Event: <start> - <end> seconds": contrast only one of the two boundaries.
+                return ("-" in line[len("Event:"):]) == (scope == "time_end")
+            return True
         if line.startswith("Time:"):
             return "]" not in line
         return scope == "time+answer" and line.startswith("Answer:")

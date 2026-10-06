@@ -475,8 +475,10 @@ def work(QA_CLASS):
                         help="pmi: (1+a) log p_M - a log p_C; against: log p_M - a max(0, log p_C - log p_M)")
     parser.add_argument("--contrastive_trace", type=str2bool, default=False,
                         help="Write top tokens with both log-probabilities at time-value steps to cdtrace-<chunk>.jsonl")
-    parser.add_argument("--contrastive_scope", choices=("all", "time", "time+answer"), default="all",
-                        help="Tokens the contrast applies to: all, time values only, or time values and the answer line")
+    parser.add_argument("--contrastive_scope", choices=("all", "time", "time+answer", "time_start", "time_end"),
+                        default="all",
+                        help="Tokens the contrast applies to: all, time values only, or time values and the answer line; "
+                             "time_start / time_end: on Event lines, only the start / only the end time")
     parser.add_argument("--batch_size", type=int, default=1,
                         help="Decode the answers of this many questions together (memories are built one at a time)")
     parser.add_argument("--prefetch_videos", type=int, default=0,
@@ -620,7 +622,7 @@ def work(QA_CLASS):
     )
     parser.add_argument(
         "--grounding_prompt",
-        choices=("official", "full_span", "timeline", "events", "events_merged"),
+        choices=("official", "full_span", "timeline", "timeline_debias", "events", "events_merged"),
         default="official",
         help="S-EMBER grounding prompt: official; full_span (ask for the whole event span); or timeline "
         "(list the relevant timestamped moments first, then derive the answer and interval)",

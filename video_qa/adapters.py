@@ -98,7 +98,7 @@ SEMBER_MCQ_METADATA_FIELDS = (
 )
 
 
-GROUNDING_PROMPT_STYLES = ("official", "full_span", "timeline", "events", "events_merged")
+GROUNDING_PROMPT_STYLES = ("official", "full_span", "timeline", "timeline_debias", "events", "events_merged")
 # Models predict intervals ~3x shorter than the annotated evidence; ask for the whole event span.
 FULL_SPAN_INSTRUCTION = (
     "The time interval must cover the whole event, from the moment it begins until it has "
@@ -153,6 +153,12 @@ EVENTS_MERGED_PROMPT = EVENTS_PROMPT.replace(
     "action are one event, which ends only when the action stops.")
 
 
+# Control for prior-contrastive decoding: state the bias in the instruction instead of removing it while decoding.
+DEBIAS_INSTRUCTION = (
+    "The relevant moments may occur at any point in the video; do not assume they are near the start."
+)
+
+
 def sember_grounding_prompt(question: str, style: str = "official") -> str:
     """Return the S-EMBER grounded VideoQA prompt (``official``, ``full_span``, ``timeline`` or ``events``)."""
     if style == "official":
@@ -161,6 +167,8 @@ def sember_grounding_prompt(question: str, style: str = "official") -> str:
         return f"{SEMBER_GROUNDING_PROMPT}\n{FULL_SPAN_INSTRUCTION}\n\n{question}"
     if style == "timeline":
         return f"{TIMELINE_PROMPT}\n\n{question}"
+    if style == "timeline_debias":
+        return f"{TIMELINE_PROMPT}\n{DEBIAS_INSTRUCTION}\n\n{question}"
     if style == "events":
         return f"{EVENTS_PROMPT}\n\n{question}"
     if style == "events_merged":
