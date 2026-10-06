@@ -303,6 +303,8 @@ compare. Timeline prompt; Acc. / mIoU / GQ@0.5 and leak.
 | Unpruned | control | 19.6 / 29.4 / 10.1 | 37.3% | 18.1 / 35.9 / 12.6 | 15.4% |
 | Unpruned | **evidence** | 9.1 / 9.4 / 1.9 | **50.6%** | 9.1 / 10.5 / 1.5 | **22.4%** |
 
+- The leak is measured on questions whose evidence starts after the first 5% of the window (397 of 475); the 15
+  questions whose evidence covers every sampled frame (no frame left after removal) are not among them.
 - **Missing evidence causes the leak**: with the evidence removed, the baseline's answers move to the start of the
   video (+14 points of leak) instead of anywhere else. This is the prior taking over, measured directly.
 - **PCD halves the fallback**, with and without the evidence. It cannot make up evidence that is not there (accuracy
@@ -456,7 +458,9 @@ differ only where the two best tokens are within bf16 rounding (near-ties), whic
 
 **Noise floor.** The same configuration decoded with a different matrix shape moves accuracy by up to ~2 points and
 GQ@0.5 by ~1 point, with mIoU stable to ±0.3. Differences between methods of that size in accuracy or GQ@0.5 should be
-read as decoding noise; mIoU differences are much more reliable.
+read as decoding noise; mIoU differences are much more reliable. This floor covers numerical noise only: rewording the
+prompt is a larger effect (the two event prompts differ by 1.5 mIoU for the baseline, 6.8), so prompt variants should
+be compared with that in mind.
 
 ---
 
