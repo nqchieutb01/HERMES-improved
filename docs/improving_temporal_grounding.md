@@ -313,6 +313,21 @@ compare. Timeline prompt; Acc. / mIoU / GQ@0.5 and leak.
 - Caveat: the control condition removes frames chosen using the gold interval, so it also removes distractors; it
   scores higher than the unablated memory and is only a matched-size control for the leak.
 
+**Control: can an instruction replace PCD?** We add "The relevant moments may occur at any point in the video; do not
+assume they are near the start." to the timeline prompt (random 10%; Acc. / mIoU / GQ@0.5, leak).
+
+| Setting | Result | Leak |
+|---|---|---|
+| Baseline | 15.2 / 25.8 / 7.2 | 29.5% |
+| Baseline + instruction | 17.3 / 25.7 / 6.9 | 28.0% |
+| Final method | 16.2 / 32.6 / 10.1 | 10.8% |
+| Final method + instruction | 15.8 / 31.3 / 9.9 | 12.1% |
+
+Stating the bias does not remove it: the leak barely moves (29.5% → 28.0%) and grounding is unchanged (mIoU −0.1,
+GQ@0.5 −0.2). The final method beats the instructed baseline by mIoU +7.0 [+4.6, +9.2]\* and GQ@0.5
++3.2 [+0.4, +5.9]\*, and adding the instruction to it does not help (mIoU −1.3, n.s.). The prior has to be removed
+where it acts, in the output distribution.
+
 **Supporting analyses on the existing runs.**
 
 | Question | Finding |
@@ -344,9 +359,21 @@ applies to those start and end values. Random 10%; Acc. / mIoU / GQ@0.5.
   counting questions with many occurrences); 768 tokens removes most of them for the baseline (8.6% → 3.2%).
 - **Fragmentation remains a PCD-specific failure**: with PCD, 12–13% of answers still run to the limit, and 84–86%
   of these split one continuing action into back-to-back fixed-length events with repeated descriptions. An explicit
-  instruction to merge them does not help (13.3%), so the cause is in decoding, not in the instructions: the contrast
-  on event boundaries rewards starting a new event where the previous one ended. This is the next thing to fix at the
-  decoding level (for example by contrasting only the start of each event, not its end).
+  instruction to merge them does not help (13.3%), so the cause is in decoding, not in the instructions.
+- **Contrasting only one boundary does not fix it** (events, merged instruction, 768 tokens, final method):
+
+  | Contrast on event lines | Acc. / mIoU / GQ@0.5 | Leak | Run-on |
+  |---|---|---|---|
+  | start and end (default) | 17.9 / **35.0** / 12.6 | 13.9% | 13.3% |
+  | start only | 17.3 / 31.9 / 11.8 | 12.1% | 16.8% |
+  | end only | 16.2 / 32.9 / 11.4 | 17.6% | 20.4% |
+
+  Neither boundary alone is the cause (run-ons stay back-to-back, 84–86%, and are not fewer), and contrasting both
+  gives the best grounding (start only: mIoU −3.1\*). The baseline shows the same splitting pattern in its few
+  run-ons (74% back-to-back), so it is a weakness of listing many events that PCD amplifies, not a boundary-specific
+  effect; it remains open.
+- **The format's gain is not the token budget**: the timeline baseline at 768 tokens is unchanged (mIoU 26.0 vs 25.8),
+  and at equal budget the events prompt still gains mIoU +7.2 [+4.9, +9.4]\* and GQ@0.5 +3.4 [+1.1, +5.9]\*.
 
 ---
 
