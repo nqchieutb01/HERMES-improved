@@ -408,6 +408,46 @@ Oracles that are given the gold interval when building the memory (timeline prom
   interval near 0 s, where it sees only timestamp text. More evidence alone does not remove the prior, which is what
   PCD targets; the two should be complementary.
 
+### 6.10 How PCD connects to token pruning
+
+Script: `logs/phase21/pruning_link.py` (→ `pruning_link.md`), using per-frame retention snapshots (tokens kept per
+frame per question) and, for answers, the timeline runs with the same selector and budget.
+
+**The chain: pruning removes evidence → the prior fills the gap → PCD removes the prior.**
+
+1. **Pruning decides where the memory goes blind.** HERMES's attention-plus-recency score keeps 27.6% of the tokens
+   in the last quarter of the window but only 2.5–4.7% elsewhere; random and stratified keep ~8.7% everywhere.
+
+   | Selector (10%) | first 10% of window | 10–25% | 25–50% | 50–75% | 75–100% |
+   |---|---|---|---|---|---|
+   | HERMES | 4.7% | 3.9% | 2.6% | 2.5% | **27.6%** |
+   | Stratified | 8.7% | 8.7% | 8.6% | 8.6% | 8.7% |
+   | Random | 8.9% | 8.8% | 8.6% | 8.7% | 8.6% |
+
+2. **Where pruning removes the evidence, the prior takes over.** For HERMES 10%, questions whose evidence keeps under
+   5% of its tokens leak 56% of the time, against 33% when at least 15% survives. Taken to the limit (all evidence
+   tokens removed, 6.7) the leak rises by 14 points. This is why HERMES leaks most (49%) of all memories.
+3. **PCD removes the prior that fills those gaps**, and does so at every level of evidence retention: leak
+   56% → 24%, 32% → 11%, 33% → 18%, with mIoU +6.7\*, +6.5\*, +4.5\* (largest where the least evidence survived).
+4. **Better selection alone cannot do this.** A selector that is given the gold interval gains only ~2 mIoU over
+   random at 10% and still leaks 32.5% (6.9); the final method beats it by +4.7\* mIoU without gold information.
+
+**Coverage is the pruning lever, PCD is the decoding lever.** Stratified pruning *is* HERMES with a coverage floor:
+it ranks tokens by the HERMES score inside each frame but gives every frame the same share of the budget. The two
+levers add up:
+
+| 10% budget | Baseline (Acc. / mIoU / GQ@0.5) | Leak | + final method | Leak |
+|---|---|---|---|---|
+| HERMES (recency-weighted) | 13.1 / 18.3 / 4.0 | 49.1% | 13.3 / 24.1 / 5.9 | 22.2% |
+| HERMES scores + coverage (stratified) | 14.1 / 23.7 / 6.1 | 29.2% | 15.8 / 31.0 / 10.5 | 8.8% |
+
+Coverage removes the gaps the prior would fill (leak 49% → 29%); PCD removes the prior in whatever gaps remain
+(29% → 9%). Together they turn HERMES 10% (18.3 mIoU) into 31.0, above the unpruned model (28.0).
+
+The paper's position: *for grounding under pruning, the problem is less which tokens to keep (a gold-informed
+selector gains ~2 mIoU) than what the model writes where tokens are missing. Coverage-preserving selection limits
+the gaps; prior-contrastive decoding removes what the model fills them with.*
+
 ## 7. Error analysis of the final method and what to do next
 
 Script and full tables: `logs/phase21/error_analysis.py` → `logs/phase21/error_analysis.md`. All 8 memories pooled
