@@ -350,6 +350,37 @@ applies to those start and end values. Random 10%; Acc. / mIoU / GQ@0.5.
 
 ---
 
+### 6.9 Comparison with upper bounds that use the gold time
+
+Oracles that are given the gold interval when building the memory (timeline prompt, no PCD), against the final method
+(no gold information). Acc. / mIoU / R@0.5 / GQ@0.5 and leak; Δ paired, 95% bootstrap.
+
+| Memory | Acc. | mIoU | R@0.5 | GQ@0.5 | Leak |
+|---|---|---|---|---|---|
+| No video | 10.5 | 7.9 | 4.8 | 0.8 | 88.4% |
+| Random 5%, baseline | 15.8 | 23.6 | 21.1 | 5.9 | 32.5% |
+| Random 5%, **final method** | 16.4 | **31.5** | **31.6** | **9.9** | **12.1%** |
+| Oracle selector 5% (gold frames' tokens kept first) | **17.1** | 27.0 | 24.6 | 7.8 | 34.8% |
+| Random 10%, baseline | 15.2 | 25.8 | 24.2 | 7.2 | 29.5% |
+| Random 10%, **final method** | 16.2 | **32.6** | **33.1** | **10.1** | **10.8%** |
+| Oracle selector 10% | **17.5** | 27.9 | 25.7 | 8.4 | 32.5% |
+| Gold-window zoom 10% (extra frames inside the gold) | 14.5 | 28.2 | 26.1 | 7.8 | 24.7% |
+| Unpruned, baseline | 18.5 | 28.0 | 26.7 | 8.6 | 33.0% |
+| Unpruned, **final method** | 21.5 | 32.7 | 34.1 | 13.3 | **13.1%** |
+| Oracle window (all 64 frames inside the gold) | **26.3** | **35.3** | **36.2** | **13.9** | 45.1% |
+
+- **At the same budget, the final method beats perfect token selection on grounding**: mIoU +4.7 [+1.9, +7.5]\* at
+  10% and +4.5 [+1.7, +7.2]\* at 5% over the oracle selector, GQ@0.5 +1.7 / +2.1 (n.s.), accuracy −1.3 / −0.6 (n.s.).
+  Knowing which tokens to keep does not stop the prior (the oracle selector still leaks 32.5%); removing the prior is
+  worth more than selecting the evidence perfectly.
+- **Against the strongest oracle**, which sees only the evidence, the final method (without gold information) closes
+  most of the grounding gap: GQ@0.5 13.3 vs 13.9 (−0.6, n.s.), mIoU 32.7 vs 35.3 (−2.6, n.s.). The remaining gap is in
+  answers: accuracy 21.5 vs 26.3 (−4.8\*), mostly duration (oracle mIoU 48.2 vs 40.3), where dense evidence frames
+  give precise boundaries.
+- **Even the oracle window leaks (45%)**: with every frame inside the evidence, the model still often starts its
+  interval near 0 s, where it sees only timestamp text. More evidence alone does not remove the prior, which is what
+  PCD targets; the two should be complementary.
+
 ## 7. Error analysis of the final method and what to do next
 
 Script and full tables: `logs/phase21/error_analysis.py` → `logs/phase21/error_analysis.md`. All 8 memories pooled
