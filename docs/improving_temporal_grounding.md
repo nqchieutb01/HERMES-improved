@@ -444,6 +444,28 @@ levers add up:
 Coverage removes the gaps the prior would fill (leak 49% → 29%); PCD removes the prior in whatever gaps remain
 (29% → 9%). Together they turn HERMES 10% (18.3 mIoU) into 31.0, above the unpruned model (28.0).
 
+**A recent state-of-the-art pruner: FastVID** (Shen et al., NeurIPS 2025; `inference/fastvid.py`). Training-free and
+query-agnostic like HERMES; it segments the video at its least similar frame transitions, keeps per segment the most
+salient tokens (vision-encoder attention) and density-peak anchors, and merges the other tokens into the anchors. Our
+port follows the authors' Qwen2.5-VL code and defaults and prunes before the language model, as in the original
+(retention 1.0 reproduces plain encoding exactly). 10% budget, timeline prompt:
+
+| Selector (10%) | Baseline (Acc. / mIoU / GQ@0.5) | Leak | + final method | Leak | Gain (mIoU / GQ@0.5) |
+|---|---|---|---|---|---|
+| Random | 15.2 / 25.8 / 7.2 | 29.5% | 16.2 / 32.6 / 10.1 | 10.8% | +6.8\* / +2.9 |
+| Stratified (HERMES + coverage) | 14.1 / 23.7 / 6.1 | 29.2% | 15.8 / 31.0 / 10.5 | 8.8% | +7.3\* / +4.4\* |
+| HERMES | 13.1 / 18.3 / 4.0 | 49.1% | 13.3 / 24.1 / 5.9 | 22.2% | +5.7\* / +1.9 |
+| **FastVID** | 14.1 / 17.9 / 4.6 | 38.3% | 15.6 / 25.5 / 7.8 | 12.1% | **+7.6\* / +3.2\*** |
+
+- **A pruner built to keep answers keeps answers, not time.** FastVID's accuracy matches random (14.1 vs 15.2, n.s.),
+  but its grounding is far worse (mIoU −7.9\*, GQ@0.5 −2.5\*) and as poor as HERMES. The reason is temporal coverage:
+  it keeps tokens from the last frame of each run of similar frames, so in a median question only 25% of the sampled
+  frames keep any token (kept share by window position 6.0 / 8.5 / 10.5 / 10.6 / 12.9%). Segments of similar frames
+  are exactly where a continuing event lives, so its start and end vanish, and the prior fills in (leak 38%).
+- **PCD transfers to it and gives its largest gain there**: mIoU +7.6\*, GQ@0.5 +3.2\*, leak 38% → 12%.
+- So for temporal grounding the ranking of selectors is set by coverage, not by token saliency: random and stratified
+  beat both HERMES and FastVID, and PCD improves every one of them.
+
 The paper's position: *for grounding under pruning, the problem is less which tokens to keep (a gold-informed
 selector gains ~2 mIoU) than what the model writes where tokens are missing. Coverage-preserving selection limits
 the gaps; prior-contrastive decoding removes what the model fills them with.*
