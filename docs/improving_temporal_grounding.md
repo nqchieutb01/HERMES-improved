@@ -60,11 +60,13 @@ the unpruned model, and HERMES streaming memory with a 4k or 6k KV budget.
 |---|---|
 | With no video at all, the model still answers with times | 89% of first `Seen` moments are 0 s; 90% of intervals start in the first 5% |
 | With video, the same habit appears | 38% of intervals start in the first 5% at 10% random pruning, 56% with HERMES pruning; only 16% of gold intervals do |
-| It grows as evidence shrinks | the less video the memory holds, the more answers start at 0 s |
+| It grows when the evidence is missing | removing the frames that show the evidence raises it from 37% to 51% (unpruned) and from 31% to 46% (random 10%); see 6.7 |
+| It does not depend on the token budget | about 30% at random 5, 10, 25% and unpruned; higher when temporal coverage is lost (HERMES 49%, streaming 37–39%) |
 | A better selector alone does not fix it | even a perfect (oracle) selector at 10% only matches the unpruned model |
 
-So the model is a mixture of "what the video shows" and "what such questions usually look like". Under pruning the
-first part weakens and the second takes over.
+So the model is a mixture of "what the video shows" and "what such questions usually look like". Wherever the
+memory does not show the evidence (because it was never sampled, was pruned away, or the memory lost coverage of
+that part of the video), the second part takes over.
 
 ---
 
@@ -284,6 +286,65 @@ reason: with no video the model is ~99% sure of "0", so even a well-supported "0
 | Coverage-then-zoom, self window | extra frames around the model's first answer | Acc. +4.6\* in some settings but not robust; combined with PCD it is worse than PCD alone |
 
 The common lesson: at a fixed budget, *where* tokens go matters less than the prior that fills the gaps.
+
+### 6.7 Why PCD: a causal test and three supporting analyses
+
+Scripts: `logs/phase21/motivation.py` (→ `motivation.md`) and the phase 21 runs. "Leak" = the interval starts in the
+first 5% of the window although the evidence starts later.
+
+**Causal test: remove the evidence from the memory.** We drop the uniform frames that fall inside the gold evidence
+("gold"), or the same number of frames elsewhere ("control"), keep every other frame with its true timestamp, and
+compare. Timeline prompt; Acc. / mIoU / GQ@0.5 and leak.
+
+| Memory | Frames removed | Baseline | Leak | Final method | Leak |
+|---|---|---|---|---|---|
+| Random 10% | control | 16.6 / 28.8 / 8.8 | 31.2% | 15.4 / 34.6 / 10.5 | 11.1% |
+| Random 10% | **evidence** | 7.8 / 8.6 / 1.7 | **45.6%** | 9.3 / 10.3 / 1.1 | **23.2%** |
+| Unpruned | control | 19.6 / 29.4 / 10.1 | 37.3% | 18.1 / 35.9 / 12.6 | 15.4% |
+| Unpruned | **evidence** | 9.1 / 9.4 / 1.9 | **50.6%** | 9.1 / 10.5 / 1.5 | **22.4%** |
+
+- **Missing evidence causes the leak**: with the evidence removed, the baseline's answers move to the start of the
+  video (+14 points of leak) instead of anywhere else. This is the prior taking over, measured directly.
+- **PCD halves the fallback**, with and without the evidence. It cannot make up evidence that is not there (accuracy
+  and GQ@0.5 stay near zero when the evidence is removed, for both methods), which is the expected behaviour of a
+  decoding method that removes a bias rather than adding information.
+- Caveat: the control condition removes frames chosen using the gold interval, so it also removes distractors; it
+  scores higher than the unablated memory and is only a matched-size control for the leak.
+
+**Supporting analyses on the existing runs.**
+
+| Question | Finding |
+|---|---|
+| Is the leak a matter of token budget? | No: ~30% at every random budget including unpruned (33%); 49% for HERMES 10%, 37–39% for streaming, 88% with no video. Every PCD variant cuts it to about a third (e.g. 29.5% → 10.8% at random 10%). |
+| Does the gain come from leaked answers? | Yes, disproportionately: on questions where the baseline leaked, mIoU rises by +8.9 [+6.5, +11.5] vs +5.8 [+4.0, +7.4] elsewhere; 25–41% of questions contribute 34–58% of the total gain. |
+| Does writing what the prior would write predict errors? | Yes: the quarter of answers whose first time value has the lowest likelihood ratio log p(t \| video) − log p(t \| no video) (≤ 0, "the prior explains it") has the lowest mIoU (20.0 vs 23–29 for the other quarters) and leaks 60% of the time (9–15% for the others). |
+
+### 6.8 Event-interval timeline: a better listing format
+
+The error analysis (section 7) showed that the timeline lists single moments, so extents are too short. The `events`
+prompt lists each distinct occurrence once, with its start and end (`Event: 12.0 - 15.5 seconds, …`); the contrast
+applies to those start and end values. Random 10%; Acc. / mIoU / GQ@0.5.
+
+| Prompt (token budget) | Baseline | Final method | Final vs baseline |
+|---|---|---|---|
+| timeline (384) | 15.2 / 25.8 / 7.2 | 16.2 / 32.6 / 10.1 | mIoU +6.8\*, GQ +2.9 |
+| events (384) | 17.3 / 30.5 / 9.9 | 14.9 / 33.1 / 10.9 | |
+| events (768) | 17.7 / **33.2** / 10.1 | 17.1 / **35.3** / 11.8 | mIoU +2.1, GQ +1.7 |
+| events, merged instruction (768) | 15.8 / 31.7 / 9.9 | **17.9 / 35.0 / 12.6** | mIoU +3.3\*, GQ +2.7 |
+
+- **The format alone is a large gain for the baseline**: mIoU +7.4\* and GQ@0.5 +2.9\* over the timeline, by
+  stating extents. The best system, events (merged) + final method, reaches 17.9 / 35.0 / 12.6, i.e. +2.7 / +9.2 /
+  +5.4 over the original timeline baseline.
+- **The two fixes are complementary but overlap**: the format corrects extents (the baseline's leak is unchanged,
+  31%), PCD corrects the leak (31% → 14%); on top of the events format PCD adds a smaller mIoU gain (+2.1 to +3.3)
+  than on the timeline (+6.8).
+- **Token budget**: at 384 tokens every run-on answer had hit the limit (an event line costs ~25 tokens; most are
+  counting questions with many occurrences); 768 tokens removes most of them for the baseline (8.6% → 3.2%).
+- **Fragmentation remains a PCD-specific failure**: with PCD, 12–13% of answers still run to the limit, and 84–86%
+  of these split one continuing action into back-to-back fixed-length events with repeated descriptions. An explicit
+  instruction to merge them does not help (13.3%), so the cause is in decoding, not in the instructions: the contrast
+  on event boundaries rewards starting a new event where the previous one ended. This is the next thing to fix at the
+  decoding level (for example by contrasting only the start of each event, not its end).
 
 ---
 
