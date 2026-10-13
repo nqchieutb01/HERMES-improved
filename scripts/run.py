@@ -309,6 +309,10 @@ def inference_command(
         command.extend(["--retrieval", str(cfg.run.retrieval)])
     if float(cfg.run.get("retrieval_min_gap", 0.0)) != 0.0:
         command.extend(["--retrieval_min_gap", str(cfg.run.retrieval_min_gap)])
+    if int(cfg.run.get("prune_seed", 0)) != 0:
+        command.extend(["--prune_seed", str(cfg.run.prune_seed)])
+    if cfg.run.get("shared_selection"):
+        command.extend(["--shared_selection", "true"])
     if int(cfg.run.get("answer_reserve", 0)) != 0:
         command.extend(["--answer_reserve", str(cfg.run.answer_reserve)])
     if int(cfg.run.get("prefetch_videos", 0)) > 0:

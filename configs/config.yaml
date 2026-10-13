@@ -67,6 +67,10 @@ run:
   retrieval_min_gap: 0.0
   # Batched decoding: with this many tokens left and no 'Answer:' line yet, write '\nAnswer:' (0 = off).
   answer_reserve: 0
+  # Ablation (prune_score random / core_topk): the same kept tokens in every layer instead of one selection per layer.
+  shared_selection: false
+  # prune_score=random: seed offset (0 = the seed of all earlier runs).
+  prune_seed: 0
   # CoRe token sampling (prune_score=core): weight of the question relevance in the per-frame density.
   core_mix: 0.5
   # CoRe per-frame quota: equal, or attn (self-retrieval quotas from the question's attention mass per frame).

@@ -490,6 +490,11 @@ def work(QA_CLASS):
                         default="all",
                         help="Tokens the contrast applies to: all, time values only, or time values and the answer line; "
                              "time_start / time_end: on Event lines, only the start / only the end time")
+    parser.add_argument("--prune_seed", type=int, default=0,
+                        help="prune_score=random: seed offset (0 = the seed of all earlier runs)")
+    parser.add_argument("--shared_selection", type=str2bool, default=False,
+                        help="Ablation (prune_score random / core_topk): keep the same tokens in every layer (one random "
+                             "draw; attention averaged over layers) instead of a selection per layer")
     parser.add_argument("--answer_reserve", type=int, default=0,
                         help="Batched decoding: when this many new tokens remain and no 'Answer:' line has started, "
                              "write '\\nAnswer:' so the answer and its Time line fit (0 = off)")
@@ -794,6 +799,8 @@ def work(QA_CLASS):
     videoqa_model.core_alloc = args.core_alloc
     videoqa_model.core_alloc_mix = args.core_alloc_mix
     videoqa_model.core_relevance = args.core_relevance
+    videoqa_model.shared_selection = args.shared_selection
+    videoqa_model.prune_seed = args.prune_seed
     if args.retrieval == "budget":
         if args.offline_keep_ratio >= 1:
             parser.error("retrieval=budget needs offline_keep_ratio < 1")

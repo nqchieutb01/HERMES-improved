@@ -942,9 +942,16 @@ class QwenVL_Hermes(Qwen2_5_VLForConditionalGeneration, Abstract_Hermes):
                 refined_scores[i] = (1 - gamma) * score_current + gamma * score_next
 
         score_mode = getattr(self, "prune_score", "hermes")
+        shared = getattr(self, "shared_selection", False)
         if score_mode == "random":
-            gen = torch.Generator(device="cpu").manual_seed(2024 + self.total_processed_frames)
-            refined_scores = [torch.rand(s.shape, generator=gen).to(s.device, s.dtype) for s in refined_scores]
+            gen = torch.Generator(device="cpu").manual_seed(
+                2024 + self.total_processed_frames + 100003 * int(getattr(self, "prune_seed", 0)))
+            if shared and len({s.shape for s in refined_scores}) == 1:
+                # Ablation: one draw, the same tokens kept in every layer (as input-level pruners do).
+                draw = torch.rand(refined_scores[0].shape, generator=gen)
+                refined_scores = [draw.to(s.device, s.dtype) for s in refined_scores]
+            else:
+                refined_scores = [torch.rand(s.shape, generator=gen).to(s.device, s.dtype) for s in refined_scores]
         elif score_mode == "recent":
             refined_scores = [torch.linspace(0, 1, s.numel(), device=s.device, dtype=s.dtype) for s in refined_scores]
         elif score_mode == "stratified":
@@ -982,6 +989,11 @@ class QwenVL_Hermes(Qwen2_5_VLForConditionalGeneration, Abstract_Hermes):
             for i, s in enumerate(refined_scores):
                 start = layer_configs[i]["visual_start_idx"]
                 attn = layer_attention_scores[i].float().to(s.device)
+                if shared and len({a.numel() for a in layer_attention_scores}) == 1:
+                    # Ablation: rank by the attention averaged over layers (each layer normalised to sum 1), so every
+                    # layer keeps the same tokens; quotas are still applied per layer below.
+                    attn = torch.stack([a.float() / a.float().sum().clamp_min(1e-12)
+                                        for a in layer_attention_scores]).mean(0).to(s.device)
                 generic = getattr(self, "_core_generic", None)
                 if generic is not None:
                     # Prior-contrastive relevance (log ratio of question to generic attention, both normalised over
