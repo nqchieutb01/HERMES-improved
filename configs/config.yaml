@@ -60,6 +60,17 @@ run:
   prefetch_videos: 0
   # Diagnostic: drop the frames inside the gold evidence (gold) or as many outside it (control).
   evidence_ablation: none
+  # Query-aware retrieval from the SigLIP 2 frame index (video_qa/retrieval.py; uniform sampling only):
+  # budget = retrieval-weighted per-frame token budget, frames = retrieval-guided frame sampling.
+  retrieval: none
+  # CoRe token sampling (prune_score=core): weight of the question relevance in the per-frame density.
+  core_mix: 0.5
+  # CoRe per-frame quota: equal, or attn (self-retrieval quotas from the question's attention mass per frame).
+  core_alloc: equal
+  # Unequal quotas: share = (1 - mix) / F + mix * softmax(z) per frame.
+  core_alloc_mix: 0.5
+  # CoRe relevance: attn (question attention) or contrast (log ratio to a question-free query's attention).
+  core_relevance: attn
   visual_attention_gain: 1.0
   visual_attention_layers: all
   zoom_mix: 0.5

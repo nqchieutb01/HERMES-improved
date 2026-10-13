@@ -297,6 +297,16 @@ def inference_command(
         command.extend(["--batch_size", str(cfg.run.batch_size)])
     if cfg.run.get("evidence_ablation", "none") != "none":
         command.extend(["--evidence_ablation", str(cfg.run.evidence_ablation)])
+    if cfg.run.get("core_relevance", "attn") != "attn":
+        command.extend(["--core_relevance", str(cfg.run.core_relevance)])
+    if float(cfg.run.get("core_alloc_mix", 0.5)) != 0.5:
+        command.extend(["--core_alloc_mix", str(cfg.run.core_alloc_mix)])
+    if cfg.run.get("core_alloc", "equal") != "equal":
+        command.extend(["--core_alloc", str(cfg.run.core_alloc)])
+    if float(cfg.run.get("core_mix", 0.5)) != 0.5:
+        command.extend(["--core_mix", str(cfg.run.core_mix)])
+    if cfg.run.get("retrieval", "none") != "none":
+        command.extend(["--retrieval", str(cfg.run.retrieval)])
     if int(cfg.run.get("prefetch_videos", 0)) > 0:
         command.extend(["--prefetch_videos", str(cfg.run.prefetch_videos)])
     if float(cfg.run.get("visual_attention_gain", 1.0)) != 1.0:

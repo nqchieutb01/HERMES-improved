@@ -972,6 +972,71 @@ class QwenVL_Hermes(Qwen2_5_VLForConditionalGeneration, Abstract_Hermes):
                 self._quota_scores(s, layer_configs[i]["visual_start_idx"], i, layer_configs[i]["budget"])
                 for i, s in enumerate(refined_scores)
             ]
+        elif score_mode in ("core", "core_topk"):
+            # CoRe token sampling (video_qa/retrieval.py): every frame keeps an equal share of the layer budget, and
+            # within a frame tokens are sampled without replacement (Gumbel-top-k) from the coverage-floored density
+            # of the real question's attention, 0.5 uniform + 0.5 softmax(z). Text tokens score as in random.
+            from video_qa.retrieval import token_log_density
+            gen = torch.Generator(device="cpu").manual_seed(2024 + self.total_processed_frames)
+            sampled = []
+            for i, s in enumerate(refined_scores):
+                start = layer_configs[i]["visual_start_idx"]
+                attn = layer_attention_scores[i].float().to(s.device)
+                generic = getattr(self, "_core_generic", None)
+                if generic is not None:
+                    # Prior-contrastive relevance (log ratio of question to generic attention, both normalised over
+                    # the visual tokens); mass per frame below uses the same ratio on frame sums.
+                    g = generic[i].float().to(s.device)[: attn.numel()]
+                    attn_q, attn_g = attn / attn.sum().clamp_min(1e-12), g / g.sum().clamp_min(1e-12)
+                ids = self._token_frame_ids_per_layer[i][start:start + s.numel()].to(s.device)
+                out = torch.rand(s.shape, generator=gen).to(s.device)
+                gumbel = -torch.log(-torch.log(torch.rand(s.shape, generator=gen).clamp_min(1e-12))).to(s.device)
+                mix = float(getattr(self, "core_mix", 0.5))
+                frames = torch.unique(ids[ids >= 0]).tolist()
+                alloc = getattr(self, "core_alloc", "equal")
+                if alloc in ("attn", "siglip", "hybrid") and frames:
+                    # Unequal per-frame quotas with a floor: share = (1 - m) / F + m * softmax(z) over the frames, where
+                    # z is the frame's relevance: the question's attention mass on it ("attn", prior-contrastive when
+                    # core_relevance=contrast), the SigLIP 2 question-frame similarity at the frame's time ("siglip",
+                    # video_qa/retrieval.py), or the mean of both z-scores ("hybrid"). m = core_alloc_mix.
+                    def zscore(v):
+                        return (v - v.mean()) / (v.std() + 1e-6) if len(frames) > 1 else torch.zeros_like(v)
+                    zs = []
+                    if alloc in ("attn", "hybrid"):
+                        if generic is not None:
+                            mass = torch.stack([torch.log(attn_q[ids == f].sum().clamp_min(1e-12))
+                                                - torch.log(attn_g[ids == f].sum().clamp_min(1e-12)) for f in frames])
+                        else:
+                            mass = torch.stack([attn[ids == f].sum() for f in frames])
+                        zs.append(zscore(mass))
+                    if alloc in ("siglip", "hybrid"):
+                        sig = getattr(self, "siglip_frame_z", None) or {}
+                        zs.append(zscore(torch.tensor([float(sig.get(f, 0.0)) for f in frames], device=s.device)))
+                    z = torch.stack(zs).mean(dim=0)
+                    m = float(getattr(self, "core_alloc_mix", 0.5))
+                    share = (1.0 - m) / len(frames) + m * torch.softmax(z, dim=0)
+                    self.frame_budget_share = {f: float(v) for f, v in zip(frames, share.tolist())}
+                for frame in frames:
+                    idx = torch.nonzero(ids == frame).flatten()
+                    if score_mode == "core_topk":
+                        # Deterministic top-k by the question's attention (prior-contrastive when enabled).
+                        rel = (torch.log(attn_q[idx].clamp_min(1e-12)) - torch.log(attn_g[idx].clamp_min(1e-12))
+                               if generic is not None else attn[idx])
+                        out[idx] = torch.sigmoid((rel - rel.mean()) / (rel.std() + 1e-6))
+                    else:
+                        out[idx] = torch.sigmoid(token_log_density(attn[idx], mix) + gumbel[idx])
+                sampled.append(self._quota_scores(out.to(s.dtype), start, i, layer_configs[i]["budget"]))
+                self.frame_budget_share = None
+            refined_scores = sampled
+        elif score_mode == "retrieval_budget":
+            # Query-aware retrieval budget (video_qa/retrieval.py): each frame keeps its share of the layer budget
+            # (frame_budget_share), choosing its tokens at random as the random selector does.
+            gen = torch.Generator(device="cpu").manual_seed(2024 + self.total_processed_frames)
+            refined_scores = [
+                self._quota_scores(torch.rand(s.shape, generator=gen).to(s.device, s.dtype),
+                                   layer_configs[i]["visual_start_idx"], i, layer_configs[i]["budget"])
+                for i, s in enumerate(refined_scores)
+            ]
         elif score_mode not in ("hermes", "hermes_exact"):
             raise ValueError(f"unknown prune_score {score_mode!r}")
 
@@ -1113,6 +1178,9 @@ class QwenVL_Hermes(Qwen2_5_VLForConditionalGeneration, Abstract_Hermes):
         if global_question is None:
             global_question = "What is the main topic of the video?"
 
+        # The scores only use the head-averaged maps (prune_kv_cache_by_attention); averaging inside the layer loop
+        # keeps 1/heads of the memory, so 128-frame memories fit a 40 GB GPU. Bit-exact (logs/phase24/verify_reduce.log).
+        head_mean = lambda layer_idx, scores: scores.mean(dim=1, keepdim=True)  # noqa: E731
         local_input_ids = self.processor.tokenizer(local_question).input_ids
         local_input_ids = torch.as_tensor([local_input_ids], device=device, dtype=torch.int)
 
@@ -1131,7 +1199,7 @@ class QwenVL_Hermes(Qwen2_5_VLForConditionalGeneration, Abstract_Hermes):
                         self.language_model.config._attn_implementation in ["flash_attention_2", "sdpa"])
 
         if use_flash_attn:
-            attn_weights_local = self._compute_attention_scores_manually(local_input_ids, self.kv_cache)
+            attn_weights_local = self._compute_attention_scores_manually(local_input_ids, self.kv_cache, reduce=head_mean)
         else:
             out_local = self.language_model(
                 input_ids=local_input_ids,
@@ -1155,7 +1223,7 @@ class QwenVL_Hermes(Qwen2_5_VLForConditionalGeneration, Abstract_Hermes):
         position_ids_global_3d = self._build_position_ids_3d_for_text(global_offset_per_layer[0], q_len_global, batch)
 
         if use_flash_attn:
-            attn_weights_global = self._compute_attention_scores_manually(global_input_ids, self.kv_cache)
+            attn_weights_global = self._compute_attention_scores_manually(global_input_ids, self.kv_cache, reduce=head_mean)
         else:
             out_global = self.language_model(
                 input_ids=global_input_ids,
@@ -1180,7 +1248,7 @@ class QwenVL_Hermes(Qwen2_5_VLForConditionalGeneration, Abstract_Hermes):
         position_ids_mixed_3d = self._build_position_ids_3d_for_text(global_offset_per_layer[0], q_len_mixed, batch)
 
         if use_flash_attn:
-            attn_weights_mixed = self._compute_attention_scores_manually(mixed_input_ids, self.kv_cache)
+            attn_weights_mixed = self._compute_attention_scores_manually(mixed_input_ids, self.kv_cache, reduce=head_mean)
         else:
             out_mixed = self.language_model(
                 input_ids=mixed_input_ids,
@@ -1221,6 +1289,30 @@ class QwenVL_Hermes(Qwen2_5_VLForConditionalGeneration, Abstract_Hermes):
 
     @torch.inference_mode()
     def predict_and_compress(self):
+        query = getattr(self, "core_query", None)
+        if query:
+            # CoRe (query-aware): score with the real question, propagated exactly through every layer.
+            print(f"CoRe query: {query}")
+            exact_before = getattr(self, "exact_attention", False)
+            self.exact_attention = True
+            try:
+                self._core_generic = None
+                if getattr(self, "core_relevance", "attn") == "contrast":
+                    # Prior-contrastive retrieval: the attention a question-free query gives each visual token, per
+                    # layer, so relevance = log a(question) - log a(generic) cancels sinks and position bias.
+                    generic = "Describe the current scene in detail, focusing on specific objects, fine-grained actions, and spatial relationships."
+                    ids = torch.as_tensor([self.processor.tokenizer(generic).input_ids], device=self.device)
+                    lengths = self._get_cache_seq_len_per_layer()
+                    vis = self.visual_start_idx
+                    with torch.no_grad():
+                        self._core_generic = self._compute_attention_scores_manually(
+                            ids, self.kv_cache,
+                            reduce=lambda l, s: s[0].float().mean(dim=0)[:, vis:lengths[l]].mean(dim=0))
+                self.pseudo_forward(query, query)
+            finally:
+                self.exact_attention = exact_before
+                self._core_generic = None
+            return
         local_question, global_question = self.predict_next_question()
         self.pseudo_forward(local_question, global_question)
 

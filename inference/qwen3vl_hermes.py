@@ -374,8 +374,9 @@ class Qwen3VL_Hermes(QwenVL_Hermes):
         torch.cuda.empty_cache()
 
     @torch.inference_mode()
-    def encode_video_fastvid(self, video, frame_times, retention, chunk_size):
-        """Encode a whole (uniformly sampled) video with FastVID input-level pruning (inference/fastvid.py).
+    def encode_video_fastvid(self, video, frame_times, retention, chunk_size, method="fastvid"):
+        """Encode a whole (uniformly sampled) video with input-level pruning: FastVID (inference/fastvid.py),
+        FlashVID (inference/flashvid.py, vision side) or VidCom2 (inference/vidcom2.py), chosen by ``method``.
 
         Every chunk goes through the vision encoder first, collecting merged tokens, DeepStack features and the
         FastVID salience (last vision block: mean frame query attending to keys pooled per merged token). FastVID then
@@ -402,24 +403,58 @@ class Qwen3VL_Hermes(QwenVL_Hermes):
             a = torch.softmax(q.float() @ k.float().transpose(-2, -1) / math.sqrt(module.head_dim), dim=-1)
             salience.append(a.mean(2).mean(0))
 
+        def flashvid_hook(module, args, kwargs):
+            # FlashVID's [CLS]-attention proxy: full attention within each temporal group, averaged over heads and
+            # queries, then over the 2x2 patches of each merged token (authors' Qwen3VLVisionAttention_forward).
+            hidden = args[0] if args else kwargs["hidden_states"]
+            seq = hidden.shape[0]
+            q, k, _ = module.qkv(hidden).reshape(seq, 3, module.num_heads, -1).permute(1, 0, 2, 3).unbind(0)
+            q, k = apply_rotary_pos_emb_vision(q, k, *kwargs["position_embeddings"])
+            t, h, w = self._last_video_grid
+            q = q.reshape(t, h * w, module.num_heads, -1).permute(0, 2, 1, 3)
+            k = k.reshape(t, h * w, module.num_heads, -1).permute(0, 2, 1, 3)
+            for g in range(t):
+                a = torch.softmax(q[g].float() @ k[g].float().transpose(-1, -2) / module.head_dim ** 0.5, dim=-1)
+                salience.append(a.mean(0).mean(0).view(1, h * w // 4, 4).mean(-1))
+
         chunks = []
-        handle = self.visual.blocks[-1].attn.register_forward_pre_hook(hook, with_kwargs=True)
+        hooks = {"fastvid": hook, "flashvid": flashvid_hook}
+        handle = (self.visual.blocks[-1].attn.register_forward_pre_hook(hooks[method], with_kwargs=True)
+                  if method in hooks else None)
         try:
             for start in range(0, video.shape[0], chunk_size):
                 frames = video[start:start + chunk_size]
                 feats, deep, grid = self._encode_visual(frames)
                 chunks.append((frames.shape[0], feats, deep, grid, list(frame_times[start:start + chunk_size])))
         finally:
-            handle.remove()
+            if handle is not None:
+                handle.remove()
         n = chunks[0][3][1] * chunks[0][3][2] // 4
         features = torch.cat([c[1] for c in chunks]).view(-1, n, chunks[0][1].shape[-1])
         deep = [torch.cat([c[2][i] for c in chunks]).view(features.shape[0], n, -1) for i in range(len(chunks[0][2]))]
         if retention >= 1.0:
             keep = [torch.arange(n) for _ in range(features.shape[0])]
             kept_feats, kept_deep = list(features), [list(d) for d in deep]
-        else:
+        elif method == "fastvid":
             keep, apply = fastvid(features, torch.cat(salience).float(), retention, **DEFAULTS)
             kept_feats, kept_deep = apply(features), [apply(d) for d in deep]
+        elif method == "flashvid":
+            from inference.flashvid import DEFAULTS as FLASHVID_DEFAULTS, flashvid
+            keep, kept_feats, apply = flashvid(features, torch.cat(salience).float(), retention, **FLASHVID_DEFAULTS)
+            kept_deep = [apply(d) for d in deep]
+        elif method == "vidcom2":
+            from inference.vidcom2 import vidcom2
+            keep, apply = vidcom2(features, retention)
+            kept_feats, kept_deep = apply(features), [apply(d) for d in deep]
+        elif method == "semvid":
+            # Query-aware: the question's token embeddings from the LLM input embedding table.
+            from inference.semvid import DEFAULTS as SEMVID_DEFAULTS, semvid
+            ids = torch.as_tensor(self.processor.tokenizer(self.prune_query, add_special_tokens=False).input_ids,
+                                  device=self.device)
+            keep, apply = semvid(features, self.get_input_embeddings()(ids), retention, **SEMVID_DEFAULTS)
+            kept_feats, kept_deep = apply(features), [apply(d) for d in deep]
+        else:
+            raise ValueError(f"unknown input-level pruning method {method!r}")
         self.last_fastvid_kept = sum(k.numel() for k in keep)
 
         base = self._get_next_global_offset_per_layer()

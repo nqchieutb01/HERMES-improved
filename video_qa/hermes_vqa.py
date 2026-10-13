@@ -10,6 +10,7 @@ from logzero import logger
 from tqdm import tqdm
 
 from inference import batched_decoding
+from video_qa import retrieval
 from video_qa.base import BaseVQA, work
 
 
@@ -281,14 +282,22 @@ class HermesVQA(BaseVQA):
                     if window_end - window_start < 1.0:  # keep at least ~1 s of frames
                         window_start = max(0.0, min(window_start, q_end - 1.0))
                         window_end = min(q_end, window_start + 1.0)
-                video, selected_frame_indices = self.load_uniform_video(
-                    video_path,
-                    num_frames=self.uniform_num_frames,
-                    end_time=window_end if oracle_window else sample.get('end_time'),
-                    video_fps=video_fps,
-                    duration=video_sample.get('duration'),
-                    start_time=window_start,
-                )
+                if getattr(self, 'retrieval', 'none') in ('frames', 'frames_cont') and not oracle_window:
+                    # Query-aware: frames drawn from the SigLIP 2 relevance over 0..question time (half uniform).
+                    q_end = float(sample.get('end_time') or video_sample.get('duration'))
+                    want = retrieval.sample_times(self.uniform_num_frames, video_sample['video_id'],
+                                                  sample['question_id'], q_end,
+                                                  continuous=self.retrieval == 'frames_cont')
+                    video, selected_frame_indices = self.load_frames_at_times(video_path, want)
+                else:
+                    video, selected_frame_indices = self.load_uniform_video(
+                        video_path,
+                        num_frames=self.uniform_num_frames,
+                        end_time=window_end if oracle_window else sample.get('end_time'),
+                        video_fps=video_fps,
+                        duration=video_sample.get('duration'),
+                        start_time=window_start,
+                    )
                 question_video = torch.from_numpy(video)
                 shuffle = getattr(self, 'shuffle_mode', 'none')
                 if shuffle != 'none':
@@ -357,13 +366,15 @@ class HermesVQA(BaseVQA):
                     # Timestamp text alone every 5 s (0.2 fps) before the evidence window.
                     self.qa_model.encode_timestamp_text([5.0 * k for k in range(int(math.ceil(window_start / 5.0)))
                                                          if 5.0 * k < window_start])
-                fastvid_mode = getattr(self.qa_model, 'prune_score', 'hermes') == 'fastvid'
+                input_method = getattr(self.qa_model, 'prune_score', 'hermes')
+                fastvid_mode = input_method in ('fastvid', 'flashvid', 'vidcom2', 'semvid')
+                self.qa_model.prune_query = question  # query-aware input-level selectors (SemVID)
                 if fastvid_mode and len(question_video) > 0:
-                    # FastVID prunes at the input: the memory holds only the kept / merged tokens.
+                    # FastVID / FlashVID / VidCom2 prune at the input: the memory holds only the kept / merged tokens.
                     self.qa_model.encode_video_fastvid(question_video, self.last_uniform_frame_times,
                                                        float(getattr(self, 'offline_keep_ratio', 1.0)),
-                                                       encode_chunk_size)
-                    print(f"FastVID: kept {self.qa_model.last_fastvid_kept} visual tokens")
+                                                       encode_chunk_size, method=input_method)
+                    print(f"{input_method}: kept {self.qa_model.last_fastvid_kept} visual tokens")
                 for start in range(0, 0 if fastvid_mode else len(question_video), encode_chunk_size):
                     stop = min(start + encode_chunk_size, len(question_video))
                     print(f"Encoding uniform frames {start} to {stop-1}")
@@ -410,7 +421,32 @@ class HermesVQA(BaseVQA):
                     full_budget = self.qa_model.kv_size
                     self.qa_model.kv_size = max(1, int(keep_ratio * visual))
                     print(f"Offline pruning: keeping {self.qa_model.kv_size} of {visual} visual tokens")
-                    self.qa_model.predict_and_compress()
+                    retrieval_budget = getattr(self, 'retrieval', 'none') == 'budget'
+                    if retrieval_budget:
+                        # Query-aware: per-frame budget shares from the SigLIP 2 relevance (half uniform floor),
+                        # random tokens within each frame.
+                        q_end = float(sample.get('end_time') or video_sample.get('duration'))
+                        shares = retrieval.budget_shares(frame_times, video_sample['video_id'],
+                                                         sample['question_id'], q_end)
+                        self.qa_model.frame_budget_share = {first_frame + i: s for i, s in enumerate(shares)}
+                        score_before, self.qa_model.prune_score = self.qa_model.prune_score, 'retrieval_budget'
+                    core = getattr(self.qa_model, 'prune_score', 'hermes') in ('core', 'core_topk')
+                    if core:
+                        self.qa_model.core_query = question  # CoRe scores tokens with the real question
+                        if getattr(self.qa_model, 'core_alloc', 'equal') in ('siglip', 'hybrid'):
+                            # SigLIP 2 relevance at each memory frame's own time (nearest indexed second).
+                            q_end = float(sample.get('end_time') or video_sample.get('duration'))
+                            sec, z = retrieval.relevance(video_sample['video_id'], sample['question_id'], q_end)
+                            near = [int(abs(sec - t).argmin()) for t in frame_times]
+                            self.qa_model.siglip_frame_z = {first_frame + i: float(z[j]) for i, j in enumerate(near)}
+                    try:
+                        self.qa_model.predict_and_compress()
+                    finally:
+                        self.qa_model.core_query = None
+                        self.qa_model.siglip_frame_z = None
+                        if retrieval_budget:
+                            self.qa_model.prune_score = score_before
+                            self.qa_model.frame_budget_share = None
                     self.qa_model.kv_size = full_budget
                 if getattr(self, 'relevance_heads', None):
                     # Diagnostic: per-frame attention of the given heads while reading the prompt, over the memory

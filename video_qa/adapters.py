@@ -37,6 +37,7 @@ SEMBER_CHOICE_LABELS = ("A", "B", "C", "D", "E")
 SEMBER_QUESTION_CATEGORIES = (
     "counting_objects_events",
     "location_trace",
+    "moment_retrieval",  # Charades-STA converted to this format (logs/phase28/prepare_charades.py)
     "object_comparison",
     "sequential_action",
     "spatial_aware_reasoning",

@@ -80,7 +80,7 @@ MODELS = {
     },
     'qwen3_vl_8b': {
         'load_func': qwen3vl_hermes_load_model,
-        'model_path': '/l/users/chieu.nguyen/models/Qwen3-VL-8B-Instruct',
+        'model_path': '/nfs-stor/chieu.nguyen/models/Qwen3-VL-8B-Instruct',
     },
 }
 
@@ -316,6 +316,14 @@ class BaseVQA:
             )
         return reader.get_batch(frame_idx).asnumpy(), frame_idx, [i / source_fps for i in frame_idx]
     
+    def load_frames_at_times(self, video_path, times):
+        """Decode the source frames nearest to the given times (seconds, sorted); sets ``last_uniform_frame_times``."""
+        reader = self._open_reader(video_path)
+        source_fps = float(reader.get_avg_fps())
+        frame_idx = sorted({min(len(reader) - 1, max(0, int(round(float(t) * source_fps)))) for t in times})
+        self.last_uniform_frame_times = [i / source_fps for i in frame_idx]
+        return reader.get_batch(frame_idx).asnumpy(), frame_idx
+
     def format_mcqa_prompt(self, question, candidates):
         assert len(question) > 0, f"Q: {question}"
 
@@ -440,11 +448,13 @@ def work(QA_CLASS):
     )
     parser.add_argument(
         "--prune_score",
-        choices=("hermes", "random", "recent", "stratified", "oracle", "hermes_exact", "zoom", "fastvid"),
+        choices=("hermes", "random", "recent", "stratified", "oracle", "hermes_exact", "zoom", "fastvid", "flashvid",
+                 "vidcom2", "semvid", "core", "core_topk"),
         default="hermes",
         help="Token score used by compression: HERMES attention+recency, random, or most recent; "
              "oracle keeps gold-interval frames first (diagnostic); hermes_exact propagates the "
-             "probe questions through every layer when scoring; fastvid prunes before the LLM (FastVID, NeurIPS 2025; "
+             "probe questions through every layer when scoring; fastvid / flashvid / vidcom2 prune before the LLM "
+             "(FastVID, NeurIPS 2025; FlashVID, ICLR 2026, vision side only; VidCom2, EMNLP 2025; "
              "uniform sampling only)",
     )
     parser.add_argument(
@@ -487,6 +497,23 @@ def work(QA_CLASS):
     parser.add_argument("--evidence_ablation", choices=("none", "gold", "control"), default="none",
                         help="Diagnostic (uniform sampling): drop the frames inside the gold evidence interval, or as "
                              "many frames outside it")
+    parser.add_argument("--core_mix", type=float, default=0.5,
+                        help="CoRe token sampling: weight of the relevance in the density (0 = random, 1 = no coverage floor)")
+    parser.add_argument("--core_alloc", choices=("equal", "attn", "siglip", "hybrid"), default="equal",
+                        help="CoRe per-frame quota: equal; or unequal with a floor from the question's attention mass "
+                             "per frame (attn), the SigLIP 2 question-frame similarity at the frame (siglip), or both "
+                             "z-scores averaged (hybrid)")
+    parser.add_argument("--core_alloc_mix", type=float, default=0.5,
+                        help="Unequal quotas: share = (1 - mix) / F + mix * softmax(z); the floor is (1 - mix) of an "
+                             "equal share")
+    parser.add_argument("--core_relevance", choices=("attn", "contrast"), default="attn",
+                        help="CoRe relevance: the question's attention, or contrast = log ratio to the attention of a "
+                             "question-free query (prior-contrastive retrieval; cancels attention sinks)")
+    parser.add_argument("--retrieval", choices=("none", "budget", "frames", "frames_cont"), default="none",
+                        help="Uniform sampling, query-aware (video_qa/retrieval.py): budget = per-frame token budget "
+                             "weighted by SigLIP 2 question-frame relevance (with offline_keep_ratio < 1); frames = "
+                             "frames drawn by inverse transform sampling of the relevance (half uniform), snapped to whole seconds; "
+                             "frames_cont = the same, continuous in time (always uniform_num_frames frames)")
     parser.add_argument("--force_batched_decoder", type=str2bool, default=False,
                         help="Diagnostic: use the batched decoder even with batch_size 1")
     parser.add_argument("--decode_log", type=str2bool, default=False,
@@ -752,6 +779,17 @@ def work(QA_CLASS):
         parser.error("prefetch_videos must be nonnegative")
     analyzer.prefetch_videos = args.prefetch_videos
     analyzer.evidence_ablation = args.evidence_ablation
+    analyzer.retrieval = args.retrieval
+    videoqa_model.core_mix = args.core_mix
+    videoqa_model.core_alloc = args.core_alloc
+    videoqa_model.core_alloc_mix = args.core_alloc_mix
+    videoqa_model.core_relevance = args.core_relevance
+    if args.retrieval == "budget":
+        if args.offline_keep_ratio >= 1:
+            parser.error("retrieval=budget needs offline_keep_ratio < 1")
+        videoqa_model.force_token_provenance = True
+    if args.retrieval in ("frames", "frames_cont") and args.prefetch_videos:
+        parser.error("retrieval=frames picks frames per question; use prefetch_videos=0")
     videoqa_model.visual_attention_gain = args.visual_attention_gain
     if args.visual_attention_layers != "all":
         lo, hi = (int(x) for x in args.visual_attention_layers.split("-"))
@@ -763,7 +801,7 @@ def work(QA_CLASS):
     if args.relevance_heads:
         videoqa_model.force_token_provenance = True
     videoqa_model.zoom_share = args.zoom_share
-    if args.prune_score in ("stratified", "oracle", "zoom"):
+    if args.prune_score in ("stratified", "oracle", "zoom", "core", "core_topk"):
         videoqa_model.force_token_provenance = True
     if args.retention_snapshot or args.question_attention:
         videoqa_model.force_token_provenance = True
