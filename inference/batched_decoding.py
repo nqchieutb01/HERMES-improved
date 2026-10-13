@@ -160,12 +160,14 @@ def _decode_step(model, memory, token_ids, step):
 
 @torch.inference_mode()
 def batched_answering(model, jobs, max_new_tokens=384, repetition_penalty=1.1, alpha=1.0, beta=0.1, scope="all",
-                      adaptive=False, rule="pmi", token_log=None):
+                      adaptive=False, rule="pmi", token_log=None, answer_reserve=0):
     """Decode all jobs together; returns the answer text of each job (same order).
 
     Jobs without a counterfactual row decode greedily (``question_answering``); jobs with one are contrasted against
     it (``contrastive_answering``). All jobs of a call must be of the same kind. ``token_log`` (diagnostic): a list
     that receives, per job, the generated token ids and the margin between the best and second-best score per step.
+    ``answer_reserve``: when that many tokens remain and a job has not started its ``Answer:`` line, ``\nAnswer:`` is
+    written for it, so a long ``Seen:`` list cannot crowd out the answer and its ``Time:`` line (0 = off).
     """
     tok = model.processor.tokenizer
     eos = tok.eos_token_id
@@ -185,6 +187,7 @@ def batched_answering(model, jobs, max_new_tokens=384, repetition_penalty=1.1, a
     margins = [[] for _ in range(n)]
     active = list(range(n))  # job ids still decoding, in row order
     log_beta, log_penalty = math.log(beta), math.log(repetition_penalty)
+    forced = [[] for _ in range(n)]  # tokens still to be written for a job (answer_reserve)
     for step in range(max_new_tokens):
         m = len(active)
         if contrastive:
@@ -222,6 +225,15 @@ def batched_answering(model, jobs, max_new_tokens=384, repetition_penalty=1.1, a
                 best2 = torch.topk(last.float(), 2, dim=-1).values
                 for j, (b1, b2) in zip(active, best2.tolist()):
                     margins[j].append(b1 - b2)
+        if answer_reserve:
+            for row, j in enumerate(active):
+                if not forced[j] and step == max_new_tokens - answer_reserve:
+                    text = tok.decode(out_ids[j])
+                    if "Answer:" not in text:
+                        forced[j] = tok(("" if text.endswith("\n") else "\n") + "Answer:",
+                                        add_special_tokens=False).input_ids
+                if forced[j]:
+                    tokens[row] = forced[j].pop(0)
         finished = []
         for row, (j, t) in enumerate(zip(active, tokens)):
             out_ids[j].append(t)

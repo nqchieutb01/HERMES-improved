@@ -307,6 +307,10 @@ def inference_command(
         command.extend(["--core_mix", str(cfg.run.core_mix)])
     if cfg.run.get("retrieval", "none") != "none":
         command.extend(["--retrieval", str(cfg.run.retrieval)])
+    if float(cfg.run.get("retrieval_min_gap", 0.0)) != 0.0:
+        command.extend(["--retrieval_min_gap", str(cfg.run.retrieval_min_gap)])
+    if int(cfg.run.get("answer_reserve", 0)) != 0:
+        command.extend(["--answer_reserve", str(cfg.run.answer_reserve)])
     if int(cfg.run.get("prefetch_videos", 0)) > 0:
         command.extend(["--prefetch_videos", str(cfg.run.prefetch_videos)])
     if float(cfg.run.get("visual_attention_gain", 1.0)) != 1.0:

@@ -42,7 +42,7 @@ class HermesVQA(BaseVQA):
             repetition_penalty=getattr(self, 'repetition_penalty', 1.1),
             alpha=float(getattr(self, 'contrastive_alpha', 1.0)), beta=float(getattr(self, 'contrastive_beta', 0.1)),
             scope=getattr(self, 'contrastive_scope', 'all'), adaptive=getattr(self, 'contrastive_adaptive', False),
-            rule=getattr(self, 'contrastive_rule', 'pmi'))
+            rule=getattr(self, 'contrastive_rule', 'pmi'), answer_reserve=int(getattr(self, 'answer_reserve', 0)))
         if token_log is not None:
             with open(os.path.join(self.save_dir, f"decode-{self.chunk_idx}.jsonl"), "a") as out:
                 for (_, record, _), entry in zip(pending, token_log):
@@ -282,11 +282,14 @@ class HermesVQA(BaseVQA):
                     if window_end - window_start < 1.0:  # keep at least ~1 s of frames
                         window_start = max(0.0, min(window_start, q_end - 1.0))
                         window_end = min(q_end, window_start + 1.0)
-                if getattr(self, 'retrieval', 'none') in ('frames', 'frames_cont') and not oracle_window:
+                span = float(sample.get('end_time') or video_sample.get('duration') or 0)
+                # Retrieval only where uniform frames are sparse: when they are already denser than
+                # retrieval_min_gap seconds apart (short videos), retrieval can only take coverage away.
+                dense = span / max(1, self.uniform_num_frames) < float(getattr(self, 'retrieval_min_gap', 0.0))
+                if getattr(self, 'retrieval', 'none') in ('frames', 'frames_cont') and not oracle_window and not dense:
                     # Query-aware: frames drawn from the SigLIP 2 relevance over 0..question time (half uniform).
-                    q_end = float(sample.get('end_time') or video_sample.get('duration'))
                     want = retrieval.sample_times(self.uniform_num_frames, video_sample['video_id'],
-                                                  sample['question_id'], q_end,
+                                                  sample['question_id'], span,
                                                   continuous=self.retrieval == 'frames_cont')
                     video, selected_frame_indices = self.load_frames_at_times(video_path, want)
                 else:

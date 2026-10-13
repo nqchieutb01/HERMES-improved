@@ -490,6 +490,12 @@ def work(QA_CLASS):
                         default="all",
                         help="Tokens the contrast applies to: all, time values only, or time values and the answer line; "
                              "time_start / time_end: on Event lines, only the start / only the end time")
+    parser.add_argument("--answer_reserve", type=int, default=0,
+                        help="Batched decoding: when this many new tokens remain and no 'Answer:' line has started, "
+                             "write '\\nAnswer:' so the answer and its Time line fit (0 = off)")
+    parser.add_argument("--retrieval_min_gap", type=float, default=0.0,
+                        help="retrieval=frames*: use retrieval frames only when uniform frames would be at least this "
+                             "many seconds apart (question time / frames); denser videos keep uniform frames (0 = always)")
     parser.add_argument("--batch_size", type=int, default=1,
                         help="Decode the answers of this many questions together (memories are built one at a time)")
     parser.add_argument("--prefetch_videos", type=int, default=0,
@@ -780,6 +786,10 @@ def work(QA_CLASS):
     analyzer.prefetch_videos = args.prefetch_videos
     analyzer.evidence_ablation = args.evidence_ablation
     analyzer.retrieval = args.retrieval
+    analyzer.retrieval_min_gap = args.retrieval_min_gap
+    if args.answer_reserve < 0:
+        parser.error("answer_reserve must be nonnegative")
+    analyzer.answer_reserve = args.answer_reserve
     videoqa_model.core_mix = args.core_mix
     videoqa_model.core_alloc = args.core_alloc
     videoqa_model.core_alloc_mix = args.core_alloc_mix

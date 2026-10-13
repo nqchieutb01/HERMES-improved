@@ -63,6 +63,10 @@ run:
   # Query-aware retrieval from the SigLIP 2 frame index (video_qa/retrieval.py; uniform sampling only):
   # budget = retrieval-weighted per-frame token budget, frames = retrieval-guided frame sampling.
   retrieval: none
+  # retrieval=frames*: only when uniform frames would be at least this many seconds apart (0 = always).
+  retrieval_min_gap: 0.0
+  # Batched decoding: with this many tokens left and no 'Answer:' line yet, write '\nAnswer:' (0 = off).
+  answer_reserve: 0
   # CoRe token sampling (prune_score=core): weight of the question relevance in the per-frame density.
   core_mix: 0.5
   # CoRe per-frame quota: equal, or attn (self-retrieval quotas from the question's attention mass per frame).
