@@ -2,7 +2,7 @@
 % (a) QA pruner: one token set for all layers, frames emptied -> timestamps lost.
 % (b) Coverage: every layer keeps its own set (top-k of that layer's question attention) under an equal per-frame
 %     quota, so every timestamp survives in every layer.
-% (c) Contrast at one time value of the teaser example (illustrative probabilities): greedy decoding follows the
+% (c) PCD at one time value of the teaser example (illustrative probabilities): greedy decoding follows the
 %     no-video prior to "0"; the contrast promotes "64", which only the memory supports.
 \begin{figure*}[t]
 \centering
@@ -67,8 +67,8 @@
 
 \node[panel, fit={(-0.6,6.5) (8.0,-0.55)}] (mem) {};
 
-%% =============================================================== (c) Contrast
-\node[title] at (9.0, 6.25) {(c) Contrast at one time value: ``Seen: \underline{\hspace{1.2em}} seconds''};
+%% =============================================================== (c) PCD
+\node[title] at (9.0, 6.25) {(c) PCD at one time value: ``Seen: \underline{\hspace{1.2em}} seconds''};
 \begin{axis}[
     name=pm, at={(9.0cm, 3.55cm)}, anchor=south west, width=4.3cm, height=3.1cm,
     ybar, bar width=9pt, ymin=0, ymax=0.95, symbolic x coords={0,64,103}, xtick=data,
@@ -111,7 +111,7 @@
 every layer and can empty whole frames, removing their timestamps. \textbf{(b)}~Coverage prunes each layer
 separately: every frame keeps the same share of the layer budget, filled with the tokens that the question attends to
 most \emph{in that layer}. Every timestamp survives in every layer, and different layers keep different evidence
-(sharing one set across layers costs $1.5$ mIoU, \cref{tab:shared}). \textbf{(c)}~Contrast at one time value of the
+(sharing one set across layers costs $1.5$ mIoU, \cref{tab:shared}). \textbf{(c)}~PCD at one time value of the
 teaser example (probabilities illustrative). Greedy decoding picks ``0'', which the memory supports only as much as
 the video-free prior does; the contrasted score discounts it and promotes ``64'', which only the memory supports.
 The answer reserve guarantees that the final interval is written (output shown is the real \method answer).}

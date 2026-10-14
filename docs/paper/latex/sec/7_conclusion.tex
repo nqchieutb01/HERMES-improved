@@ -16,7 +16,7 @@ When uniform frames are less than a second apart, spreading tokens at random bea
 \paragraph{Not a streaming memory.}
 The memory is rebuilt per question from the frames before the question. It is causal, but the full memory is
 prefilled once per question, so peak memory and time-to-first-token are those of the uncompressed model: \method
-reduces the memory the decoder reads, not the cost of building it. Contrast also adds a second, prompt-only decoding
+reduces the memory the decoder reads, not the cost of building it. PCD also adds a second, prompt-only decoding
 pass for time-value tokens. \TODO{cost table; write-once memory re-ranked at question time.}
 
 \paragraph{Scope of the evaluation.}

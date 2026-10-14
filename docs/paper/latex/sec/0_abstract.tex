@@ -9,7 +9,7 @@ similarity removes whole stretches of the timeline. Where the memory is silent, 
 prior that does not depend on the video: asked with no video at all, the model still answers, starting intervals
 early and ending them too soon. We propose \method, a training-free method with two parts. \emph{Coverage} gives
 every frame an equal token quota and fills it with the tokens the actual question attends to, so that every time
-anchor survives pruning. \emph{Contrast} writes each time value against the model's own no-video prediction, with
+anchor survives pruning. \emph{Prior-contrastive decoding} (PCD) writes each time value against the model's own no-video prediction, with
 a strength that fades as the model grows confident, and reserves room for the final interval. Because grounding
 benchmarks carry strong positional biases, we evaluate every method against video-free floors. With 10\% of the
 visual tokens, \method raises R@0.5 on QVHighlights from 25.0 (random tokens) and 28.6 (all tokens) to

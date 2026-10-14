@@ -23,30 +23,30 @@ on S-EMBER the two parsers differ by at most 0.7 mIoU and batch size changes no 
   \setlength{\tabcolsep}{5pt}
   \caption{\textbf{Grounding with 10\% of the visual tokens} (ActivityNet: 30\%), mIoU\,/\,R@0.5. Grey rows are floors:
   the best video-free constant interval, tuned on the test questions, and the Retrieve\,$+$\,Coverage prediction
-  without Contrast lengthened by a factor fitted on S-EMBER. Contrast includes the answer reserve. Coverage rows
+  without PCD lengthened by a factor fitted on S-EMBER. PCD includes the answer reserve. Coverage rows
   include optional retrieval, which the coverage gate disables on Charades-STA. Empty cells: not yet computed. Best
-  non-floor result in \textbf{bold}.}
+  non-floor result in \textbf{bold}. S-EMBER closed intervals: \cref{tab:closed}.}
   \label{tab:main}
-  \begin{adjustbox}{max width=\linewidth}\begin{tabular}{@{}lccccc@{}}
+  \begin{adjustbox}{max width=\linewidth}\begin{tabular}{@{}lcccc@{}}
     \toprule
-    Method & S-EMBER & S-EMBER (closed) & QVHighlights & ActivityNet (30\%) & Charades-STA \\
+    Method & S-EMBER & QVHighlights & ActivityNet (30\%) & Charades-STA \\
     \midrule
-    \floor{Best constant interval}       & \floor{36.9 / 34.7} & \floor{32.1 / 29.9} & \floor{26.8 / 17.6} & \floor{37.9 / 35.8} & \floor{29.7 / 29.6} \\
-    \floor{Length rescaling of R $+$ C}  & \floor{38.3 / 40.0} & \floor{32.3 / 33.1} & \floor{40.2 / 42.4} & \floor{34.0 / 33.0} & \floor{24.0 / 17.6} \\
+    \floor{Best constant interval}       & \floor{36.9 / 34.7} & \floor{26.8 / 17.6} & \floor{37.9 / 35.8} & \floor{29.7 / 29.6} \\
+    \floor{Length rescaling of R $+$ C}  & \floor{38.3 / 40.0} & \floor{40.2 / 42.4} & \floor{34.0 / 33.0} & \floor{24.0 / 17.6} \\
     \midrule
-    All tokens (no pruning)          & 28.0 / 26.7 & 30.0 / 27.4 & 29.1 / 28.6 & 22.9 / 18.2 & 16.6 / 14.2 \\
-    Random tokens                    & 25.6 / 24.6 & 28.3 / 27.4 & 26.9 / 25.0 & 22.9 / 18.6 & 17.4 / 13.8 \\
-    FastVID~\cite{fastvid}           & 17.9 / 15.8 &             & 19.2 / 15.4 &             & 13.3 / 11.6 \\
-    VidCom\textsuperscript{2}~\cite{vidcom2} & 20.4 / 18.7 &     & 19.9 / 18.2 &             & 12.3 / \phantom{0}8.4 \\
-    FlashVID~\cite{flashvid}         & 22.7 / 21.5 &             & 22.8 / 20.4 & 20.5 / 15.4$^\dagger$ & 14.1 / 10.8 \\
-    SemVID~\cite{semvid}             & 23.3 / 20.6 &             & 24.5 / 21.2 & 22.8 / 18.6 & 14.6 / 11.2 \\
+    All tokens (no pruning)          & 28.0 / 26.7 & 29.1 / 28.6 & 22.9 / 18.2 & 16.6 / 14.2 \\
+    Random tokens                    & 25.6 / 24.6 & 26.9 / 25.0 & 22.9 / 18.6 & 17.4 / 13.8 \\
+    FastVID~\cite{fastvid}           & 17.9 / 15.8 & 19.2 / 15.4 &             & 13.3 / 11.6 \\
+    VidCom\textsuperscript{2}~\cite{vidcom2} & 20.4 / 18.7 & 19.9 / 18.2 &             & 12.3 / \phantom{0}8.4 \\
+    FlashVID~\cite{flashvid}         & 22.7 / 21.5 & 22.8 / 20.4 & 20.5 / 15.4$^\dagger$ & 14.1 / 10.8 \\
+    SemVID~\cite{semvid}             & 23.3 / 20.6 & 24.5 / 21.2 & 22.8 / 18.6 & 14.6 / 11.2 \\
     \midrule
-    Random $+$ Contrast              & 35.0 / 33.9 & 36.8 / 38.2 & 37.8 / 39.2 & 31.4 / 29.4 & \textbf{26.2} / \textbf{24.0} \\
-    SemVID $+$ Contrast              & 34.8 / 35.8 & 34.3 / 34.4 & 34.8 / 34.8 & 30.2 / 27.8 & 21.7 / 19.2 \\
-    Coverage only                    & 32.5 / 34.1 & 33.0 / 35.7 & 34.5 / 35.6 & 25.4 / 21.2 & 16.4 / 13.6 \\
-    \oursrow \textbf{\method} (Coverage $+$ Contrast) & \textbf{39.3} / \textbf{40.8} & \textbf{39.7} / \textbf{43.3} & \textbf{48.8} / \textbf{54.8} & \textbf{34.7} / \textbf{32.4} & 23.3 / 21.2 \\
+    Random $+$ PCD              & 35.0 / 33.9 & 37.8 / 39.2 & 31.4 / 29.4 & \textbf{26.2} / \textbf{24.0} \\
+    SemVID $+$ PCD              & 34.8 / 35.8 & 34.8 / 34.8 & 30.2 / 27.8 & 21.7 / 19.2 \\
+    Coverage only                    & 32.5 / 34.1 & 34.5 / 35.6 & 25.4 / 21.2 & 16.4 / 13.6 \\
+    \oursrow \textbf{\method} (Coverage $+$ PCD) & \textbf{39.3} / \textbf{40.8} & \textbf{48.8} / \textbf{54.8} & \textbf{34.7} / \textbf{32.4} & 23.3 / 21.2 \\
     \bottomrule
-    \multicolumn{6}{@{}l}{\footnotesize $^\dagger$ at 10\%.}
+    \multicolumn{5}{@{}l}{\footnotesize $^\dagger$ at 10\%.}
   \end{tabular}\end{adjustbox}
 \end{table*}
 
@@ -56,15 +56,15 @@ on S-EMBER the two parsers differ by at most 0.7 mIoU and batch size changes no 
   \setlength{\tabcolsep}{4pt}
   \caption{\textbf{Paired gains of \method in mIoU} (95\% bootstrap interval; $^*$: excludes 0).}
   \label{tab:paired}
-  \begin{adjustbox}{max width=\linewidth}\begin{tabular}{@{}lccccc@{}}
+  \begin{adjustbox}{max width=\linewidth}\begin{tabular}{@{}lcccc@{}}
     \toprule
-    \method \vs & S-EMBER & S-EMBER (closed) & QVHighlights & ActivityNet (30\%) & Charades-STA \\
+    \method \vs & S-EMBER & QVHighlights & ActivityNet (30\%) & Charades-STA \\
     \midrule
-    All tokens            & $+11.3$ \TODO{CI}            &                             & \up{$+19.7$ \pr{16.7, 22.8}$^*$} & \up{$+11.8$ \pr{9.3, 14.6}$^*$} & \\
-    Random $+$ Contrast   & \up{$+4.2$ \pr{1.7, 6.7}$^*$}     &                             & \up{$+11.0$ \pr{8.3, 13.5}$^*$}  & \up{$+3.3$ \pr{1.1, 5.5}$^*$}   & \dn{$-2.9$ \pr{$-4.7$, $-1.1$}$^*$} \\
-    SemVID $+$ Contrast   & \up{$+4.5$ \pr{1.9, 7.2}$^*$}     &                             & \up{$+14.1$ \pr{11.2, 17.1}$^*$} & \up{$+4.5$ \pr{2.3, 6.7}$^*$}   & \\
-    Best constant         & $+2.4$ \pr{$-0.7$, 5.6}      & \up{$+7.6$ \pr{2.5, 12.6}$^*$}   & \up{$+22.1$ \pr{18.7, 25.4}$^*$} & \dn{$-3.1$ \pr{$-5.9$, $-0.4$}$^*$} & \dn{$-6.4$ \pr{$-9.5$, $-3.3$}$^*$} \\
-    Length rescaling      & $+1.0$ \pr{$-1.6$, 3.7}      & \up{$+7.5$ \pr{3.2, 11.7}$^*$}   & \up{$+8.6$ \pr{5.5, 11.8}$^*$}   & $+0.8$ \pr{$-2.0$, 3.5}    & $-0.7$ \pr{$-3.1$, 1.6} \\
+    All tokens            & $+11.3$ \TODO{CI}            & \up{$+19.7$ \pr{16.7, 22.8}$^*$} & \up{$+11.8$ \pr{9.3, 14.6}$^*$} & \\
+    Random $+$ PCD   & \up{$+4.2$ \pr{1.7, 6.7}$^*$}     & \up{$+11.0$ \pr{8.3, 13.5}$^*$}  & \up{$+3.3$ \pr{1.1, 5.5}$^*$}   & \dn{$-2.9$ \pr{$-4.7$, $-1.1$}$^*$} \\
+    SemVID $+$ PCD   & \up{$+4.5$ \pr{1.9, 7.2}$^*$}     & \up{$+14.1$ \pr{11.2, 17.1}$^*$} & \up{$+4.5$ \pr{2.3, 6.7}$^*$}   & \\
+    Best constant         & $+2.4$ \pr{$-0.7$, 5.6}      & \up{$+22.1$ \pr{18.7, 25.4}$^*$} & \dn{$-3.1$ \pr{$-5.9$, $-0.4$}$^*$} & \dn{$-6.4$ \pr{$-9.5$, $-3.3$}$^*$} \\
+    Length rescaling      & $+1.0$ \pr{$-1.6$, 3.7}      & \up{$+8.6$ \pr{5.5, 11.8}$^*$}   & $+0.8$ \pr{$-2.0$, 3.5}    & $-0.7$ \pr{$-3.1$, 1.6} \\
     \bottomrule
   \end{tabular}\end{adjustbox}
 \end{table*}
@@ -78,7 +78,8 @@ tokens, and clears every floor by a wide margin ($+22.1$ mIoU over the best cons
 \emph{(ii) On S-EMBER, the gain is real where the window end is not a shortcut.} \method beats all tokens, random
 selection and SemVID under the same decoding. Against the floors its pooled gain is small and not significant,
 because two thirds of S-EMBER intervals end at the question time. On closed intervals, where that shortcut does not
-exist, \method gains $+7.6$ mIoU over the best constant and $+7.5$ over length rescaling.
+exist, \method gains $+7.6^*$ mIoU over the best constant and $+7.5^*$ over length rescaling
+(\cref{tab:closed}).
 
 \emph{(iii) On ActivityNet and Charades-STA, the base model is the bottleneck.} The uncompressed model is far below
 the constant floor on both (22.9 \vs 37.9 and 16.6 \vs 29.7). \method improves on all tokens and on every pruner on
@@ -102,8 +103,8 @@ ActivityNet, but no method reaches the floor, and on Charades-STA Coverage is wo
     FlashVID               & 17.3 & \phantom{0}6.1 & 22.7 & $+0.0$ \\
     SemVID                 & 19.8 & \phantom{0}7.6 & 23.3 & $+2.5$ \\
     Coverage, uniform frames & \textbf{22.5} & 11.2 & 31.7 & \up{$+5.3^*$} \\
-    Random $+$ Contrast    & 20.4 & 12.2 & 35.0 & $+3.2$ \\
-    SemVID $+$ Contrast\textsuperscript{\,(no reserve)} & 17.9 & \phantom{0}9.9 & 32.3 & $+0.6$ \\
+    Random $+$ PCD    & 20.4 & 12.2 & 35.0 & $+3.2$ \\
+    SemVID $+$ PCD\textsuperscript{\,(no reserve)} & 17.9 & \phantom{0}9.9 & 32.3 & $+0.6$ \\
     \oursrow \method                & 21.7 & 13.3 & \textbf{39.3} & \up{$+4.4^*$} \\
     \oursrow \method $+$ coverage gate & 22.1 & \textbf{13.5} & \textbf{39.3} & \up{$+4.8^*$} \\
     \bottomrule
@@ -112,9 +113,9 @@ ActivityNet, but no method reaches the floor, and on Charades-STA Coverage is wo
 
 \paragraph{Answers.}
 \method also improves the answers (\cref{tab:qa}): accuracy 21.7 \vs 17.3 for random tokens ($+4.4^*$) and 19.8 for
-all tokens, and GQ@0.5 13.3 \vs 7.4 and 8.8. Coverage alone gives the best accuracy (22.5); Contrast trades about one
+all tokens, and GQ@0.5 13.3 \vs 7.4 and 8.8. Coverage alone gives the best accuracy (22.5); PCD trades about one
 point of accuracy for its grounding gain, and differences below about two points of accuracy are within the decoding
-noise of the judge setup. \TODO{SemVID $+$ Contrast with reserve in the same judging session.}
+noise of the judge setup. \TODO{SemVID $+$ PCD with reserve in the same judging session.}
 
 \begin{table}[t]
   \centering
@@ -129,8 +130,8 @@ noise of the judge setup. \TODO{SemVID $+$ Contrast with reserve in the same jud
     All tokens            & 37.6 / 40.3 & 30.1 / 25.5 & \phantom{0}5.9 / 3.0 \\
     Random tokens         & 33.2 / 35.1 & 29.6 / 26.1 & \phantom{0}3.5 / 2.0 \\
     Coverage              & 43.2 / 46.6 & 35.3 / 36.4 & \phantom{0}7.1 / 6.0 \\
-    Random $+$ Contrast   & 41.0 / 40.8 & 41.9 / 40.2 & \textbf{11.0} / \textbf{9.0} \\
-    SemVID $+$ Contrast   & 38.9 / 36.6 & 44.6 / \textbf{50.0} & \phantom{0}8.9 / 8.0 \\
+    Random $+$ PCD   & 41.0 / 40.8 & 41.9 / 40.2 & \textbf{11.0} / \textbf{9.0} \\
+    SemVID $+$ PCD   & 38.9 / 36.6 & 44.6 / \textbf{50.0} & \phantom{0}8.9 / 8.0 \\
     \oursrow \method               & \textbf{47.6} / \textbf{50.8} & \textbf{46.9} / 48.4 & \phantom{0}9.3 / 8.0 \\
     \bottomrule
   \end{tabular}\end{adjustbox}
@@ -154,7 +155,7 @@ selection varies little across seeds ($26.0 \pm 0.6$ mIoU over three seeds on S-
 The ordering follows coverage (\cref{tab:retention}): the methods that empty frames most aggressively lose most, and
 those that spread tokens lose least. Accuracy, in contrast, is barely affected (\cref{tab:qa}): FastVID's accuracy
 is within noise of random selection ($-2.1$, n.s.) while its mIoU is 7.6 lower. A pruner built to keep answers keeps answers, not time.
-Contrast helps every pruner ($+7$ to $+12$ mIoU with the reserve) but does not close the gap to \method.
+PCD helps every pruner ($+7$ to $+12$ mIoU with the reserve) but does not close the gap to \method.
 
 %% ================================================================================================= 6.3 coverage
 \subsection{Analysis of Coverage}
@@ -165,7 +166,7 @@ Contrast helps every pruner ($+7$ to $+12$ mIoU with the reserve) but does not c
   \small
   \setlength{\tabcolsep}{3pt}
   \caption{\textbf{Component ladder} (mIoU\,/\,R@0.5; ActivityNet at 30\%). R: retrieval frames; C: Coverage;
-  PCD: contrast; res.: answer reserve.}
+  PCD: prior-contrastive decoding; res.: answer reserve.}
   \label{tab:ladder}
   \begin{adjustbox}{max width=\linewidth}\begin{tabular}{@{}lccc@{}}
     \toprule
@@ -185,7 +186,7 @@ Contrast helps every pruner ($+7$ to $+12$ mIoU with the reserve) but does not c
 \Cref{tab:ladder} adds the components one at a time. Coverage is the largest gain on the memory side: $+6.1^*$ mIoU
 on S-EMBER and $+6.8^*$ on QVHighlights over random tokens. Retrieval adds $+0.8$ to $+0.9$ on top (not significant
 on any dataset); once tokens are chosen by the question, which frames are encoded matters less.
-\TODO{Coverage $+$ Contrast without retrieval on all datasets.}
+\TODO{Coverage $+$ PCD without retrieval on all datasets.}
 
 \begin{table}[t]
   \centering
@@ -245,7 +246,7 @@ letting each choose.
     Method & Per layer & Shared & $\Delta$mIoU \\
     \midrule
     Random tokens           & 25.6 & 26.3 & $+0.7$ \pr{$-0.7$, 2.2} \\
-    Random $+$ Contrast     & 35.0 & 35.8 & $+0.7$ \pr{$-0.9$, 2.3} \\
+    Random $+$ PCD     & 35.0 & 35.8 & $+0.7$ \pr{$-0.9$, 2.3} \\
     R $+$ C                 & 32.5 & 31.9 & $-0.6$ \pr{$-2.3$, 1.1} \\
     \oursrow \method                 & 39.3 & 37.8 & \dn{$-1.5$ \pr{$-2.9$, $-0.0$}$^*$} \\
     \bottomrule
@@ -253,20 +254,20 @@ letting each choose.
 \end{table}
 
 %% ================================================================================================= 6.4 contrast
-\subsection{Analysis of Contrast}
+\subsection{Analysis of PCD}
 \label{sec:res-contrast}
 
 \begin{table*}[t]
   \centering
   \small
   \setlength{\tabcolsep}{5pt}
-  \caption{\textbf{Contrast on eight memories} (S-EMBER, Acc.\,/\,mIoU\,/\,GQ@0.5; no answer reserve). PCD: plain
-  contrast on all tokens ($\alpha{=}0.5$); final: confidence-adaptive strength on time values only. $\Delta$ final
+  \caption{\textbf{PCD on eight memories} (S-EMBER, Acc.\,/\,mIoU\,/\,GQ@0.5; no answer reserve). Plain PCD: on all
+  tokens with constant $\alpha{=}0.5$; PCD: confidence-adaptive strength on time values only (ours). $\Delta$ PCD
   \vs greedy.}
   \label{tab:pcd8}
   \begin{adjustbox}{max width=\linewidth}\begin{tabular}{@{}lcccccc@{}}
     \toprule
-    Memory & Greedy & PCD & Final & $\Delta$mIoU & $\Delta$GQ@0.5 & Early starts \\
+    Memory & Greedy & Plain PCD & PCD & $\Delta$mIoU & $\Delta$GQ@0.5 & Early starts \\
     \midrule
     Random 5\%            & 15.8 / 23.6 / 5.9  & 15.4 / 29.2 / 9.1  & \textbf{16.4 / 31.5 / 9.9}  & \up{$+8.0^*$} & \up{$+4.0^*$} & 39\% $\rightarrow$ 20\% \\
     Random 10\%           & 15.2 / 25.8 / 7.2  & 16.2 / 32.1 / 10.1 & \textbf{16.2 / 32.6 / 10.1} & \up{$+6.8^*$} & $+2.9$   & 38\% $\rightarrow$ 19\% \\
@@ -282,12 +283,12 @@ letting each choose.
   \end{tabular}\end{adjustbox}
 \end{table*}
 
-\paragraph{Contrast is a plug-in for any memory.}
-\Cref{tab:pcd8} applies Contrast to eight memories: three random budgets, the uncompressed model, HERMES and
+\paragraph{PCD is a plug-in for any memory.}
+\Cref{tab:pcd8} applies PCD to eight memories: three random budgets, the uncompressed model, HERMES and
 stratified pruning, and two HERMES streaming memories. It improves mIoU significantly on all eight ($+4.6$ to $+8.0$)
 and GQ@0.5 on six, roughly halves the early starts everywhere, and its gains are largest where the memory is
 smallest. With 10\% of the tokens and random selection it already beats the uncompressed model (32.6 \vs 28.0).
-Contrast also transfers to FastVID ($+7.6^*$ mIoU, leak $38\% \rightarrow 12\%$), the pruner that loses coverage
+PCD also transfers to FastVID ($+7.6^*$ mIoU, leak $38\% \rightarrow 12\%$), the pruner that loses coverage
 most.
 
 \begin{table}[t]
@@ -326,7 +327,7 @@ the instruction, leaves the prior in place.
   \centering
   \small
   \setlength{\tabcolsep}{3pt}
-  \caption{\textbf{Time scope and adaptive strength} (S-EMBER, Acc.\,/\,mIoU\,/\,GQ@0.5). Top: contrast on all tokens
+  \caption{\textbf{Time scope and adaptive strength} (S-EMBER, Acc.\,/\,mIoU\,/\,GQ@0.5). Top: PCD on all tokens
   \vs time values only. Bottom: the 78 questions whose evidence truly starts in the first 5\% of the window.}
   \label{tab:scope}
   \begin{adjustbox}{max width=\linewidth}\begin{tabular}{@{}lcc@{}}
@@ -350,8 +351,8 @@ the instruction, leaves the prior in place.
 \paragraph{Time scope and adaptive strength.}
 Contrasting every token also changes words that have nothing to do with time: the answer text changed in 85\% of
 questions, lists of more than eight moments rose from 12 to 56, and over-counting rose from 14\% to 34\% of counting
-questions. Restricting the contrast to time values keeps the grounding gain and disturbs the text less
-(\cref{tab:scope}, top). Contrast also risks hurting questions whose evidence really starts at 0\,s. With a constant
+questions. Restricting PCD to time values keeps the grounding gain and disturbs the text less
+(\cref{tab:scope}, top). PCD also risks hurting questions whose evidence really starts at 0\,s. With a constant
 strength, their accuracy on the uncompressed memory falls from 21.8 to 16.7; with the adaptive strength, which fades
 when the model is confident, it rises to 23.1 (\cref{tab:scope}, bottom; $+6.4^*$ \vs constant). The adaptive rule
 also gives the best \emph{discrimination}, early starts on early-evidence questions minus early starts on the
@@ -384,13 +385,14 @@ We logged both distributions at the first time value of every answer and replaye
 starts and removing leaked ones. The remaining early-start errors are cases where the memory itself is unsure; they
 need evidence, not a better decoding rule.
 
-\paragraph{Is Contrast more than a longer interval?}
+\paragraph{Is PCD more than a longer interval?}
 \label{sec:lengthening}
-Contrast lengthens predicted intervals (median predicted/gold length $0.57 \rightarrow 0.67$ on S-EMBER), and longer
+PCD lengthens predicted intervals (median predicted/gold length $0.57 \rightarrow 0.67$ on S-EMBER), and longer
 intervals alone raise mIoU on benchmarks with long gold intervals. The length-rescaling floor tests this directly
-(\cref{tab:paired}, last row). On QVHighlights ($+8.6^*$) and on S-EMBER closed intervals ($+7.5^*$), \method clearly
-beats rescaling: Contrast moves the interval toward the evidence, not just outward. On pooled S-EMBER, ActivityNet and
-Charades-STA the two are statistically tied, so on those sets the benefit of Contrast cannot be separated from a
+(\cref{tab:paired}, last row). On QVHighlights ($+8.6^*$) and on S-EMBER closed intervals ($+7.5^*$,
+\cref{tab:closed}), \method clearly
+beats rescaling: PCD moves the interval toward the evidence, not just outward. On pooled S-EMBER, ActivityNet and
+Charades-STA the two are statistically tied, so on those sets the benefit of PCD cannot be separated from a
 calibrated lengthening. \TODO{start/end error decomposition on closed questions; mismatched-video and shuffled-frame
 negatives.}
 
@@ -414,16 +416,16 @@ negatives.}
 \end{table}
 
 \paragraph{Answer reserve.}
-Contrast rewards fine time steps that the prior finds unlikely, so it sometimes lists one continuing activity at
+PCD rewards fine time steps that the prior finds unlikely, so it sometimes lists one continuing activity at
 one-second steps until the token limit. The reserve removes every such failure and improves every PCD configuration
 we tested (\cref{tab:reserve}), most where run-ons were frequent (SemVID $+$ PCD on Charades, \method on
 QVHighlights). It costs nothing when the model answers within the limit, which every greedy run does.
 
 \paragraph{Prompt format.}
-Contrast needs a reasoning-style answer: with the official direct-answer prompt it does not help ($+0.4$ mIoU). An
+PCD needs a reasoning-style answer: with the official direct-answer prompt it does not help ($+0.4$ mIoU). An
 \emph{event} timeline that lists start and end per occurrence (\texttt{Event: 12.0 -- 15.5 seconds}) improves the
-greedy baseline by $+7.4^*$ mIoU by stating extents, and Contrast still adds $+2.1$ to $+3.3$ on top
-(35.0 mIoU, 12.6 GQ@0.5 at 768 tokens). The two fixes overlap: the format corrects extents, Contrast corrects the
+greedy baseline by $+7.4^*$ mIoU by stating extents, and PCD still adds $+2.1$ to $+3.3$ on top
+(35.0 mIoU, 12.6 GQ@0.5 at 768 tokens). The two fixes overlap: the format corrects extents, PCD corrects the
 leak. \method uses the simpler timeline in all main results. \TODO{event timeline with \method.}
 
 %% ================================================================================================= 6.5 budget
@@ -445,9 +447,9 @@ leak. \method uses the simpler timeline in all main results. \TODO{event timelin
     \midrule
     Random                  & 23.9 & 25.6 & 27.4 &      & 26.9 &      & 17.8 & 22.9 & 23.5 \\
     SemVID                  & 20.9 & 23.3 & 26.5 &      & 24.5 &      & 21.2 & 22.8 & 22.3 \\
-    R $+$ C (no Contrast)   & 34.6 & 32.5 & 31.0 &      & 34.5 &      & 11.3 & 25.4 & 25.0 \\
-    SemVID $+$ Contrast     & 31.9 & 34.8 & 35.3 &      & 34.8 &      & \textbf{26.8} & 30.2 & 31.4 \\
-    Random $+$ Contrast     & 34.5 & 35.0 & 36.5 &      & 37.8 &      & 21.5 & 31.4 & 32.2 \\
+    R $+$ C (no PCD)   & 34.6 & 32.5 & 31.0 &      & 34.5 &      & 11.3 & 25.4 & 25.0 \\
+    SemVID $+$ PCD     & 31.9 & 34.8 & 35.3 &      & 34.8 &      & \textbf{26.8} & 30.2 & 31.4 \\
+    Random $+$ PCD     & 34.5 & 35.0 & 36.5 &      & 37.8 &      & 21.5 & 31.4 & 32.2 \\
     \oursrow \method                 & \textbf{39.3} & \textbf{39.3} & \textbf{36.8} & 9.7 & \textbf{48.8} & \textbf{49.4} & 11.6 & \textbf{34.7} & \textbf{34.4} \\
     \bottomrule
   \end{tabular}\end{adjustbox}
@@ -458,7 +460,7 @@ leak. \method uses the simpler timeline in all main results. \TODO{event timelin
 \Cref{tab:budget,fig:budget} vary the budget at 64 frames and show two regimes. Above roughly 500 kept tokens, question-driven
 selection is flat or even improves as the budget \emph{shrinks}: on S-EMBER, Retrieve $+$ Coverage rises from 31.0
 (20\%) to 34.6 (5\%) and \method from 36.8 to 39.3, while random selection and SemVID degrade. Pruning by the question
-removes distractors as well as cost: at 5\% \method leads SemVID $+$ Contrast by $+7.4^*$ mIoU, at 20\% by $+1.5$
+removes distractors as well as cost: at 5\% \method leads SemVID $+$ PCD by $+7.4^*$ mIoU, at 20\% by $+1.5$
 (n.s.). Below roughly 300 kept tokens (QVHighlights 5\%, ActivityNet 10\%), the equal quota leaves only 2--4 tokens
 per frame pair, the top-attended tokens carry little content, and \method collapses (9.7 and 11.6), below random
 selection and below SemVID, whose cross-frame merging degrades more gracefully. The threshold is absolute, not
@@ -473,12 +475,12 @@ copies.
   \centering
   \small
   \setlength{\tabcolsep}{5pt}
-  \caption{\textbf{Spending a fixed token budget on fewer frames} (mIoU\,/\,R@0.5, all with Contrast and reserve).
+  \caption{\textbf{Spending a fixed token budget on fewer frames} (mIoU\,/\,R@0.5, all with PCD and reserve).
   Within each block every row keeps the same number of tokens: $F$ frames at keep ratio $\rho \cdot 64/F$.}
   \label{tab:frames}
   \begin{adjustbox}{max width=\linewidth}\begin{tabular}{@{}llccc@{}}
     \toprule
-    Dataset (kept tokens) & Frames $\times$ keep ratio & Random $+$ Contrast & SemVID $+$ Contrast & \method \\
+    Dataset (kept tokens) & Frames $\times$ keep ratio & Random $+$ PCD & SemVID $+$ PCD & \method \\
     \midrule
     \multirow{3}{*}{QVHighlights (${\sim}$260)} & 64 $\times$ 5\%  & --          & --          & \phantom{0}9.7 / \phantom{0}6.6 \\
                                                 & 32 $\times$ 10\% & 32.4 / 29.2 & 35.5 / 33.6 & \textbf{43.1} / \textbf{46.6} \\
@@ -498,13 +500,13 @@ copies.
 The collapse at small budgets is not a limit of the equal quota itself but of how the budget is spent. In
 \cref{tab:frames} every row of a block keeps the same number of tokens and only the split between frames and tokens
 per frame changes. With 32 frames instead of 64, each frame pair keeps twice as many tokens, and \method recovers from
-9.7 to 43.1 mIoU on QVHighlights and from 11.6 to 33.9 on ActivityNet, where it now beats SemVID $+$ Contrast
+9.7 to 43.1 mIoU on QVHighlights and from 11.6 to 33.9 on ActivityNet, where it now beats SemVID $+$ PCD
 ($+5.5$) and nearly matches its own 64-frame result at three times the budget (34.7). Halving again to 16 frames
 loses a little: past a point, temporal coverage becomes the bottleneck. The baselines gain from fewer frames too,
 but less. On Charades-STA (30\,s videos) fewer frames do not help any method. We therefore recommend the rule of
 \cref{sec:coverage}: keep at least about eight tokens per frame pair and reduce $F$ when the budget does not allow it.
 At equal tokens, more frames with fewer tokens each does not help either: 128 frames at 5\% on S-EMBER give
-$+1.2$ mIoU (n.s.) without Contrast and $-3.6^*$ with it, with 74--78 unparseable answers.
+$+1.2$ mIoU (n.s.) without PCD and $-3.6^*$ with it, with 74--78 unparseable answers.
 
 %% ================================================================================================= 6.7 oracles
 \subsection{Comparison with gold-informed upper bounds}
@@ -514,7 +516,7 @@ $+1.2$ mIoU (n.s.) without Contrast and $-3.6^*$ with it, with 74--78 unparseabl
   \centering
   \small
   \setlength{\tabcolsep}{2.5pt}
-  \caption{\textbf{Upper bounds that use the gold interval} (S-EMBER, greedy unless noted; Contrast without
+  \caption{\textbf{Upper bounds that use the gold interval} (S-EMBER, greedy unless noted; PCD without
   reserve). Oracle selector: the gold frames' tokens are kept first. Oracle window: all 64 frames inside the gold
   interval.}
   \label{tab:oracle}
@@ -524,21 +526,21 @@ $+1.2$ mIoU (n.s.) without Contrast and $-3.6^*$ with it, with 74--78 unparseabl
     \midrule
     No video                          & 10.5 & \phantom{0}7.9 & \phantom{0}4.8 & 0.8 & 88\% \\
     Random 10\%                       & 15.2 & 25.8 & 24.2 & 7.2 & 30\% \\
-    Random 10\% $+$ Contrast          & 16.2 & \textbf{32.6} & \textbf{33.1} & \textbf{10.1} & \textbf{11\%} \\
+    Random 10\% $+$ PCD          & 16.2 & \textbf{32.6} & \textbf{33.1} & \textbf{10.1} & \textbf{11\%} \\
     Oracle selector 10\%              & \textbf{17.5} & 27.9 & 25.7 & 8.4 & 33\% \\
     Gold-window zoom 10\%             & 14.5 & 28.2 & 26.1 & 7.8 & 25\% \\
     \midrule
     All tokens                        & 18.5 & 28.0 & 26.7 & 8.6 & 33\% \\
-    All tokens $+$ Contrast           & 21.5 & 32.7 & 34.1 & 13.3 & \textbf{13\%} \\
+    All tokens $+$ PCD           & 21.5 & 32.7 & 34.1 & 13.3 & \textbf{13\%} \\
     Oracle window                     & \textbf{26.3} & \textbf{35.3} & \textbf{36.2} & \textbf{13.9} & 45\% \\
     \bottomrule
   \end{tabular}\end{adjustbox}
 \end{table}
 
-\Cref{tab:oracle} gives the memory information it should not have. At the same budget, Contrast without any gold
+\Cref{tab:oracle} gives the memory information it should not have. At the same budget, PCD without any gold
 information beats perfect token selection on grounding ($+4.7^*$ mIoU over the oracle selector at 10\%, $+4.5^*$ at
 5\%): knowing which tokens to keep does not stop the prior, and the oracle selector still leaks 33\% of the time.
-Against the strongest oracle, which sees only the evidence, Contrast closes most of the grounding gap (GQ@0.5 13.3
+Against the strongest oracle, which sees only the evidence, PCD closes most of the grounding gap (GQ@0.5 13.3
 \vs 13.9, n.s.), and the remaining gap is in the answers (accuracy 21.5 \vs 26.3$^*$). Even the oracle window leaks
 45\%: with every frame inside the evidence, the model still often starts near 0\,s. More evidence alone does not remove
 the prior; the two levers are complementary.
@@ -588,7 +590,7 @@ fixed frames.
 
 \Cref{tab:negative} collects the ideas that gave little or nothing. They share a lesson: at a fixed budget,
 redistributing evidence (zooming, re-weighting frames, unequal quotas) is close to its ceiling, and only removing the
-prior where it acts (Contrast) or guaranteeing coverage (the equal quota) gives large gains.
+prior where it acts (PCD) or guaranteeing coverage (the equal quota) gives large gains.
 
 %% ================================================================================================= 6.10 errors
 \subsection{Where answers still fail}
@@ -598,12 +600,12 @@ prior where it acts (Contrast) or guaranteeing coverage (the equal quota) gives 
   \centering
   \small
   \setlength{\tabcolsep}{3pt}
-  \caption{\textbf{Error types} on S-EMBER, pooled over eight memories (3{,}800 answers), greedy \vs Contrast
+  \caption{\textbf{Error types} on S-EMBER, pooled over eight memories (3{,}800 answers), greedy \vs PCD
   (no reserve).}
   \label{tab:errors}
   \begin{adjustbox}{max width=\linewidth}\begin{tabular}{@{}lccc@{}}
     \toprule
-    Outcome & Greedy & Contrast & $\Delta$ \\
+    Outcome & Greedy & PCD & $\Delta$ \\
     \midrule
     IoU $\geq 0.5$, answer correct      & \phantom{0}6.1\% & \phantom{0}9.9\% & \up{$+3.8^*$} \\
     IoU $\geq 0.5$, answer wrong        & 16.3\% & 20.7\% & \up{$+4.4^*$} \\
@@ -618,7 +620,7 @@ prior where it acts (Contrast) or guaranteeing coverage (the equal quota) gives 
   \end{tabular}\end{adjustbox}
 \end{table}
 
-\Cref{tab:errors} shows that Contrast works where it was aimed: intervals entirely before the gold one, the signature
+\Cref{tab:errors} shows that PCD works where it was aimed: intervals entirely before the gold one, the signature
 of the prior, fall from the largest error type to less than a fifth of answers. The remaining failures point to
 four limits. (i) \emph{Answers, not intervals}: twice as many answers are well grounded but wrong as grounded and
 right; counting answers do not use the events the model itself listed, and an IoU of 0.5 still allows a two-fold

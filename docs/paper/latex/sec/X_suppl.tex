@@ -7,6 +7,37 @@ On videos longer than a minute, the model sometimes writes times as minutes:seco
 numbers with the official parser are: QVHighlights, \method 44.6\,/\,50.2 (\vs 48.8\,/\,54.8); ActivityNet at 30\%,
 33.3\,/\,31.0 (\vs 34.7\,/\,32.4). \TODO{full table with the official parser.}
 
+\section{S-EMBER closed intervals}
+\label{sec:suppl-closed}
+
+Two thirds of S-EMBER gold intervals end at, or close to, the question time, so a constant interval ending at $q$
+is a strong floor on the pooled set. \Cref{tab:closed} restricts the main comparison to the \emph{closed} questions
+(gold end $<0.8q$, 33\% of the questions), where that shortcut does not exist; the floors are re-tuned on this subset.
+
+\begin{table}[h]
+  \centering
+  \small
+  \setlength{\tabcolsep}{3pt}
+  \caption{\textbf{S-EMBER closed intervals} (10\%, mIoU\,/\,R@0.5; settings as in \cref{tab:main}). Right: paired
+  $\Delta$mIoU of \method (95\% bootstrap interval; $^*$: excludes 0).}
+  \label{tab:closed}
+  \begin{adjustbox}{max width=\linewidth}\begin{tabular}{@{}lcc@{}}
+    \toprule
+    Method & mIoU / R@0.5 & \method \vs \\
+    \midrule
+    \floor{Best constant interval}       & \floor{32.1 / 29.9} & \up{$+7.6$ \pr{2.5, 12.6}$^*$} \\
+    \floor{Length rescaling of R $+$ C}  & \floor{32.3 / 33.1} & \up{$+7.5$ \pr{3.2, 11.7}$^*$} \\
+    \midrule
+    All tokens (no pruning)              & 30.0 / 27.4 & \\
+    Random tokens                        & 28.3 / 27.4 & \\
+    Random $+$ PCD                       & 36.8 / 38.2 & \\
+    SemVID $+$ PCD                       & 34.3 / 34.4 & \\
+    Coverage only                        & 33.0 / 35.7 & \\
+    \oursrow \textbf{\method} (Coverage $+$ PCD) & \textbf{39.7} / \textbf{43.3} & -- \\
+    \bottomrule
+  \end{tabular}\end{adjustbox}
+\end{table}
+
 \section{End-snapping on S-EMBER}
 \label{sec:suppl-snap}
 

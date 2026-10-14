@@ -18,8 +18,8 @@
   \addplot[black!45, mark=o] coordinates {(5,23.9) (10,25.6) (20,27.4)};             \addlegendentry{random}
   \addplot[black!45, dashed, mark=square] coordinates {(5,20.9) (10,23.3) (20,26.5)}; \addlegendentry{SemVID}
   \addplot[orange!80!black, mark=triangle] coordinates {(5,34.6) (10,32.5) (20,31.0)}; \addlegendentry{R + Coverage}
-  \addplot[black!70, mark=*] coordinates {(5,34.5) (10,35.0) (20,36.5)};              \addlegendentry{random + Contrast}
-  \addplot[black!70, dashed, mark=square*] coordinates {(5,31.9) (10,34.8) (20,35.3)};\addlegendentry{SemVID + Contrast}
+  \addplot[black!70, mark=*] coordinates {(5,34.5) (10,35.0) (20,36.5)};              \addlegendentry{random + PCD}
+  \addplot[black!70, dashed, mark=square*] coordinates {(5,31.9) (10,34.8) (20,35.3)};\addlegendentry{SemVID + PCD}
   \addplot[ours, very thick, mark=diamond*, mark size=3pt] coordinates {(5,39.3) (10,39.3) (20,36.8)}; \addlegendentry{\textbf{\method}}
   \addplot[floorc, densely dotted, thick, mark=none, forget plot] coordinates {(3.5,36.9) (21.5,36.9)};
   \node[font=\sffamily\tiny, text=floorc, anchor=south west] at (axis cs:3.7,36.9) {best constant};

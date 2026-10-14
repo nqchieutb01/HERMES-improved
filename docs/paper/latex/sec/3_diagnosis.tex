@@ -97,11 +97,11 @@ all answers, \cref{tab:errors}).
   \setlength{\tabcolsep}{3pt}
   \caption{\textbf{Causal test.} Frames inside the gold evidence (``evidence'') or as many frames elsewhere
   (``control'') are removed. Acc.\,/\,mIoU\,/\,GQ@0.5 and leak; leak measured on the 397 questions whose evidence starts
-  after the first 5\% of the window. Contrast: adaptive PCD on time values (\cref{sec:contrast}), no reserve.}
+  after the first 5\% of the window. PCD: adaptive, on time values (\cref{sec:contrast}), no reserve.}
   \label{tab:causal}
   \begin{adjustbox}{max width=\linewidth}\begin{tabular}{@{}llcccc@{}}
     \toprule
-    & & \multicolumn{2}{c}{Greedy} & \multicolumn{2}{c}{Contrast} \\
+    & & \multicolumn{2}{c}{Greedy} & \multicolumn{2}{c}{PCD} \\
     \cmidrule(lr){3-4} \cmidrule(l){5-6}
     Memory & Removed & Acc./mIoU/GQ & Leak & Acc./mIoU/GQ & Leak \\
     \midrule

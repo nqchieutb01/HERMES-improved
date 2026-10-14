@@ -24,14 +24,14 @@ QVHighlights: about 520). ActivityNet is reported at 30\% (400--900 tokens), bec
 \paragraph{Baselines.}
 All tokens (no pruning); random tokens; FastVID~\cite{fastvid}, VidCom\textsuperscript{2}~\cite{vidcom2},
 FlashVID~\cite{flashvid} (vision-side stages) and SemVID~\cite{semvid}, re-implemented and checked to keep the
-same tokens as the authors' code on test inputs; each with and without Contrast.
+same tokens as the authors' code on test inputs; each with and without PCD.
 \TODO{SnapKV-style observation-window eviction, PruneVid, global question top-$k$ without quotas, and FV-Action /
 attention readout on the same memory.}
 
 \paragraph{Floor-adjusted evaluation.}
 For every dataset we report three video-free or video-light references. (i) The \emph{best constant interval}
 $[aq, bq]$ over a $20{\times}20$ grid, tuned on the test questions, which upper-bounds any constant rule.
-(ii) \emph{Length rescaling}: the no-Contrast prediction stretched about its start by a factor fitted once on
+(ii) \emph{Length rescaling}: the no-PCD prediction stretched about its start by a factor fitted once on
 S-EMBER (1.76) and applied unchanged to the other datasets; it tests whether a gain could come from longer
 intervals alone. (iii) The split into \emph{closed} questions (gold end $<0.8q$) and the rest. End-snapping on
 S-EMBER is discussed in \cref{sec:suppl-snap}.
