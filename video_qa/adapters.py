@@ -99,7 +99,7 @@ SEMBER_MCQ_METADATA_FIELDS = (
 )
 
 
-GROUNDING_PROMPT_STYLES = ("official", "full_span", "timeline", "timeline_debias", "events", "events_merged", "timelens")
+GROUNDING_PROMPT_STYLES = ("official", "full_span", "timeline", "timeline_debias", "events", "events_merged", "timelens", "raw")
 # Models predict intervals ~3x shorter than the annotated evidence; ask for the whole event span.
 FULL_SPAN_INSTRUCTION = (
     "The time interval must cover the whole event, from the moment it begins until it has "
@@ -184,6 +184,9 @@ def sember_grounding_prompt(question: str, style: str = "official") -> str:
         return f"{EVENTS_MERGED_PROMPT}\n\n{question}"
     if style == "timelens":
         return TIMELENS_PROMPT.format(question)
+    if style == "raw":
+        # The question field already holds the full prompt (e.g. NExT-GQA's multiple-choice and grounding prompts).
+        return question
     raise ValueError(f"Unknown S-EMBER grounding prompt style: {style!r}")
 
 
