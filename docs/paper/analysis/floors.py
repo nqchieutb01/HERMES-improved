@@ -50,7 +50,8 @@ def mean(v):
     return 100 * sum(v) / len(v) if v else float("nan")
 
 
-for ds, runs in SETS.items():
+def main():
+  for ds, runs in SETS.items():
     data = {k: load(v) for k, v in runs.items()}
     ref = data["Random"]
     qids = sorted(ref)
@@ -74,3 +75,7 @@ for ds, runs in SETS.items():
         c = [iou(d[k][0], d[k][1], d[k][2]) for k in closed]
         snc = [iou((d[k][0][0], d[k][3]), d[k][1], d[k][2]) if d[k][0][0] is not None else 0.0 for k in closed]
         print(f"| {name} | {mean(a):.1f} | {mean(sn):.1f} | {mean(c):.1f} | {mean(snc):.1f} |")
+
+
+if __name__ == "__main__":
+    main()

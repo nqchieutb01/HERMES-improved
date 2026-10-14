@@ -67,7 +67,7 @@ intervals are 0.45$\times$ the gold length (median) and 87\% of its ends are mor
 call this the model's \emph{temporal prior}: start early, stop soon.
 
 \paragraph{The prior leaks into answers with video.}
-The same signature appears in every memory, weaker (\cref{tab:leak}). About 30\% of intervals start early at every
+The same signature appears in every memory, weaker (\cref{fig:leak}). About 30\% of intervals start early at every
 random budget and with no pruning at all, against 16\% of gold intervals, and the share rises when coverage is lost
 (HERMES 49\%, HERMES streaming 37--39\%). The leak is therefore not a matter of the number of tokens, but of where the
 memory is silent.
@@ -89,26 +89,7 @@ Across memories, the median end error is 0.40--0.69 of the gold length without c
 0.14--0.30 for the start, and the most frequent failure is an interval entirely \emph{before} the gold one (33\% of
 all answers, \cref{tab:errors}).
 
-\begin{table}[t]
-  \centering
-  \small
-  \setlength{\tabcolsep}{4pt}
-  \caption{\textbf{The temporal prior leaks into every memory.} Early starts: share of intervals starting in the first
-  5\% of the window (gold: 16\%). S-EMBER, greedy decoding.}
-  \label{tab:leak}
-  \begin{adjustbox}{max width=\linewidth}\begin{tabular}{@{}lcc@{}}
-    \toprule
-    Memory & Early starts & mIoU \\
-    \midrule
-    No video                   & 90\% & \phantom{0}7.9 \\
-    HERMES 10\%                & 56\% & 18.3 \\
-    HERMES streaming, 4k / 6k  & 45\% / 46\% & 21.6 / 22.6 \\
-    Random 5\% / 10\% / 25\%   & 39\% / 38\% / 37\% & 23.6 / 25.8 / 28.2 \\
-    Stratified 10\%            & 36\% & 23.7 \\
-    All tokens                 & 41\% & 28.0 \\
-    \bottomrule
-  \end{tabular}\end{adjustbox}
-\end{table}
+\input{fig/leak}
 
 \begin{table}[t]
   \centering

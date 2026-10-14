@@ -44,7 +44,7 @@ on S-EMBER the two parsers differ by at most 0.7 mIoU and batch size changes no 
     Random $+$ Contrast              & 35.0 / 33.9 & 36.8 / 38.2 & 37.8 / 39.2 & 31.4 / 29.4 & \textbf{26.2} / \textbf{24.0} \\
     SemVID $+$ Contrast              & 34.8 / 35.8 & 34.3 / 34.4 & 34.8 / 34.8 & 30.2 / 27.8 & 21.7 / 19.2 \\
     Coverage only                    & 32.5 / 34.1 & 33.0 / 35.7 & 34.5 / 35.6 & 25.4 / 21.2 & 16.4 / 13.6 \\
-    \textbf{\method} (Coverage $+$ Contrast) & \textbf{39.3} / \textbf{40.8} & \textbf{39.7} / \textbf{43.3} & \textbf{48.8} / \textbf{54.8} & \textbf{34.7} / \textbf{32.4} & 23.3 / 21.2 \\
+    \oursrow \textbf{\method} (Coverage $+$ Contrast) & \textbf{39.3} / \textbf{40.8} & \textbf{39.7} / \textbf{43.3} & \textbf{48.8} / \textbf{54.8} & \textbf{34.7} / \textbf{32.4} & 23.3 / 21.2 \\
     \bottomrule
     \multicolumn{6}{@{}l}{\footnotesize $^\dagger$ at 10\%.}
   \end{tabular}\end{adjustbox}
@@ -60,11 +60,11 @@ on S-EMBER the two parsers differ by at most 0.7 mIoU and batch size changes no 
     \toprule
     \method \vs & S-EMBER & S-EMBER (closed) & QVHighlights & ActivityNet (30\%) & Charades-STA \\
     \midrule
-    All tokens            & $+11.3$ \TODO{CI}            &                             & $+19.7$ \pr{16.7, 22.8}$^*$ & $+11.8$ \pr{9.3, 14.6}$^*$ & \\
-    Random $+$ Contrast   & $+4.2$ \pr{1.7, 6.7}$^*$     &                             & $+11.0$ \pr{8.3, 13.5}$^*$  & $+3.3$ \pr{1.1, 5.5}$^*$   & $-2.9$ \pr{$-4.7$, $-1.1$}$^*$ \\
-    SemVID $+$ Contrast   & $+4.5$ \pr{1.9, 7.2}$^*$     &                             & $+14.1$ \pr{11.2, 17.1}$^*$ & $+4.5$ \pr{2.3, 6.7}$^*$   & \\
-    Best constant         & $+2.4$ \pr{$-0.7$, 5.6}      & $+7.6$ \pr{2.5, 12.6}$^*$   & $+22.1$ \pr{18.7, 25.4}$^*$ & $-3.1$ \pr{$-5.9$, $-0.4$}$^*$ & $-6.4$ \pr{$-9.5$, $-3.3$}$^*$ \\
-    Length rescaling      & $+1.0$ \pr{$-1.6$, 3.7}      & $+7.5$ \pr{3.2, 11.7}$^*$   & $+8.6$ \pr{5.5, 11.8}$^*$   & $+0.8$ \pr{$-2.0$, 3.5}    & $-0.7$ \pr{$-3.1$, 1.6} \\
+    All tokens            & $+11.3$ \TODO{CI}            &                             & \up{$+19.7$ \pr{16.7, 22.8}$^*$} & \up{$+11.8$ \pr{9.3, 14.6}$^*$} & \\
+    Random $+$ Contrast   & \up{$+4.2$ \pr{1.7, 6.7}$^*$}     &                             & \up{$+11.0$ \pr{8.3, 13.5}$^*$}  & \up{$+3.3$ \pr{1.1, 5.5}$^*$}   & \dn{$-2.9$ \pr{$-4.7$, $-1.1$}$^*$} \\
+    SemVID $+$ Contrast   & \up{$+4.5$ \pr{1.9, 7.2}$^*$}     &                             & \up{$+14.1$ \pr{11.2, 17.1}$^*$} & \up{$+4.5$ \pr{2.3, 6.7}$^*$}   & \\
+    Best constant         & $+2.4$ \pr{$-0.7$, 5.6}      & \up{$+7.6$ \pr{2.5, 12.6}$^*$}   & \up{$+22.1$ \pr{18.7, 25.4}$^*$} & \dn{$-3.1$ \pr{$-5.9$, $-0.4$}$^*$} & \dn{$-6.4$ \pr{$-9.5$, $-3.3$}$^*$} \\
+    Length rescaling      & $+1.0$ \pr{$-1.6$, 3.7}      & \up{$+7.5$ \pr{3.2, 11.7}$^*$}   & \up{$+8.6$ \pr{5.5, 11.8}$^*$}   & $+0.8$ \pr{$-2.0$, 3.5}    & $-0.7$ \pr{$-3.1$, 1.6} \\
     \bottomrule
   \end{tabular}\end{adjustbox}
 \end{table*}
@@ -101,11 +101,11 @@ ActivityNet, but no method reaches the floor, and on Charades-STA Coverage is wo
     VidCom\textsuperscript{2} & 16.2 & \phantom{0}5.9 & 20.4 & $-1.1$ \\
     FlashVID               & 17.3 & \phantom{0}6.1 & 22.7 & $+0.0$ \\
     SemVID                 & 19.8 & \phantom{0}7.6 & 23.3 & $+2.5$ \\
-    Coverage, uniform frames & \textbf{22.5} & 11.2 & 31.7 & $+5.3^*$ \\
+    Coverage, uniform frames & \textbf{22.5} & 11.2 & 31.7 & \up{$+5.3^*$} \\
     Random $+$ Contrast    & 20.4 & 12.2 & 35.0 & $+3.2$ \\
     SemVID $+$ Contrast\textsuperscript{\,(no reserve)} & 17.9 & \phantom{0}9.9 & 32.3 & $+0.6$ \\
-    \method                & 21.7 & 13.3 & \textbf{39.3} & $+4.4^*$ \\
-    \method $+$ coverage gate & 22.1 & \textbf{13.5} & \textbf{39.3} & $+4.8^*$ \\
+    \oursrow \method                & 21.7 & 13.3 & \textbf{39.3} & \up{$+4.4^*$} \\
+    \oursrow \method $+$ coverage gate & 22.1 & \textbf{13.5} & \textbf{39.3} & \up{$+4.8^*$} \\
     \bottomrule
   \end{tabular}\end{adjustbox}
 \end{table}
@@ -131,7 +131,7 @@ noise of the judge setup. \TODO{SemVID $+$ Contrast with reserve in the same jud
     Coverage              & 43.2 / 46.6 & 35.3 / 36.4 & \phantom{0}7.1 / 6.0 \\
     Random $+$ Contrast   & 41.0 / 40.8 & 41.9 / 40.2 & \textbf{11.0} / \textbf{9.0} \\
     SemVID $+$ Contrast   & 38.9 / 36.6 & 44.6 / \textbf{50.0} & \phantom{0}8.9 / 8.0 \\
-    \method               & \textbf{47.6} / \textbf{50.8} & \textbf{46.9} / 48.4 & \phantom{0}9.3 / 8.0 \\
+    \oursrow \method               & \textbf{47.6} / \textbf{50.8} & \textbf{46.9} / 48.4 & \phantom{0}9.3 / 8.0 \\
     \bottomrule
   \end{tabular}\end{adjustbox}
 \end{table}
@@ -145,7 +145,9 @@ who disagree on the interval (mean pairwise IoU $<0.6$), which caps any method.
 \subsection{QA pruners on grounding}
 \label{sec:pruners}
 
-Every published pruner falls below random token selection on S-EMBER ($-2.3$ to $-7.6$ mIoU, all significant),
+\input{fig/pruners}
+
+Every published pruner (\cref{fig:pruners}) falls below random token selection on S-EMBER ($-2.3$ to $-7.6$ mIoU, all significant),
 QVHighlights ($-2.4$ to $-7.7$; SemVID not significant) and Charades-STA ($-2.8$ to $-5.2$, all significant);
 on ActivityNet at 10\% the input-level pruners are above random, which we discuss in \cref{sec:frames}. Random
 selection varies little across seeds ($26.0 \pm 0.6$ mIoU over three seeds on S-EMBER), so the gaps are not noise.
@@ -174,7 +176,7 @@ Contrast helps every pruner ($+7$ to $+12$ mIoU with the reserve) but does not c
     C (uniform frames)            & 31.7 / 32.4 & 33.7 / 33.0 & 24.6 / 21.6 \\
     R $+$ C                       & 32.5 / 34.1 & 34.5 / 35.6 & 25.4 / 21.2 \\
     R $+$ C $+$ PCD               & 37.5 / 39.2 & 42.8 / 48.2 & -- \\
-    R $+$ C $+$ PCD $+$ res. (\method) & \textbf{39.3 / 40.8} & \textbf{48.8 / 54.8} & \textbf{34.7 / 32.4} \\
+    \oursrow R $+$ C $+$ PCD $+$ res. (\method) & \textbf{39.3 / 40.8} & \textbf{48.8 / 54.8} & \textbf{34.7 / 32.4} \\
     \bottomrule
   \end{tabular}\end{adjustbox}
 \end{table}
@@ -245,7 +247,7 @@ letting each choose.
     Random tokens           & 25.6 & 26.3 & $+0.7$ \pr{$-0.7$, 2.2} \\
     Random $+$ Contrast     & 35.0 & 35.8 & $+0.7$ \pr{$-0.9$, 2.3} \\
     R $+$ C                 & 32.5 & 31.9 & $-0.6$ \pr{$-2.3$, 1.1} \\
-    \method                 & 39.3 & 37.8 & $-1.5$ \pr{$-2.9$, $-0.0$}$^*$ \\
+    \oursrow \method                 & 39.3 & 37.8 & \dn{$-1.5$ \pr{$-2.9$, $-0.0$}$^*$} \\
     \bottomrule
   \end{tabular}\end{adjustbox}
 \end{table}
@@ -266,14 +268,14 @@ letting each choose.
     \toprule
     Memory & Greedy & PCD & Final & $\Delta$mIoU & $\Delta$GQ@0.5 & Early starts \\
     \midrule
-    Random 5\%            & 15.8 / 23.6 / 5.9  & 15.4 / 29.2 / 9.1  & \textbf{16.4 / 31.5 / 9.9}  & $+8.0^*$ & $+4.0^*$ & 39\% $\rightarrow$ 20\% \\
-    Random 10\%           & 15.2 / 25.8 / 7.2  & 16.2 / 32.1 / 10.1 & \textbf{16.2 / 32.6 / 10.1} & $+6.8^*$ & $+2.9$   & 38\% $\rightarrow$ 19\% \\
-    Random 25\%           & 17.7 / 28.2 / 8.2  & 18.9 / 33.0 / 11.8 & \textbf{18.9 / 34.9 / 13.3} & $+6.7^*$ & $+5.1^*$ & 37\% $\rightarrow$ 21\% \\
-    All tokens            & 18.5 / 28.0 / 8.6  & 19.8 / 31.5 / 11.2 & \textbf{21.5 / 32.7 / 13.3} & $+4.6^*$ & $+4.6^*$ & 41\% $\rightarrow$ 23\% \\
-    HERMES 10\%           & 13.1 / 18.3 / 4.0  & 15.4 / 22.6 / 7.2  & 13.3 / \textbf{24.1} / 5.9  & $+5.7^*$ & $+1.9$   & 56\% $\rightarrow$ 31\% \\
-    Stratified 10\%       & 14.1 / 23.7 / 6.1  & 14.5 / 29.9 / 8.8  & \textbf{15.8 / 31.0 / 10.5} & $+7.3^*$ & $+4.4^*$ & 36\% $\rightarrow$ 17\% \\
-    HERMES streaming 4k   & 13.5 / 21.6 / 4.0  & 17.1 / 27.4 / 8.2  & 15.4 / \textbf{28.6} / 8.2  & $+6.9^*$ & $+4.2^*$ & 45\% $\rightarrow$ 24\% \\
-    HERMES streaming 6k   & 14.3 / 22.6 / 4.8  & 14.7 / 28.1 / 7.6  & \textbf{15.4 / 29.8 / 8.4}  & $+7.2^*$ & $+3.6^*$ & 46\% $\rightarrow$ 24\% \\
+    Random 5\%            & 15.8 / 23.6 / 5.9  & 15.4 / 29.2 / 9.1  & \textbf{16.4 / 31.5 / 9.9}  & \up{$+8.0^*$} & \up{$+4.0^*$} & 39\% $\rightarrow$ 20\% \\
+    Random 10\%           & 15.2 / 25.8 / 7.2  & 16.2 / 32.1 / 10.1 & \textbf{16.2 / 32.6 / 10.1} & \up{$+6.8^*$} & $+2.9$   & 38\% $\rightarrow$ 19\% \\
+    Random 25\%           & 17.7 / 28.2 / 8.2  & 18.9 / 33.0 / 11.8 & \textbf{18.9 / 34.9 / 13.3} & \up{$+6.7^*$} & \up{$+5.1^*$} & 37\% $\rightarrow$ 21\% \\
+    All tokens            & 18.5 / 28.0 / 8.6  & 19.8 / 31.5 / 11.2 & \textbf{21.5 / 32.7 / 13.3} & \up{$+4.6^*$} & \up{$+4.6^*$} & 41\% $\rightarrow$ 23\% \\
+    HERMES 10\%           & 13.1 / 18.3 / 4.0  & 15.4 / 22.6 / 7.2  & 13.3 / \textbf{24.1} / 5.9  & \up{$+5.7^*$} & $+1.9$   & 56\% $\rightarrow$ 31\% \\
+    Stratified 10\%       & 14.1 / 23.7 / 6.1  & 14.5 / 29.9 / 8.8  & \textbf{15.8 / 31.0 / 10.5} & \up{$+7.3^*$} & \up{$+4.4^*$} & 36\% $\rightarrow$ 17\% \\
+    HERMES streaming 4k   & 13.5 / 21.6 / 4.0  & 17.1 / 27.4 / 8.2  & 15.4 / \textbf{28.6} / 8.2  & \up{$+6.9^*$} & \up{$+4.2^*$} & 45\% $\rightarrow$ 24\% \\
+    HERMES streaming 6k   & 14.3 / 22.6 / 4.8  & 14.7 / 28.1 / 7.6  & \textbf{15.4 / 29.8 / 8.4}  & \up{$+7.2^*$} & \up{$+3.6^*$} & 46\% $\rightarrow$ 24\% \\
     \midrule
     Mean of 8             & 15.3 / 24.0 / 6.1  & 16.5 / 29.2 / 9.3  & \textbf{16.6 / 30.7 / 10.0} & $+6.7$   & $+3.9$   & \\
     \bottomrule
@@ -300,7 +302,7 @@ most.
     Counterfactual & mIoU & GQ@0.5 & Early \\
     \midrule
     None (greedy)                         & 25.8 & \phantom{0}7.2 & 38\% \\
-    \textbf{No video (ours)}              & \textbf{32.1} ($+6.2^*$) & \textbf{10.1} ($+2.9^*$) & \textbf{19\%} \\
+    \textbf{No video (ours)}              & \textbf{32.1} (\up{$+6.2^*$}) & \textbf{10.1} (\up{$+2.9^*$}) & \textbf{19\%} \\
     Noised frames (VCD~\cite{vcd})        & 26.3 ($+0.5$) & \phantom{0}7.8 & 30\% \\
     Permuted timestamps                   & $+0.9$ (n.s.) & -- & -- \\
     \midrule
@@ -402,9 +404,9 @@ negatives.}
     \toprule
     Configuration & S-EMBER & QVHighlights & Charades \\
     \midrule
-    Random $+$ PCD        & $+1.9^*$ & $+1.5^*$ & $+2.7^*$ \\
-    SemVID $+$ PCD        & $+2.5^*$ & --       & $+5.6^*$ \\
-    R $+$ C $+$ PCD       & $+1.8^*$ & $+6.1^*$ & $+2.4^*$ \\
+    Random $+$ PCD        & \up{$+1.9^*$} & \up{$+1.5^*$} & \up{$+2.7^*$} \\
+    SemVID $+$ PCD        & \up{$+2.5^*$} & --       & \up{$+5.6^*$} \\
+    R $+$ C $+$ PCD       & \up{$+1.8^*$} & \up{$+6.1^*$} & \up{$+2.4^*$} \\
     \midrule
     Unparseable (of 500)  & 26--39 $\rightarrow$ 0 & 25--60 $\rightarrow$ 0 & 28--68 $\rightarrow$ 0 \\
     \bottomrule
@@ -446,12 +448,14 @@ leak. \method uses the simpler timeline in all main results. \TODO{event timelin
     R $+$ C (no Contrast)   & 34.6 & 32.5 & 31.0 &      & 34.5 &      & 11.3 & 25.4 & 25.0 \\
     SemVID $+$ Contrast     & 31.9 & 34.8 & 35.3 &      & 34.8 &      & \textbf{26.8} & 30.2 & 31.4 \\
     Random $+$ Contrast     & 34.5 & 35.0 & 36.5 &      & 37.8 &      & 21.5 & 31.4 & 32.2 \\
-    \method                 & \textbf{39.3} & \textbf{39.3} & \textbf{36.8} & 9.7 & \textbf{48.8} & \textbf{49.4} & 11.6 & \textbf{34.7} & \textbf{34.4} \\
+    \oursrow \method                 & \textbf{39.3} & \textbf{39.3} & \textbf{36.8} & 9.7 & \textbf{48.8} & \textbf{49.4} & 11.6 & \textbf{34.7} & \textbf{34.4} \\
     \bottomrule
   \end{tabular}\end{adjustbox}
 \end{table*}
 
-\Cref{tab:budget} varies the budget at 64 frames and shows two regimes. Above roughly 500 kept tokens, question-driven
+\input{fig/budget}
+
+\Cref{tab:budget,fig:budget} vary the budget at 64 frames and show two regimes. Above roughly 500 kept tokens, question-driven
 selection is flat or even improves as the budget \emph{shrinks}: on S-EMBER, Retrieve $+$ Coverage rises from 31.0
 (20\%) to 34.6 (5\%) and \method from 36.8 to 39.3, while random selection and SemVID degrade. Pruning by the question
 removes distractors as well as cost: at 5\% \method leads SemVID $+$ Contrast by $+7.4^*$ mIoU, at 20\% by $+1.5$
@@ -569,7 +573,7 @@ fixed frames.
     \midrule
     VCD-style noised-frame contrast   & greedy          & $+0.5$ \\
     Permuted-timestamp contrast       & greedy          & $+0.9$ \\
-    Evidence-against decoding rule    & PCD             & $-5.6^*$ \\
+    Evidence-against decoding rule    & PCD             & \dn{$-5.6^*$} \\
     Attention gain while decoding     & greedy          & $+1.3$ \\
     Bias stated in the instruction    & greedy          & $-0.1$ \\
     Relevance-guided frame zoom       & greedy          & $-1.5$ \\
@@ -577,7 +581,7 @@ fixed frames.
     Unequal per-frame quotas (5 variants) & equal quota & $-0.4$ to $+0.5$ \\
     Contrastive token score           & question top-$k$ & $-1.2$ to $+0.5$ \\
     Prior-subtracted retrieval        & SigLIP          & AUROC $\leq +0.003$ \\
-    128 frames at the same budget     & 64 frames       & $+1.2$ / $-3.6^*$ \\
+    128 frames at the same budget     & 64 frames       & $+1.2$ / \dn{$-3.6^*$} \\
     \bottomrule
   \end{tabular}\end{adjustbox}
 \end{table}
@@ -601,14 +605,14 @@ prior where it acts (Contrast) or guaranteeing coverage (the equal quota) gives 
     \toprule
     Outcome & Greedy & Contrast & $\Delta$ \\
     \midrule
-    IoU $\geq 0.5$, answer correct      & \phantom{0}6.1\% & \phantom{0}9.9\% & $+3.8^*$ \\
-    IoU $\geq 0.5$, answer wrong        & 16.3\% & 20.7\% & $+4.4^*$ \\
+    IoU $\geq 0.5$, answer correct      & \phantom{0}6.1\% & \phantom{0}9.9\% & \up{$+3.8^*$} \\
+    IoU $\geq 0.5$, answer wrong        & 16.3\% & 20.7\% & \up{$+4.4^*$} \\
     Partial overlap (IoU $<0.5$)        & 17.0\% & 15.7\% & $-1.3$ \\
-    Inside gold, too short              & 22.2\% & 18.5\% & $-3.7^*$ \\
+    Inside gold, too short              & 22.2\% & 18.5\% & \dn{$-3.7^*$} \\
     Entirely \emph{before} gold         & \textbf{33.1\%} & \textbf{18.9\%} & $\mathbf{-14.2^*}$ \\
-    Entirely after gold                 & \phantom{0}2.7\% & \phantom{0}5.7\% & $+3.0^*$ \\
+    Entirely after gold                 & \phantom{0}2.7\% & \phantom{0}5.7\% & \up{$+3.0^*$} \\
     Covers gold, too long               & \phantom{0}2.2\% & \phantom{0}2.5\% & $+0.3$ \\
-    No answer / unparsed$^\P$           & \phantom{0}0.5\% & \phantom{0}8.1\% & $+7.6^*$ \\
+    No answer / unparsed$^\P$           & \phantom{0}0.5\% & \phantom{0}8.1\% & \up{$+7.6^*$} \\
     \bottomrule
     \multicolumn{4}{@{}l}{\footnotesize $^\P$ removed by the answer reserve (\cref{tab:reserve}).}
   \end{tabular}\end{adjustbox}

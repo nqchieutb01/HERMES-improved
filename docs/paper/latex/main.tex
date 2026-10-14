@@ -22,7 +22,12 @@ Training-Free Temporal Grounding for Video LLMs under a Visual-Token Budget}
 \author{Anonymous \confName\ submission}
 
 \begin{document}
+% Title and full-width teaser above the two columns (as in the CVPR author kit).
+\twocolumn[{%
+\renewcommand\twocolumn[1][]{#1}%
 \maketitle
+\input{fig/teaser}
+}]
 
 \input{sec/0_abstract}
 \input{sec/1_intro}

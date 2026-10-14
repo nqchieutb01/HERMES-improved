@@ -1,0 +1,31 @@
+% Early starts (interval starts in the first 5% of the window) per memory, greedy vs Contrast. S-EMBER.
+\begin{figure}[t]
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+    width=\linewidth, height=5.3cm, ybar, bar width=5.2pt,
+    ymin=0, ymax=100, ylabel={early starts (\%)}, ylabel style={font=\sffamily\scriptsize},
+    symbolic x coords={novid,all,r5,r10,r25,strat,herm,s4,s6}, xtick=data,
+    xticklabels={no video, all tokens, random 5\%, random 10\%, random 25\%, stratified, HERMES 10\%,
+                 stream 4k, stream 6k},
+    xticklabel style={font=\sffamily\scriptsize, rotate=35, anchor=north east},
+    yticklabel style={font=\sffamily\scriptsize},
+    legend style={font=\sffamily\scriptsize, at={(0.98,0.97)}, anchor=north east, draw=none, fill=white,
+                  fill opacity=0.85, text opacity=1},
+    legend cell align=left, enlarge x limits=0.07, axis x line*=bottom, axis y line*=left,
+    nodes near coords, nodes near coords style={font=\sffamily\tiny}]
+  \addplot[fill=black!35, draw=black!55] coordinates
+    {(novid,90) (all,41) (r5,39) (r10,38) (r25,37) (strat,36) (herm,56) (s4,45) (s6,46)};
+  \addplot[fill=ours!80, draw=ours] coordinates
+    {(all,23) (r5,20) (r10,19) (r25,21) (strat,17) (herm,31) (s4,24) (s6,24)};
+  \draw[gain, dashed, thick] (rel axis cs:0,0.16) -- (rel axis cs:1,0.16)
+    node[pos=0.995, font=\sffamily\tiny, anchor=south east, text=gain, fill=white, inner sep=1pt] {gold: 16\%};
+  \legend{greedy, Contrast}
+\end{axis}
+\end{tikzpicture}
+\caption{\textbf{The temporal prior leaks into every memory, and Contrast removes most of it.} Share of predicted
+intervals that start in the first 5\% of the window (S-EMBER). Without video the model starts early 90\% of the
+time; every memory inherits part of this habit, most where pruning loses coverage (HERMES). Contrast roughly halves
+it everywhere.}
+\label{fig:leak}
+\end{figure}

@@ -1,0 +1,76 @@
+% Teaser: a real QVHighlights example (6SdLxtywo4s_60.0_210.0) with every method's predicted interval, and the
+% QVHighlights R@0.5 of each method at 10% of the visual tokens.
+\begin{center}
+\captionsetup{type=figure}
+\resizebox{\linewidth}{!}{%
+\begin{tikzpicture}[font=\sffamily\small]
+  %% ------------------------------------------------------------------ filmstrip
+  \def\fw{1.62}   % frame width (cm)
+  \node[anchor=west, font=\sffamily\small\bfseries] at (0, 3.15)
+    {Q: When does ``a lady talking to a little boy on the train'' happen?};
+  \foreach \t [count=\i from 0] in {005,025,045,070,085,110,130,145} {
+    \node[inner sep=0pt, anchor=south west] (f\i) at (\i*\fw*1.04, 1.85)
+      {\includegraphics[width=\fw cm]{fig/teaser/t\t.jpg}};
+    \pgfmathtruncatemacro{\tsec}{\t}
+    \node[font=\sffamily\scriptsize, anchor=north, text=black!70] at (f\i.south) {\tsec\,s};
+  }
+  \foreach \i in {3,4} \draw[gain, line width=1.6pt] (f\i.south west) rectangle (f\i.north east);
+  %% ------------------------------------------------------------------ timeline
+  \def\T{13.45}   % timeline width (cm) for 150 s
+  \pgfmathsetmacro{\gs}{64/150*\T}  \pgfmathsetmacro{\ge}{94/150*\T}
+  \fill[gain!15] (\gs, -2.35) rectangle (\ge, 1.25);
+  \draw[gain, dashed] (\gs, -2.35) -- (\gs, 1.25);  \draw[gain, dashed] (\ge, -2.35) -- (\ge, 1.25);
+  \node[font=\sffamily\scriptsize\bfseries, text=gain] at ({(\gs+\ge)/2}, 1.05) {gold [64, 94]\,s};
+  \draw[->, black!60] (0, -2.55) -- (\T+0.2, -2.55);
+  \foreach \s in {0,30,60,90,120,150} {
+    \pgfmathsetmacro{\x}{\s/150*\T}
+    \draw[black!60] (\x, -2.5) -- (\x, -2.6);
+    \node[font=\sffamily\scriptsize, text=black!60, anchor=north] at (\x, -2.6) {\s\,s};
+  }
+  % rows: label, start, end, colour, IoU, note
+  \foreach \lab/\s/\e/\c/\iou/\y in {%
+      Random tokens (10\%)/1.2/1.2/loss/0.00/0.6,
+      All tokens (no pruning)/103.5/130.5/black!55/0.00/-0.1,
+      SemVID + Contrast/98/108/black!55/0.00/-0.8,
+      Random + Contrast/62.5/75/black!55/0.35/-1.5,
+      \textbf{CoCo (ours)}/65/94/ours/\textbf{0.97}/-2.2} {
+    \pgfmathsetmacro{\xs}{\s/150*\T}  \pgfmathsetmacro{\xe}{max(\e/150*\T, \xs+0.09)}
+    \node[anchor=east, font=\sffamily\small] at (-0.15, \y) {\lab};
+    \fill[\c, rounded corners=1.5pt] (\xs, \y-0.17) rectangle (\xe, \y+0.17);
+    \node[anchor=west, font=\sffamily\scriptsize] at (\T+0.25, \y) {IoU \iou};
+  }
+  \node[anchor=west, font=\sffamily\scriptsize\itshape, text=loss] at (0.35, 0.6)
+    {``Seen: 1.2 seconds, a lady is talking to a little boy'' \,(the prior: start of the video)};
+  %% ------------------------------------------------------------------ bar chart (drawn directly)
+  \begin{scope}[shift={(19.4, 0)}]
+    \def\sc{0.085}   % cm per R@0.5 point
+    \node[font=\sffamily\small\bfseries, anchor=west] at (-3.3, 3.15) {QVHighlights, 500 queries};
+    \node[font=\sffamily\scriptsize, anchor=west, text=black!65] at (-3.3, 2.7) {R@0.5 with 10\% of the visual tokens};
+    \foreach \lab/\v/\c/\y in {%
+        best constant (no video)/17.6/floorc!55/2.0,
+        random tokens/25.0/black!25/1.25,
+        all tokens (no pruning)/28.6/black!25/0.5,
+        SemVID + Contrast/34.8/black!25/-0.25,
+        random + Contrast/39.2/black!25/-1.0,
+        \textbf{CoCo (ours)}/54.8/ours/-1.75} {
+      \node[anchor=east, font=\sffamily\scriptsize] at (-0.1, \y) {\lab};
+      \fill[\c] (0, \y-0.22) rectangle (\v*\sc, \y+0.22);
+      \node[anchor=west, font=\sffamily\scriptsize] at (\v*\sc+0.05, \y) {\v};
+    }
+    \draw[black!50] (0, 2.35) -- (0, -2.1);
+    \draw[black!50] (0, -2.1) -- (60*\sc, -2.1);
+    \foreach \t in {0,20,40,60} {
+      \draw[black!50] (\t*\sc, -2.1) -- (\t*\sc, -2.18);
+      \node[font=\sffamily\tiny, text=black!60, anchor=north] at (\t*\sc, -2.18) {\t};
+    }
+    \node[font=\sffamily\scriptsize\bfseries, text=ours, anchor=west] at (2.5, -2.75) {$\times$1.9 the uncompressed model};
+  \end{scope}
+\end{tikzpicture}}
+\captionof{figure}{\textbf{Temporal grounding from a pruned video memory.} Left: a QVHighlights query, with the
+intervals predicted by each method at 10\% of the visual tokens (real outputs). With random pruning the model falls
+back on a video-free prior and answers ``1.2 seconds''; QA-oriented pruning and the uncompressed model pick a later,
+wrong scene. \method keeps every frame anchored in time and contrasts the answer against the model's no-video
+prediction, and recovers the interval (IoU 0.97). Right: over 500 queries, \method nearly doubles the R@0.5 of the
+uncompressed model and is far above the best video-free constant.}
+\label{fig:teaser}
+\end{center}

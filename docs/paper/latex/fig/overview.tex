@@ -1,78 +1,119 @@
-% Method overview (TikZ). Left: how pruning treats the timeline, (a) a QA pruner vs (b) Coverage.
-% Right: (c) Contrast decodes time values against a no-video run; the answer reserve guarantees the interval.
+% Method overview.
+% (a) QA pruner: one token set for all layers, frames emptied -> timestamps lost.
+% (b) Coverage: every layer keeps its own set (top-k of that layer's question attention) under an equal per-frame
+%     quota, so every timestamp survives in every layer.
+% (c) Contrast at one time value of the teaser example (illustrative probabilities): greedy decoding follows the
+%     no-video prior to "0"; the contrast promotes "64", which only the memory supports.
 \begin{figure*}[t]
 \centering
 \resizebox{\linewidth}{!}{%
 \begin{tikzpicture}[
   font=\sffamily\small,
-  tok/.style={minimum size=3.4mm, inner sep=0pt, draw=black!25, fill=black!5},
-  keep/.style={tok, fill=cvprblue!75, draw=cvprblue!90},
-  ts/.style={rounded corners=1pt, inner sep=1.3pt, font=\sffamily\scriptsize, fill=orange!25, draw=orange!70},
+  tok/.style={minimum size=3.2mm, inner sep=0pt, draw=black!25, fill=black!5},
+  keep/.style={tok, fill=ours!80, draw=ours},
+  ts/.style={rounded corners=1pt, inner sep=1.2pt, font=\sffamily\scriptsize, fill=orange!25, draw=orange!70},
   tsoff/.style={ts, fill=black!4, draw=black!20, text=black!30},
   panel/.style={rounded corners=4pt, draw=black!35, inner sep=6pt},
   box/.style={rounded corners=3pt, draw=black!45, align=center, inner sep=4pt},
   arr/.style={-{Stealth[length=2.4mm]}, thick, black!60},
   title/.style={font=\sffamily\footnotesize\bfseries, anchor=west},
-  note/.style={font=\sffamily\scriptsize, anchor=west, align=left}
+  note/.style={font=\sffamily\scriptsize, anchor=north west, align=left}
 ]
-%% ---------------------------------------------------------------- (a) QA pruner
-\node[title] at (0, 4.15) {(a) QA pruner: keeps salient / unique tokens};
+%% =============================================================== (a) QA pruner
+\node[title] at (0, 6.25) {(a) QA pruner: one token set, shared by all layers};
 \foreach \f/\t in {0/0s,1/8s,2/16s,3/24s,4/32s,5/40s} {
-  \pgfmathsetmacro{\x}{\f*1.3}
-  \ifnum\f=1 \node[tsoff] at (\x+0.36, 3.7) {\t};
-  \else\ifnum\f=4 \node[tsoff] at (\x+0.36, 3.7) {\t};
-  \else \node[ts] at (\x+0.36, 3.7) {\t}; \fi\fi
-  \foreach \i in {0,1,2} \foreach \j in {0,1,2} \node[tok] at (\x+\i*0.36, 3.25-\j*0.36) {};
+  \pgfmathsetmacro{\x}{\f*1.25}
+  \ifnum\f=1 \node[tsoff] at (\x+0.32, 5.8) {\t};
+  \else\ifnum\f=4 \node[tsoff] at (\x+0.32, 5.8) {\t};
+  \else \node[ts] at (\x+0.32, 5.8) {\t}; \fi\fi
+  \foreach \i in {0,1,2} \foreach \j in {0,1,2} \node[tok] at (\x+\i*0.32, 5.4-\j*0.32) {};
 }
 \foreach \f/\i/\j in {0/0/0,0/1/1,2/0/0,2/1/0,2/2/1,2/1/2,3/0/1,3/2/2,5/2/0,5/1/1,5/0/2,5/2/2} {
-  \pgfmathsetmacro{\x}{\f*1.3}
-  \node[keep] at (\x+\i*0.36, 3.25-\j*0.36) {};
+  \pgfmathsetmacro{\x}{\f*1.25}  \node[keep] at (\x+\i*0.32, 5.4-\j*0.32) {};
 }
-\node[note, text=red!70!black, anchor=north west] at (0, 2.4) {8\,s and 32\,s lose every token: their timestamps are gone};
+\node[note, text=loss] at (0, 4.62) {8\,s and 32\,s keep no token: their timestamps are lost};
 
-%% ---------------------------------------------------------------- (b) Coverage
-\node[title] at (0, 1.55) {(b) Coverage: equal quota per frame, filled by the question};
-\foreach \f/\t in {0/0s,1/8s,2/16s,3/24s,4/32s,5/40s} {
-  \pgfmathsetmacro{\x}{\f*1.3}
-  \node[ts] at (\x+0.36, 1.1) {\t};
-  \foreach \i in {0,1,2} \foreach \j in {0,1,2} \node[tok] at (\x+\i*0.36, 0.65-\j*0.36) {};
+%% =============================================================== (b) Coverage, three layers
+\node[title] at (0, 3.95) {(b) Coverage: equal quota per frame, own set per layer};
+% layer slices drawn back to front with an offset
+\foreach \L/\dy/\dx/\pat in {36/0.0/0.42/2, 18/-1.1/0.21/1, 1/-2.2/0.0/0} {
+  \begin{scope}[shift={(\dx, \dy)}]
+    \fill[white, rounded corners=2pt, draw=black!20] (-0.12, 3.62) rectangle (7.3, 2.62);
+    \node[font=\sffamily\scriptsize, anchor=east, text=black!60] at (-0.15, 3.12) {$\ell{=}\L$};
+    \foreach \f/\t in {0/0s,1/8s,2/16s,3/24s,4/32s,5/40s} {
+      \pgfmathsetmacro{\x}{\f*1.25}
+      \node[ts, font=\sffamily\tiny] at (\x+0.32, 3.47) {\t};
+      \foreach \i in {0,1,2} \node[tok] at (\x+\i*0.32, 3.12) {};
+      \foreach \i in {0,1,2} \node[tok] at (\x+\i*0.32, 2.80) {};
+    }
+    % pattern 0/1/2: different kept tokens per layer, always 2 per frame
+    \ifnum\pat=0
+      \foreach \f/\i/\j/\k/\l in {0/0/0/2/1,1/1/1/2/0,2/2/0/0/1,3/1/0/1/1,4/0/1/2/1,5/2/0/1/1}
+        {\pgfmathsetmacro{\x}{\f*1.25} \node[keep] at (\x+\i*0.32, 3.12-\j*0.32) {}; \node[keep] at (\x+\k*0.32, 3.12-\l*0.32) {};}
+    \fi
+    \ifnum\pat=1
+      \foreach \f/\i/\j/\k/\l in {0/1/1/2/0,1/0/0/2/1,2/1/0/1/1,3/0/1/2/1,4/1/0/2/0,5/0/0/0/1}
+        {\pgfmathsetmacro{\x}{\f*1.25} \node[keep] at (\x+\i*0.32, 3.12-\j*0.32) {}; \node[keep] at (\x+\k*0.32, 3.12-\l*0.32) {};}
+    \fi
+    \ifnum\pat=2
+      \foreach \f/\i/\j/\k/\l in {0/2/0/1/1,1/0/1/1/0,2/0/0/2/1,3/2/0/0/1,4/0/0/1/1,5/1/0/2/1}
+        {\pgfmathsetmacro{\x}{\f*1.25} \node[keep] at (\x+\i*0.32, 3.12-\j*0.32) {}; \node[keep] at (\x+\k*0.32, 3.12-\l*0.32) {};}
+    \fi
+  \end{scope}
 }
-\foreach \f/\i/\j/\k/\l in {0/1/0/2/2,1/0/1/1/2,2/2/0/1/1,3/0/0/0/2,4/1/1/2/0,5/2/2/0/1} {
-  \pgfmathsetmacro{\x}{\f*1.3}
-  \node[keep] at (\x+\i*0.36, 0.65-\j*0.36) {};
-  \node[keep] at (\x+\k*0.36, 0.65-\l*0.36) {};
-}
-\node[note, text=black!65, anchor=north west] at (0, -0.2) {every frame keeps $\lfloor B/F\rfloor$ tokens: every timestamp survives;\\ the question's attention decides which ones};
+\node[note, text=black!70] at (0, 0.28)
+  {layer $\ell$ keeps $\operatorname{top}_{B/F}$ of the question's attention $a_\ell(i)$ in each frame:\\
+   every timestamp survives; each layer picks its own evidence};
 
-\node[panel, fit={(-0.1,4.4) (8.0,-1.0)}] (mem) {};
+\node[panel, fit={(-0.6,6.5) (8.0,-0.55)}] (mem) {};
 
-%% ---------------------------------------------------------------- (c) Contrast
-\node[title] at (9.0, 4.15) {(c) Contrast: decode time values against the no-video prior};
-\node[box, fill=cvprblue!8, minimum width=3.3cm, minimum height=0.95cm] (pm) at (10.8, 3.2)
-  {$\log p(y \mid \mathcal{M}, x)$\\[-1pt]{\scriptsize pruned memory}};
-\node[box, fill=black!4, minimum width=3.3cm, minimum height=0.95cm] (p0) at (10.8, 1.75)
-  {$\log p(y \mid \varnothing, x)$\\[-1pt]{\scriptsize no visual tokens}};
-\node[box, fill=orange!12, text width=4.3cm, minimum height=2.4cm] (sc) at (15.6, 2.48)
-  {$(1{+}\alpha_t)\log p_{\mathcal{M}}(y) - \alpha_t \log p_{\varnothing}(y)$\\[4pt]
-   {\scriptsize applied only to time values\\ $\alpha_t = 1 - \max_y p_{\mathcal{M}}(y)$ (fades when confident)\\
-   plausibility: $p_{\mathcal{M}}(y) \geq 0.1 \max p_{\mathcal{M}}$}};
-\draw[arr] (pm.east) -- (pm.east -| sc.west);
-\draw[arr] (p0.east) -- (p0.east -| sc.west);
-\draw[arr] (mem.east |- pm.west) -- node[above, font=\sffamily\scriptsize] {KV} (pm.west);
-
-\node[box, fill=white, font=\ttfamily\scriptsize, align=left, anchor=north west, text width=8.6cm] (out) at (9.0, 0.6)
-  {Seen: 12.0 seconds, opens the paper cutter\\
-   Seen: 41.0 seconds, puts the cutter away\\
-   Answer: about 29 seconds\\
-   Time: [12.0, 41.0]};
-\node[note, text=black!60, anchor=north west] at (9.0, -0.75) {answer reserve: with 64 tokens left and no \texttt{Answer:} line, write it};
-\draw[arr] (sc.south) -- (sc.south |- out.north);
+%% =============================================================== (c) Contrast
+\node[title] at (9.0, 6.25) {(c) Contrast at one time value: ``Seen: \underline{\hspace{1.2em}} seconds''};
+\begin{axis}[
+    name=pm, at={(9.0cm, 3.55cm)}, anchor=south west, width=4.3cm, height=3.1cm,
+    ybar, bar width=9pt, ymin=0, ymax=0.95, symbolic x coords={0,64,103}, xtick=data,
+    xticklabel style={font=\sffamily\scriptsize}, ytick=\empty, axis x line*=bottom, axis y line=none,
+    title={$p(y\mid\mathcal{M},x)$: pruned memory}, title style={font=\sffamily\scriptsize, yshift=-4pt},
+    nodes near coords, nodes near coords style={font=\sffamily\tiny, /pgf/number format/fixed, /pgf/number format/precision=2}, enlarge x limits=0.3]
+  \addplot[fill=ours!70, draw=ours] coordinates {(0,0.38) (64,0.34) (103,0.12)};
+\end{axis}
+\begin{axis}[
+    name=p0, at={(9.0cm, 0.15cm)}, anchor=south west, width=4.3cm, height=3.1cm,
+    ybar, bar width=9pt, ymin=0, ymax=0.95, symbolic x coords={0,64,103}, xtick=data,
+    xticklabel style={font=\sffamily\scriptsize}, ytick=\empty, axis x line*=bottom, axis y line=none,
+    title={$p(y\mid\varnothing,x)$: no video (prior)}, title style={font=\sffamily\scriptsize, yshift=-4pt},
+    nodes near coords, nodes near coords style={font=\sffamily\tiny, /pgf/number format/fixed, /pgf/number format/precision=2}, enlarge x limits=0.3]
+  \addplot[fill=black!30, draw=black!50] coordinates {(0,0.80) (64,0.05) (103,0.05)};
+\end{axis}
+\begin{axis}[
+    name=sc, at={(14.6cm, 1.55cm)}, anchor=south west, width=4.3cm, height=3.1cm,
+    ybar, bar width=9pt, ymin=0, ymax=0.95, symbolic x coords={0,64,103}, xtick=data,
+    xticklabel style={font=\sffamily\scriptsize}, ytick=\empty, axis x line*=bottom, axis y line=none,
+    title={$\operatorname{softmax}_y s_t(y)$: contrasted}, title style={font=\sffamily\scriptsize, yshift=-4pt},
+    nodes near coords, nodes near coords style={font=\sffamily\tiny, /pgf/number format/fixed,
+    /pgf/number format/precision=2}, enlarge x limits=0.3]
+  \addplot[fill=orange!55, draw=orange!80!black] coordinates {(0,0.15) (64,0.72) (103,0.13)};
+\end{axis}
+\node[box, fill=orange!8, font=\sffamily\scriptsize, text width=4.5cm, anchor=north west] at (14.4, 6.05)
+  {$s_t(y)=(1{+}\alpha_t)\log p_{\mathcal{M}}(y)-\alpha_t\log p_{\varnothing}(y)$\\[2pt]
+   $\alpha_t = 1-\max_y p_{\mathcal{M}}(y) = 0.62$; only on time values};
+\draw[arr] ($(pm.east)+(0.1,0)$) -- ++(0.75,-0.6);
+\draw[arr] ($(p0.east)+(0.1,0.3)$) -- ++(0.75,0.6);
+\node[font=\sffamily\scriptsize, text=loss, anchor=west, align=left] at (9.05, -0.45) {greedy: argmax $p_{\mathcal{M}}$ $\rightarrow$ ``0'' (the prior)};
+\node[font=\sffamily\scriptsize\bfseries, text=gain, anchor=west, align=left] at (14.6, 0.85) {\method: ``64'' (only the memory supports it)};
+\node[box, fill=white, font=\ttfamily\scriptsize, align=left, anchor=north west, text width=8.9cm] (out) at (9.0, -0.8)
+  {Seen: 65.0 seconds, a little boy is seen on the train\\
+   Seen: 94.0 seconds, a lady is seen talking to the little boy\\
+   Answer: ... for about 29 seconds.\quad Time: [65.0, 94.0]\hfill{\sffamily\color{black!55}$\leftarrow$ answer reserve}};
+\draw[arr] (mem.east |- 0,4.2) -- node[below, font=\sffamily\scriptsize] {pruned KV} (9.0, 4.2);
 \end{tikzpicture}}
-\caption{\textbf{Overview of \method.} \textbf{(a)}~QA-oriented pruners keep salient or unique tokens and can empty
-whole frames, removing their timestamps from memory. \textbf{(b)}~Coverage gives every frame (pair) the same share of
-each layer's budget and fills it with the tokens the question attends to most, so the whole timeline stays anchored.
-\textbf{(c)}~Contrast writes each time value by amplifying the evidence of the pruned memory over the model's
-video-free prediction; the strength fades where the model is confident, and the answer reserve guarantees that the
-final interval is written.}
+\caption{\textbf{Overview of \method.} \textbf{(a)}~QA-oriented pruners keep one set of salient or unique tokens in
+every layer and can empty whole frames, removing their timestamps. \textbf{(b)}~Coverage prunes each layer
+separately: every frame keeps the same share of the layer budget, filled with the tokens that the question attends to
+most \emph{in that layer}. Every timestamp survives in every layer, and different layers keep different evidence
+(sharing one set across layers costs $1.5$ mIoU, \cref{tab:shared}). \textbf{(c)}~Contrast at one time value of the
+teaser example (probabilities illustrative). Greedy decoding picks ``0'', which the memory supports only as much as
+the video-free prior does; the contrasted score discounts it and promotes ``64'', which only the memory supports.
+The answer reserve guarantees that the final interval is written (output shown is the real \method answer).}
 \label{fig:overview}
 \end{figure*}

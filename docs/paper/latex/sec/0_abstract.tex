@@ -12,8 +12,8 @@ every frame an equal token quota and fills it with the tokens the actual questio
 anchor survives pruning. \emph{Contrast} writes each time value against the model's own no-video prediction, with
 a strength that fades as the model grows confident, and reserves room for the final interval. Because grounding
 benchmarks carry strong positional biases, we evaluate every method against video-free floors. With 10\% of the
-visual tokens, \method raises R@0.5 on QVHighlights from 25.0 (random tokens) and 28.6 (all tokens) to 54.8,
-where the best video-free constant reaches 17.6, and from 24.6 to 40.8 on S-EMBER grounded QA. We also report
+visual tokens, \method raises R@0.5 on QVHighlights from 25.0 (random tokens) and 28.6 (all tokens) to
+\key{54.8}, where the best video-free constant reaches 17.6, and from 24.6 to \key{40.8} on S-EMBER grounded QA. We also report
 where it does not help: on Charades-STA and ActivityNet Captions the uncompressed model itself stays below the
 video-free floor, and no pruning method, ours included, rises above it.
 \end{abstract}

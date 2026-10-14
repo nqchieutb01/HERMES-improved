@@ -1,0 +1,27 @@
+% Paired difference to random token selection (mIoU), greedy decoding, 10% of the tokens.
+\begin{figure}[t]
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+    width=\linewidth, height=5.4cm, ybar, bar width=4.6pt,
+    ymin=-9.5, ymax=10, ylabel={$\Delta$mIoU vs.\ random tokens}, ylabel style={font=\sffamily\scriptsize},
+    symbolic x coords={fast,vid,flash,sem,cov}, xtick=data,
+    xticklabels={FastVID, VidCom$^2$, FlashVID, SemVID, \textbf{Coverage (ours)}},
+    xticklabel style={font=\sffamily\scriptsize, rotate=18, anchor=north east}, yticklabel style={font=\sffamily\scriptsize},
+    axis x line*=bottom, axis y line*=left,
+    legend style={font=\sffamily\scriptsize, at={(0.5,1.03)}, anchor=south, draw=none, legend columns=3,
+                  /tikz/every even column/.append style={column sep=6pt}},
+    enlarge x limits=0.13, ymajorgrids, grid style={black!8},
+    extra y ticks={0}, extra y tick style={grid style={black!60, thick}}]
+  \addplot[fill=black!55, draw=black!70] coordinates {(fast,-7.6) (vid,-5.2) (flash,-2.9) (sem,-2.3) (cov,6.9)};
+  \addplot[fill=ours!75, draw=ours] coordinates {(fast,-7.7) (vid,-7.0) (flash,-4.0) (sem,-2.4) (cov,7.6)};
+  \addplot[fill=orange!60, draw=orange!80!black] coordinates {(fast,-4.1) (vid,-5.2) (flash,-3.3) (sem,-2.8) (cov,-1.0)};
+  \legend{S-EMBER, QVHighlights, Charades-STA}
+\end{axis}
+\end{tikzpicture}
+\caption{\textbf{QA pruners fall below random selection on grounding.} Paired mIoU difference to random token
+selection at the same 10\% budget, greedy decoding. All four published pruners lose on all three datasets (all
+significant except SemVID on QVHighlights). Coverage gains on the two long-video datasets and is level with random
+selection on 30\,s Charades videos.}
+\label{fig:pruners}
+\end{figure}
