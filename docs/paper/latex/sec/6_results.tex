@@ -8,8 +8,8 @@ with upper bounds that use the gold interval, \cref{sec:res-retrieval} analyses 
 \cref{sec:negative} lists what did not work, and \cref{sec:errors} analyses the remaining errors.
 
 \paragraph{Reading the tables.}
-Numbers are mIoU, or mIoU\,/\,R@0.5 where two are given. $\Delta$ is a paired difference with a 95\% bootstrap
-interval; $^*$ marks intervals that exclude 0. Tables built from the early S-EMBER phases (\cref{tab:pcd8,tab:cf,%
+Numbers are mIoU, or mIoU\,/\,R@0.5 where two are given. $\Delta$ is a paired difference; $^*$ marks differences whose 95\%
+paired bootstrap interval excludes 0. Tables built from the early S-EMBER phases (\cref{tab:pcd8,tab:cf,%
 tab:scope,tab:replay,tab:oracle,tab:errors} and \cref{tab:causal}) predate the answer reserve, so PCD there runs without it, and use the official parser and batch size 1;
 on S-EMBER the two parsers differ by at most 0.7 mIoU and batch size changes no paired result. In every table the best
 value is in \best{bold} and the second best \second{underlined}, per column unless a caption says per row; floors
@@ -55,17 +55,17 @@ and differences ($\Delta$) are not ranked.
   \centering
   \small
   \setlength{\tabcolsep}{4pt}
-  \caption{\textbf{Paired gains of \method in mIoU} (95\% bootstrap interval; $^*$: excludes 0).}
+  \caption{\textbf{Paired gains of \method in mIoU} ($^*$: 95\% paired bootstrap interval excludes 0).}
   \label{tab:paired}
   \begin{adjustbox}{max width=\linewidth}\begin{tabular}{@{}lcccc@{}}
     \toprule
     \method \vs & S-EMBER & QVHighlights & ActivityNet (30\%) & Charades-STA \\
     \midrule
-    All tokens            & $+11.3$ \TODO{CI}            & \up{$+19.7$ \pr{16.7, 22.8}$^*$} & \up{$+11.8$ \pr{9.3, 14.6}$^*$} & \\
-    Random $+$ PCD   & \up{$+4.2$ \pr{1.7, 6.7}$^*$}     & \up{$+11.0$ \pr{8.3, 13.5}$^*$}  & \up{$+3.3$ \pr{1.1, 5.5}$^*$}   & \dn{$-2.9$ \pr{$-4.7$, $-1.1$}$^*$} \\
-    SemVID $+$ PCD   & \up{$+4.5$ \pr{1.9, 7.2}$^*$}     & \up{$+14.1$ \pr{11.2, 17.1}$^*$} & \up{$+4.5$ \pr{2.3, 6.7}$^*$}   & \\
-    Best constant         & $+2.4$ \pr{$-0.7$, 5.6}      & \up{$+22.1$ \pr{18.7, 25.4}$^*$} & \dn{$-3.1$ \pr{$-5.9$, $-0.4$}$^*$} & \dn{$-6.4$ \pr{$-9.5$, $-3.3$}$^*$} \\
-    Length rescaling      & $+1.0$ \pr{$-1.6$, 3.7}      & \up{$+8.6$ \pr{5.5, 11.8}$^*$}   & $+0.8$ \pr{$-2.0$, 3.5}    & $-0.7$ \pr{$-3.1$, 1.6} \\
+    All tokens            & $+11.3$ \TODO{sig.}            & \up{$+19.7^*$} & \up{$+11.8^*$} & \\
+    Random $+$ PCD   & \up{$+4.2^*$}     & \up{$+11.0^*$}  & \up{$+3.3^*$}   & \dn{$-2.9^*$} \\
+    SemVID $+$ PCD   & \up{$+4.5^*$}     & \up{$+14.1^*$} & \up{$+4.5^*$}   & \\
+    Best constant         & $+2.4$      & \up{$+22.1^*$} & \dn{$-3.1^*$} & \dn{$-6.4^*$} \\
+    Length rescaling      & $+1.0$      & \up{$+8.6^*$}   & $+0.8$    & $-0.7$ \\
     \bottomrule
   \end{tabular}\end{adjustbox}
 \end{table*}
@@ -201,15 +201,15 @@ on any dataset); once tokens are chosen by the question, which frames are encode
     Token selection & Frames & mIoU & $\Delta$ \\
     \midrule
     \textbf{Equal quota, question top-$k$}       & R & 32.5 & --    \\
-    Quota $\propto$ SigLIP relevance (floor 50\%) & R & \best{33.0} & $+0.5$ \pr{$-0.5$, 1.4}    \\
-    Quota $\propto$ SigLIP (floor 25\%)          & R & 32.6 & $+0.1$ \pr{$-1.2$, 1.3}    \\
-    Quota $\propto$ SigLIP $+$ attention         & R & \second{32.9} & $+0.4$ \pr{$-0.7$, 1.5}    \\
+    Quota $\propto$ SigLIP relevance (floor 50\%) & R & \best{33.0} & $+0.5$    \\
+    Quota $\propto$ SigLIP (floor 25\%)          & R & 32.6 & $+0.1$    \\
+    Quota $\propto$ SigLIP $+$ attention         & R & \second{32.9} & $+0.4$    \\
     Quota $\propto$ attention mass               & R & 32.1 & $-0.4$    \\
     Contrastive token score$^\ddagger$           & R & \best{33.0} & $+0.5$, n.s.    \\
-    One token set shared by all layers           & R & 31.9 & $-0.6$ \pr{$-2.3$, 1.1}    \\
+    One token set shared by all layers           & R & 31.9 & $-0.6$    \\
     \midrule
     \textbf{Equal quota, question top-$k$}       & U & 31.7 & --    \\
-    Quota $\propto$ SigLIP relevance             & U & 31.4 & $-0.2$ \pr{$-1.2$, 0.8}    \\
+    Quota $\propto$ SigLIP relevance             & U & 31.4 & $-0.2$    \\
     Equal quota, sampling instead of top-$k$     & U & 30.0 & $-1.7$    \\
     Contrastive token score$^\ddagger$           & U & 30.5 & $-1.2$    \\
     HERMES score, equal quota (stratified)       & U & 23.7 &    \\
@@ -246,10 +246,10 @@ letting each choose.
     \toprule
     Method & Per layer & Shared & $\Delta$mIoU \\
     \midrule
-    Random tokens           & 25.6 & 26.3 & $+0.7$ \pr{$-0.7$, 2.2}    \\
-    Random $+$ PCD     & \second{35.0} & \second{35.8} & $+0.7$ \pr{$-0.9$, 2.3}    \\
-    R $+$ C                 & 32.5 & 31.9 & $-0.6$ \pr{$-2.3$, 1.1}    \\
-    \oursrow \method                 & \best{39.3} & \best{37.8} & \dn{$-1.5$ \pr{$-2.9$, $-0.0$}$^*$}    \\
+    Random tokens           & 25.6 & 26.3 & $+0.7$    \\
+    Random $+$ PCD     & \second{35.0} & \second{35.8} & $+0.7$    \\
+    R $+$ C                 & 32.5 & 31.9 & $-0.6$    \\
+    \oursrow \method                 & \best{39.3} & \best{37.8} & \dn{$-1.5^*$}    \\
     \bottomrule
   \end{tabular}\end{adjustbox}
 \end{table}

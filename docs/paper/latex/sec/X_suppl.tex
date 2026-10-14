@@ -19,14 +19,14 @@ is a strong floor on the pooled set. \Cref{tab:closed} restricts the main compar
   \small
   \setlength{\tabcolsep}{3pt}
   \caption{\textbf{S-EMBER closed intervals} (10\%, mIoU\,/\,R@0.5; settings as in \cref{tab:main}). Right: paired
-  $\Delta$mIoU of \method (95\% bootstrap interval; $^*$: excludes 0).}
+  $\Delta$mIoU of \method ($^*$: 95\% paired bootstrap interval excludes 0).}
   \label{tab:closed}
   \begin{adjustbox}{max width=\linewidth}\begin{tabular}{@{}lcc@{}}
     \toprule
     Method & mIoU / R@0.5 & \method \vs \\
     \midrule
-    \floor{Best constant interval}       & \floor{32.1 / 29.9} & \up{$+7.6$ \pr{2.5, 12.6}$^*$} \\
-    \floor{Length rescaling of R $+$ C}  & \floor{32.3 / 33.1} & \up{$+7.5$ \pr{3.2, 11.7}$^*$} \\
+    \floor{Best constant interval}       & \floor{32.1 / 29.9} & \up{$+7.6^*$} \\
+    \floor{Length rescaling of R $+$ C}  & \floor{32.3 / 33.1} & \up{$+7.5^*$} \\
     \midrule
     All tokens (no pruning)              & 30.0 / 27.4 &    \\
     Random tokens                        & 28.3 / 27.4 &    \\

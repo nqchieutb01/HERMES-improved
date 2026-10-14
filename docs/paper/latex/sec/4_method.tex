@@ -40,13 +40,13 @@ The equal quota is a deliberately simple coverage constraint. It guarantees the 
 multiple-choice QA does not, and it stops attention from collapsing onto a few frames: when quotas follow attention
 mass, attention sinks and recency bias give a single frame up to 227 of about 2{,}140 kept tokens. Relevance-weighted
 quotas with a floor, from SigLIP similarity or attention mass, did not beat equal quotas in a pre-registered test
-($-0.2$ mIoU \pr{$-1.2$, $+0.8$}). Using the \emph{actual} question, rather than the generic probe questions of
+($-0.2$ mIoU). Using the \emph{actual} question, rather than the generic probe questions of
 streaming memories such as HERMES~\cite{hermes}, is what makes attention informative: generic probes with a global
 top-$k$ are the weakest variant we measured (18.3 mIoU).
 
 \paragraph{Per-layer selection.}
 Each layer keeps its own set $\mathcal{K}_\ell$. Forcing one shared set (attention averaged over layers) costs
-\method $-1.5$ mIoU \pr{$-2.9$, $-0.0$}, whereas it does not change random selection ($+0.7$, n.s.). The benefit of
+\method $-1.5^*$ mIoU, whereas it does not change random selection ($+0.7$, n.s.). The benefit of
 per-layer selection is therefore specific to question-driven scores, and it does not explain why random selection
 beats input-level pruners.
 
