@@ -1,0 +1,126 @@
+\input{fig/overview}
+
+\section{Method: \method}
+\label{sec:method}
+
+\method acts at the two places where \cref{sec:diagnosis} locates the failures: the memory (Coverage) and the
+decoder (Contrast). Neither needs training. \Cref{fig:overview} gives an overview.
+
+\subsection{Coverage: equal quotas filled by the question}
+\label{sec:coverage}
+
+After the $F$ frames are encoded, the memory is pruned once, independently in each of the $L$ layers. Let
+$\mathcal{T}_f$ be the visual tokens of frame pair $f \in \{1,\dots,F'\}$ and $B$ the per-layer budget for visual
+tokens.
+
+\paragraph{Question relevance.}
+The question $x$ is appended to the full, uncompressed memory and propagated exactly through all layers, so that
+the queries at layer $\ell$ come from the real hidden states. The relevance of visual token $i$ at layer $\ell$ is
+the attention it receives from the question, averaged over heads $h$ and question positions $j$:
+\begin{equation}
+  a_\ell(i) \;=\; \frac{1}{H\,|x|} \sum_{h=1}^{H} \sum_{j \in x}
+  \operatorname{softmax}_i\!\Big( \tfrac{1}{\sqrt{d}}\, Q^{(\ell,h)}_j \, {K^{(\ell,h)}_i}^{\!\top} \Big).
+  \label{eq:relevance}
+\end{equation}
+
+\paragraph{Equal quota.}
+Every frame pair receives the same share of the budget, $B_f = \lfloor B/F' \rfloor$ (remainders assigned in
+order), and layer $\ell$ keeps
+\begin{equation}
+  \mathcal{K}_\ell \;=\; \bigcup_{f=1}^{F'} \topop_{B_f} \big\{\, a_\ell(i) \;:\; i \in \mathcal{T}_f \,\big\}.
+  \label{eq:quota}
+\end{equation}
+The timestamp tokens of $f$ are kept if and only if $\mathcal{K}_\ell \cap \mathcal{T}_f \neq \emptyset$. With an
+equal quota every frame pair keeps at least one token at any practical budget, so \emph{every time anchor
+survives}, and the question decides which part of each frame is shown. Kept tokens retain their original rotary
+positions, so their temporal order is preserved.
+
+\paragraph{Why equal, and why the question.}
+The equal quota is a deliberately simple coverage constraint. It guarantees the timeline, which grounding needs and
+multiple-choice QA does not, and it stops attention from collapsing onto a few frames: when quotas follow attention
+mass, attention sinks and recency bias give a single frame up to 227 of about 2{,}140 kept tokens. Relevance-weighted
+quotas with a floor, from SigLIP similarity or attention mass, did not beat equal quotas in a pre-registered test
+($-0.2$ mIoU \pr{$-1.2$, $+0.8$}). Using the \emph{actual} question, rather than the generic probe questions of
+streaming memories such as HERMES~\cite{hermes}, is what makes attention informative: generic probes with a global
+top-$k$ are the weakest variant we measured (18.3 mIoU).
+
+\paragraph{Per-layer selection.}
+Each layer keeps its own set $\mathcal{K}_\ell$. Forcing one shared set (attention averaged over layers) costs
+\method $-1.5$ mIoU \pr{$-2.9$, $-0.0$}, whereas it does not change random selection ($+0.7$, n.s.). The benefit of
+per-layer selection is therefore specific to question-driven scores, and it does not explain why random selection
+beats input-level pruners.
+
+\paragraph{Frames and budget.}
+An equal quota needs enough tokens per frame to show anything: with 2--4 tokens per frame pair, the top-attended
+tokens carry little content and Coverage collapses (\cref{sec:frames}). When the budget is small, we therefore spend
+it on fewer frames: at a fixed number of kept tokens, 32 frames with twice the share per frame recover what 64 frames
+lose. As a rule we use $F{=}64$ when each frame pair keeps at least ${\sim}8$ tokens and halve $F$ otherwise.
+\TODO{this rule was derived from the results of \cref{sec:frames}; validate it on held-out data.}
+
+\paragraph{Cost.}
+Coverage adds one forward pass of the question over the uncompressed memory per question.
+\TODO{measured latency and peak memory; the current implementation runs 3--4 scoring passes, reducible to one.}
+
+\subsection{Contrast: prior-contrastive decoding of time values}
+\label{sec:contrast}
+
+Let $p_\Mem(y) = p(y \mid \Mem, x, y_{<t})$ be the next-token distribution with the compressed memory and
+$p_\varnothing(y) = p(y \mid \varnothing, x, y_{<t})$ the distribution with the same prompt and generated prefix but
+\emph{no visual tokens}. Then
+\begin{equation}
+  \log p_\Mem(y) \;=\; \log p_\varnothing(y) \;+\; \underbrace{\log \frac{p_\Mem(y)}{p_\varnothing(y)}}_{\text{evidence from } \Mem},
+  \label{eq:decomp}
+\end{equation}
+so when the memory carries no information about $y$, the evidence term is flat and the video-free prior decides:
+this is the failure of \cref{sec:prior}. Prior-contrastive decoding (PCD) amplifies the evidence term,
+\begin{equation}
+\begin{aligned}
+  s_t(y) &\;=\; (1+\alpha_t)\log p_\Mem(y) - \alpha_t \log p_\varnothing(y) \\
+         &\;=\; \log p_\varnothing(y) + (1+\alpha_t) \log \frac{p_\Mem(y)}{p_\varnothing(y)},
+\end{aligned}
+  \label{eq:pcd}
+\end{equation}
+and picks $y_t = \argmax_{y \in \mathcal{V}_\beta} s_t(y)$ over the plausible set
+$\mathcal{V}_\beta = \{ y : p_\Mem(y) \geq \beta \max_{y'} p_\Mem(y') \}$ with $\beta{=}0.1$, as in VCD~\cite{vcd},
+so that tokens the memory makes implausible are never promoted. Three choices adapt this rule to grounding.
+
+\paragraph{No-video counterfactual.}
+The negative memory is empty rather than noised or shuffled. It isolates exactly the prior measured in
+\cref{sec:prior}, and it is cheap: its cache holds only the prompt.
+
+\paragraph{Time scope.}
+The contrast is applied only while a time value is written: inside a \texttt{Seen:} time before its description and
+inside \texttt{Time: [$s$, $e$]}. All other tokens, including the answer text, are decoded greedily from $p_\Mem$, so
+the answer is unaffected where the memory already speaks.
+
+\paragraph{Confidence-adaptive strength.}
+We set $\alpha_t = \alpha_{\max}\,\big(1 - \max_y p_\Mem(y)\big)$ with $\alpha_{\max}{=}1$. Where the memory makes the
+model confident (\eg evidence that truly starts at 0\,s), the contrast fades and the early answer is kept; where the
+model hesitates between times, the evidence term decides.
+
+The timeline prompt matters: PCD acts on the listed \texttt{Seen:} moments and then on the interval, so the interval
+is written from contrasted observations. \TODO{report PCD with a direct-answer prompt, where it does not help.}
+
+\subsection{Answer reserve}
+\label{sec:reserve}
+
+Contrastive decoding lengthens the list of observed moments: under PCD the model sometimes keeps writing
+\texttt{Seen:} lines until the generation limit $T$, and never writes the interval. We reserve room for the answer:
+if $R$ tokens remain ($R{=}64$) and no \texttt{Answer:} line has started, the decoder writes
+``\texttt{\textbackslash nAnswer:}'' and continues normally. This is a format constraint, not a heuristic on the
+content: the interval is still chosen by PCD from the memory. It removes every unparseable output (from 25--68 of
+500 to 0) and improves every PCD configuration on every dataset (\cref{tab:reserve}).
+
+\subsection{Optional: retrieval-guided frames}
+\label{sec:retrieval}
+
+When the window is much longer than $F$ frames, which frames are encoded can matter as much as which tokens are
+kept. As an optional front end we sample frames as in BOLT~\cite{bolt}. Each second of video is embedded once with
+SigLIP~2~\cite{siglip2}, which gives a causal 1\,fps index. The relevance $z_j$ of second $j \leq q$ is its z-scored
+cosine similarity with the question, and the $F$ frames are taken at evenly spaced quantiles of
+\begin{equation}
+  p(j) \;=\; \tfrac{1}{2}\cdot\tfrac{1}{q} \;+\; \tfrac{1}{2}\operatorname{softmax}(z)_j ,
+\end{equation}
+so that half of the frames stay uniform. Retrieval is skipped when uniform frames would be less than 1\,s apart.
+Once tokens are chosen by the question, retrieval adds only $+0.8$ to $+0.9$ mIoU (not significant on S-EMBER,
+QVHighlights or ActivityNet), so we treat it as optional; the main-table runs include it.

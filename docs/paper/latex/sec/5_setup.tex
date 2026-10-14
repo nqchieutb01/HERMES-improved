@@ -1,0 +1,48 @@
+\section{Experimental Setup}
+\label{sec:setup}
+
+\paragraph{Model.}
+Qwen3-VL-8B-Instruct~\cite{qwen3vl}, 64 frames sampled uniformly from $[0,q]$ (or by \cref{sec:retrieval}) at native
+resolution, greedy decoding or PCD, at most 384 new tokens, batch size 8. All methods share the timeline prompt.
+
+\paragraph{Datasets.}
+\textbf{S-EMBER} grounded QA~\cite{sember}: 475 questions (191 duration, 184 counting, 100 location) on the first
+300 videos, asked mid-stream; the memory contains only the frames before the question.
+\textbf{QVHighlights}~\cite{qvhighlights} val: 500 queries with a single relevant window (a seed-0 sample of the
+1{,}020 single-window queries), videos of about 150\,s.
+\textbf{ActivityNet Captions}~\cite{activitynet} val\_1: 500 queries, one sentence per video, videos of about
+115\,s. \textbf{Charades-STA}~\cite{charadessta} test: 500 queries, videos of about 30\,s. For the last three, the
+question is \emph{``When does the following happen in the video: \textless query\textgreater?''} and the window is
+the whole video. Our QVHighlights and ActivityNet copies are low-resolution re-encodes (153 and about 84 visual
+tokens per frame pair, against 660 on S-EMBER), so we also report budgets in absolute tokens.
+
+\paragraph{Budget.}
+10\% of the visual tokens of the 64-frame memory, timestamps included (S-EMBER: about 2{,}140 tokens;
+QVHighlights: about 520). ActivityNet is reported at 30\% (400--900 tokens), because at 10\% the memory holds only
+120--300 tokens (\cref{sec:budget}).
+
+\paragraph{Baselines.}
+All tokens (no pruning); random tokens; FastVID~\cite{fastvid}, VidCom\textsuperscript{2}~\cite{vidcom2},
+FlashVID~\cite{flashvid} (vision-side stages) and SemVID~\cite{semvid}, re-implemented and checked to keep the
+same tokens as the authors' code on test inputs; each with and without Contrast.
+\TODO{SnapKV-style observation-window eviction, PruneVid, global question top-$k$ without quotas, and FV-Action /
+attention readout on the same memory.}
+
+\paragraph{Floor-adjusted evaluation.}
+For every dataset we report three video-free or video-light references. (i) The \emph{best constant interval}
+$[aq, bq]$ over a $20{\times}20$ grid, tuned on the test questions, which upper-bounds any constant rule.
+(ii) \emph{Length rescaling}: the no-Contrast prediction stretched about its start by a factor fitted once on
+S-EMBER (1.76) and applied unchanged to the other datasets; it tests whether a gain could come from longer
+intervals alone. (iii) The split into \emph{closed} questions (gold end $<0.8q$) and the rest. End-snapping on
+S-EMBER is discussed in \cref{sec:suppl-snap}.
+
+\paragraph{Metrics and statistics.}
+mIoU and R@$\{0.3,0.5,0.7\}$; on S-EMBER also answer accuracy and GQ@0.5, judged with the official S-EMBER judge
+prompt by a local Qwen3.8-27B-FP8 model, all rows of a table in one judging session. Answers that state times as
+minutes:seconds are converted to seconds for every method alike (\cref{sec:suppl-parse}). We use a paired bootstrap
+over questions (2{,}000 resamples, 95\% intervals) and mark with $^*$ the intervals that exclude 0.
+\TODO{video-clustered bootstrap.}
+
+\paragraph{Protocol.}
+All design choices (scores, quotas, $\alpha$, scope, reserve) were made on S-EMBER. The configuration was then frozen
+and run once on QVHighlights, ActivityNet and Charades-STA. \TODO{held-out S-EMBER videos as a test split.}

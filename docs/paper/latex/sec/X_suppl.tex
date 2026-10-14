@@ -1,0 +1,34 @@
+\section{Parsing times written as minutes:seconds}
+\label{sec:suppl-parse}
+
+On videos longer than a minute, the model sometimes writes times as minutes:seconds, \eg
+\texttt{Time: [1:45, 2:07]}, which the official S-EMBER parser scores as missing. We convert \texttt{h:mm:ss} and
+\texttt{m:ss} to seconds for every method alike. Method rankings are unchanged with the official parser. The main
+numbers with the official parser are: QVHighlights, \method 44.6\,/\,50.2 (\vs 48.8\,/\,54.8); ActivityNet at 30\%,
+33.3\,/\,31.0 (\vs 34.7\,/\,32.4). \TODO{full table with the official parser.}
+
+\section{End-snapping on S-EMBER}
+\label{sec:suppl-snap}
+
+Setting every predicted end to the question time $q$ raises every S-EMBER method to 42--46 mIoU, more than the 39.3
+of \method, because 67\% of the gold intervals end within the last fifth of the window. On closed intervals,
+end-snapping \emph{hurts} every method (to 22--24 mIoU) while \method keeps 39.7; on QVHighlights it lowers \method
+from 48.8 to 40.5. A decoder that decides whether an interval is still open at question time is a natural
+extension. \TODO{open-interval decoding.}
+
+\section{Reproduction}
+\label{sec:suppl-repro}
+
+\method corresponds to the following overrides of the HERMES code base:
+\begin{center}
+\scriptsize\ttfamily
+\begin{adjustbox}{max width=\linewidth}\begin{tabular}{l}
+model=qwen3\_vl\_8b experiment=sember\_grounding\_uniform run.uniform\_num\_frames=64 \\
+dataset.grounding\_prompt=timeline run.keep\_time\_tokens=surviving run.max\_new\_tokens=384 \\
+run.batch\_size=8 run.prune\_score=core\_topk run.offline\_keep\_ratio=0.1 \\
+run.contrastive\_mode=blind run.contrastive\_alpha=1.0 run.contrastive\_adaptive=true \\
+run.contrastive\_scope=time run.answer\_reserve=64 \\
+\textrm{(optional retrieval)} run.retrieval=frames\_cont run.retrieval\_min\_gap=1.0
+\end{tabular}\end{adjustbox}
+\end{center}
+Floors and paired intervals are computed by \texttt{docs/paper/analysis/floors.py}.

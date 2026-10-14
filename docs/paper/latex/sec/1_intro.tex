@@ -1,0 +1,75 @@
+\section{Introduction}
+\label{sec:intro}
+
+Ask a video assistant ``how long did I use the paper cutter?'' and a useful answer has two parts: a duration and
+the interval it comes from. Such \emph{grounded} questions are central to egocentric assistants, video search and
+step-by-step guidance. They are hard for the same reason they are useful: the model must know \emph{when} things
+happened across the whole window, including the moments just before and after the event.
+
+At the same time, video LLMs pay for every frame. Qwen3-VL~\cite{qwen3vl} spends about 330 visual tokens per pair
+of frames, so 64 frames already cost about 21{,}000 tokens, and long or streaming video multiplies this. Pruning
+the visual tokens to a small budget is therefore the default, and a fast-growing literature reports that
+10--25\% of the tokens preserve multiple-choice accuracy~\cite{fastvid,vidcom2,flashvid,semvid,prunevid,dycoke}.
+This paper asks what pruning does to \emph{temporal grounding}, and finds that the answer differs from QA in three
+ways.
+
+\paragraph{Observation 1: QA pruners lose the timeline.}
+Video LLMs such as Qwen3-VL report time by reading timestamp tokens interleaved with the visual tokens. A frame
+whose visual tokens are all removed loses its timestamp, or keeps a timestamp with nothing to show. Pruners
+designed for QA remove frames that look redundant, unremarkable or unrelated to the words of the question, and
+those frames are exactly what makes a timeline usable for grounding. On S-EMBER grounded QA, all four recent
+pruners we evaluate fall below \emph{random} token selection at the same budget, and the same holds on
+QVHighlights and Charades-STA (\cref{sec:pruners}). Random selection is a strong baseline for grounding because it
+keeps a few tokens on every frame.
+
+\paragraph{Observation 2: where the memory is silent, a prior answers.}
+Asked with no video at all, the model still produces confident intervals, and 90\% of them start in the first 5\%
+of the window. A pruned memory shows the same habit: 30--56\% of predicted intervals start in the first 5\% of the
+window, against 16\% of the gold intervals, and removing the frames that contain the evidence raises this share
+from 37\% to 51\%. The end of the interval suffers most: the median end error is two to three times the start
+error, and without video 87\% of predicted ends fall more than half an interval too early (\cref{sec:prior}).
+
+\paragraph{Observation 3: benchmark floors are high.}
+Grounding benchmarks have strong positional regularities~\cite{otani2020uncovering}. On S-EMBER, where questions are
+asked mid-stream and two thirds of the gold intervals end within the last fifth of the window, the best
+\emph{constant} interval $[0.15q, q]$ reaches 36.9 mIoU, more than the uncompressed model (28.0). On ActivityNet
+Captions and Charades-STA the best constant also beats the uncompressed model. A claimed gain in grounding under
+compression must clear these floors, and we report them for every method (\cref{sec:floors}).
+
+\medskip
+These observations suggest that a compressed memory for grounding needs two things that QA-oriented pruning does
+not provide: \textbf{coverage}, so that every part of the timeline keeps an anchor in memory, and a way to stop the
+decoder's \textbf{prior} from writing the interval where the evidence is thin. We propose \method (Coverage $+$
+Contrast), a training-free method with one component for each (\cref{fig:overview}):
+\begin{itemize}
+  \item \textbf{Coverage} (\cref{sec:coverage}). After the frames are encoded, the KV cache is pruned layer by
+  layer. Every frame keeps an equal share of the layer's budget, and within each frame the tokens that the
+  \emph{actual question} attends to most are kept. Because a timestamp survives exactly when one of its frame's
+  visual tokens survives, the equal quota keeps every time anchor, and the question decides what each anchor shows.
+  \item \textbf{Contrast} (\cref{sec:contrast}). While the answer is written, each time value is chosen by
+  contrasting the model's prediction with its prediction from a video-free memory. The contrast acts only on time
+  values, and its strength fades where the model is already confident. An \emph{answer reserve}
+  (\cref{sec:reserve}) guarantees that the final interval is always written.
+\end{itemize}
+
+Neither operator is new in isolation: per-frame budgets appear in VidCom\textsuperscript{2}, KTV and
+AdaTP~\cite{vidcom2,ktv,adatp}, question-attention KV eviction in SnapKV and PruneVid~\cite{snapkv,prunevid}, and
+contrast against a degraded input in VCD and M3ID~\cite{vcd,m3id}. Our contributions are to show \emph{why}
+temporal grounding needs this particular combination, and to make it work:
+\begin{enumerate}
+  \item \textbf{A diagnosis of grounding under compression} (\cref{sec:diagnosis}). QA-oriented pruners lose
+  temporal coverage and fall below random selection; the decoder's video-free prior fills the gaps, mostly at the
+  interval end; and benchmark floors are high enough to hide both effects.
+  \item \textbf{\method} (\cref{sec:method}), which couples time-anchor coverage with prior-contrastive decoding of
+  time values. It needs no training, no labelled calibration and no change to the model.
+  \item \textbf{A floor-adjusted evaluation} (\cref{sec:setup}) that reports, for every method, the best
+  video-free constant interval, a length-rescaling baseline, and closed versus open intervals, with paired
+  confidence intervals. All design choices were made on S-EMBER; the other three datasets were run once with the
+  frozen configuration.
+  \item \textbf{Results on four datasets} (\cref{sec:results}). With 10\% of the tokens, \method exceeds the
+  uncompressed model and every pruner on S-EMBER and QVHighlights, and clears the video-free floors by
+  $+7.6$ mIoU on S-EMBER closed intervals and $+22.1$ on QVHighlights, both significant. Question-driven
+  selection improves as the budget shrinks, as long as each frame keeps enough tokens; at very small budgets, fewer
+  frames with more tokens each recover what 64 frames lose. We also report the two datasets where the base model
+  itself stays below the floor, and a broad set of negative results.
+\end{enumerate}

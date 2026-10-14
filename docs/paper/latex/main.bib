@@ -1,0 +1,264 @@
+% Bibliography for the CoCo draft.
+% Entries with note = {[verify]} come from our literature survey and have not been re-checked against the
+% published version; "[authors to verify]" marks author lists we did not confirm. Check every entry before submission.
+
+%% ------------------------------------------------------------------ model, encoder, datasets
+@misc{qwen3vl,
+  title  = {{Qwen3-VL} Technical Report},
+  author = {{Qwen Team}},
+  year   = {2025},
+  note   = {[verify]}
+}
+@article{siglip2,
+  title   = {{SigLIP} 2: Multilingual Vision-Language Encoders with Improved Semantic Understanding, Localization, and Dense Features},
+  author  = {Tschannen, Michael and others},
+  journal = {arXiv preprint arXiv:2502.14786},
+  year    = {2025}
+}
+@misc{sember,
+  title  = {{S-EMBER}: grounded streaming video question answering},
+  author = {{[authors to verify]}},
+  note   = {[cite: S-EMBER benchmark paper]}
+}
+@inproceedings{qvhighlights,
+  title     = {{QVHighlights}: Detecting Moments and Highlights in Videos via Natural Language Queries},
+  author    = {Lei, Jie and Berg, Tamara L. and Bansal, Mohit},
+  booktitle = {Advances in Neural Information Processing Systems (NeurIPS)},
+  year      = {2021}
+}
+@inproceedings{activitynet,
+  title     = {Dense-Captioning Events in Videos},
+  author    = {Krishna, Ranjay and Hata, Kenji and Ren, Frederic and Fei-Fei, Li and Niebles, Juan Carlos},
+  booktitle = {IEEE International Conference on Computer Vision (ICCV)},
+  year      = {2017}
+}
+@inproceedings{charadessta,
+  title     = {{TALL}: Temporal Activity Localization via Language Query},
+  author    = {Gao, Jiyang and Sun, Chen and Yang, Zhenheng and Nevatia, Ram},
+  booktitle = {IEEE International Conference on Computer Vision (ICCV)},
+  year      = {2017}
+}
+@inproceedings{otani2020uncovering,
+  title     = {Uncovering Hidden Challenges in Query-Based Video Moment Retrieval},
+  author    = {Otani, Mayu and Nakashima, Yuta and Rahtu, Esa and Heikkil{\"a}, Janne},
+  booktitle = {British Machine Vision Conference (BMVC)},
+  year      = {2020}
+}
+
+%% ------------------------------------------------------------------ frame selection
+@inproceedings{bolt,
+  title     = {{BOLT}: Boost Large Vision-Language Model Without Training for Long-form Video Understanding},
+  author    = {Liu, Shuming and others},
+  booktitle = {IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)},
+  year      = {2025},
+  note      = {arXiv:2503.21483}
+}
+@inproceedings{aks,
+  title     = {Adaptive Keyframe Sampling for Long Video Understanding},
+  author    = {Tang, Xi and others},
+  booktitle = {IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)},
+  year      = {2025},
+  note      = {arXiv:2502.21271}
+}
+@article{mdp3,
+  title   = {{MDP3}: A Training-free Approach for List-wise Frame Selection in Video-{LLMs}},
+  author  = {{[authors to verify]}},
+  journal = {arXiv preprint arXiv:2501.02885},
+  year    = {2025}
+}
+@article{focus,
+  title   = {{FOCUS}: Efficient Keyframe Selection for Long Video Understanding},
+  author  = {{[authors to verify]}},
+  journal = {arXiv preprint arXiv:2510.27280},
+  year    = {2025}
+}
+@inproceedings{qframe,
+  title     = {{Q-Frame}: Query-aware Frame Selection and Multi-Resolution Adaptation for Video-{LLMs}},
+  author    = {{[authors to verify]}},
+  booktitle = {IEEE/CVF International Conference on Computer Vision (ICCV)},
+  year      = {2025},
+  note      = {[verify]}
+}
+
+%% ------------------------------------------------------------------ token pruning
+@inproceedings{fastvid,
+  title     = {{FastVID}: Dynamic Density Pruning for Fast Video Large Language Models},
+  author    = {Shen, Leqi and others},
+  booktitle = {Advances in Neural Information Processing Systems (NeurIPS)},
+  year      = {2025},
+  note      = {arXiv:2503.11187}
+}
+@inproceedings{vidcom2,
+  title     = {Video Compression Commander: Plug-and-Play Inference Acceleration for Video Large Language Models},
+  author    = {Liu, Xuyang and others},
+  booktitle = {Conference on Empirical Methods in Natural Language Processing (EMNLP)},
+  year      = {2025},
+  note      = {arXiv:2505.14454}
+}
+@inproceedings{flashvid,
+  title     = {{FlashVID}: Training-free Tree-based Spatiotemporal Token Merging for Video Large Language Models},
+  author    = {Fan, Ziyang and others},
+  booktitle = {International Conference on Learning Representations (ICLR)},
+  year      = {2026},
+  note      = {arXiv:2602.08024; [verify]}
+}
+@inproceedings{semvid,
+  title     = {{SemVID}},
+  author    = {{[authors to verify]}},
+  booktitle = {European Conference on Computer Vision (ECCV)},
+  year      = {2026},
+  note      = {arXiv:2603.05663; [verify title]}
+}
+@inproceedings{prunevid,
+  title     = {{PruneVid}: Visual Token Pruning for Efficient Video Large Language Models},
+  author    = {Huang, Xiaohu and Zhou, Hao and Han, Kai},
+  booktitle = {Findings of the Association for Computational Linguistics (ACL)},
+  year      = {2025}
+}
+@inproceedings{lgttp,
+  title     = {Language-Guided Temporal Token Pruning for Efficient {VideoLLM} Processing},
+  author    = {{[authors to verify]}},
+  booktitle = {Conference on Empirical Methods in Natural Language Processing (EMNLP)},
+  year      = {2025},
+  note      = {[verify]}
+}
+@article{adatp,
+  title   = {{AdaTP}: Attention-Debiased Token Pruning for Video Large Language Models},
+  author  = {{[authors to verify]}},
+  journal = {arXiv preprint arXiv:2505.20100},
+  year    = {2025}
+}
+@article{ktv,
+  title   = {Keyframes and Key Tokens Selection for Efficient Training-Free Video {LLMs}},
+  author  = {{[authors to verify]}},
+  journal = {arXiv preprint arXiv:2602.03615},
+  year    = {2026}
+}
+@inproceedings{dycoke,
+  title     = {{DyCoke}: Dynamic Compression of Tokens for Fast Video Large Language Models},
+  author    = {Tao, Keda and others},
+  booktitle = {IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)},
+  year      = {2025},
+  note      = {[verify]}
+}
+@article{framefusion,
+  title   = {{FrameFusion}: Combining Similarity and Importance for Video Token Reduction on Large Visual Language Models},
+  author  = {Fu, Tianyu and others},
+  journal = {arXiv preprint arXiv:2501.01986},
+  year    = {2025},
+  note    = {[verify]}
+}
+
+%% ------------------------------------------------------------------ KV cache and video memory
+@inproceedings{snapkv,
+  title     = {{SnapKV}: {LLM} Knows What You are Looking for Before Generation},
+  author    = {Li, Yuhong and Huang, Yingbing and Yang, Bowen and Venkitesh, Bharat and Locatelli, Acyr and Ye, Hanchen and Cai, Tianle and Lewis, Patrick and Chen, Deming},
+  booktitle = {Advances in Neural Information Processing Systems (NeurIPS)},
+  year      = {2024}
+}
+@inproceedings{h2o,
+  title     = {{H2O}: Heavy-Hitter Oracle for Efficient Generative Inference of Large Language Models},
+  author    = {Zhang, Zhenyu and Sheng, Ying and Zhou, Tianyi and Chen, Tianlong and Zheng, Lianmin and Cai, Ruisi and Song, Zhao and Tian, Yuandong and R{\'e}, Christopher and Barrett, Clark and Wang, Zhangyang and Chen, Beidi},
+  booktitle = {Advances in Neural Information Processing Systems (NeurIPS)},
+  year      = {2023}
+}
+@article{pyramidkv,
+  title   = {{PyramidKV}: Dynamic {KV} Cache Compression based on Pyramidal Information Funneling},
+  author  = {Cai, Zefan and others},
+  journal = {arXiv preprint arXiv:2406.02069},
+  year    = {2024}
+}
+@article{adakv,
+  title   = {{Ada-KV}: Optimizing {KV} Cache Eviction by Adaptive Budget Allocation for Efficient {LLM} Inference},
+  author  = {Feng, Yuan and others},
+  journal = {arXiv preprint arXiv:2407.11550},
+  year    = {2024}
+}
+@inproceedings{hermes,
+  title     = {{HERMES}},
+  author    = {{[authors to verify]}},
+  booktitle = {Annual Meeting of the Association for Computational Linguistics (ACL)},
+  year      = {2026},
+  note      = {[verify title]}
+}
+@inproceedings{rekv,
+  title     = {Streaming Video Question-Answering with In-context Video {KV}-Cache Retrieval},
+  author    = {Di, Shangzhe and others},
+  booktitle = {International Conference on Learning Representations (ICLR)},
+  year      = {2025}
+}
+@article{streammem,
+  title   = {{StreamMem}: Query-Agnostic {KV} Cache Memory for Streaming Video Understanding},
+  author  = {{[authors to verify]}},
+  journal = {arXiv preprint arXiv:2508.15717},
+  year    = {2025}
+}
+@article{infinipotv,
+  title   = {{InfiniPot-V}: Memory-Constrained {KV} Cache Compression for Streaming Video Understanding},
+  author  = {{[authors to verify]}},
+  journal = {arXiv preprint arXiv:2506.15745},
+  year    = {2025}
+}
+
+%% ------------------------------------------------------------------ contrastive decoding
+@inproceedings{vcd,
+  title     = {Mitigating Object Hallucinations in Large Vision-Language Models through Visual Contrastive Decoding},
+  author    = {Leng, Sicong and Zhang, Hang and Chen, Guanzheng and Li, Xin and Lu, Shijian and Miao, Chunyan and Bing, Lidong},
+  booktitle = {IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)},
+  year      = {2024}
+}
+@inproceedings{icd,
+  title     = {Mitigating Hallucinations in Large Vision-Language Models with Instruction Contrastive Decoding},
+  author    = {Wang, Xintong and Pan, Jingheng and Ding, Liang and Biemann, Chris},
+  booktitle = {Findings of the Association for Computational Linguistics (ACL)},
+  year      = {2024}
+}
+@inproceedings{m3id,
+  title     = {Multi-Modal Hallucination Control by Visual Information Grounding},
+  author    = {Favero, Alessandro and Zancato, Luca and Trager, Matthew and Choudhary, Siddharth and Perera, Pramuditha and Achille, Alessandro and Swaminathan, Ashwin and Soatto, Stefano},
+  booktitle = {IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)},
+  year      = {2024}
+}
+@inproceedings{pai,
+  title     = {Paying More Attention to Image: A Training-Free Method for Alleviating Hallucination in {LVLMs}},
+  author    = {Liu, Shi and Zheng, Kecheng and Chen, Wei},
+  booktitle = {European Conference on Computer Vision (ECCV)},
+  year      = {2024}
+}
+@article{season,
+  title   = {{SEASON}},
+  author  = {{[authors to verify]}},
+  journal = {arXiv preprint arXiv:2512.04643},
+  year    = {2025},
+  note    = {[verify title]}
+}
+
+%% ------------------------------------------------------------------ training-free temporal grounding
+@inproceedings{numpro,
+  title     = {Number it: Temporal Grounding Videos like Flipping Manga},
+  author    = {Wu, Yongliang and others},
+  booktitle = {IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)},
+  year      = {2025},
+  note      = {[verify]}
+}
+@article{fvaction,
+  title   = {Your {VLM} Already Knows When},
+  author  = {{[authors to verify]}},
+  journal = {arXiv preprint arXiv:2608.08315},
+  year    = {2026},
+  note    = {[verify title]}
+}
+@article{reze,
+  title   = {{REZE}},
+  author  = {{[authors to verify]}},
+  journal = {arXiv preprint arXiv:2608.04480},
+  year    = {2026},
+  note    = {[verify title]}
+}
+@article{knowwhen,
+  title   = {{MLLMs} Know When Before Speaking},
+  author  = {{[Authors to verify]}},
+  journal = {arXiv preprint arXiv:2605.21954},
+  year    = {2026},
+  note    = {[verify title]}
+}

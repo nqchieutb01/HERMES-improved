@@ -1,0 +1,34 @@
+%% Preamble: CVPR author-kit defaults (trimmed) + project macros.
+
+\usepackage{cuted}      % two-column teaser (strip environment)
+\usepackage{capt-of}
+\usepackage{caption}
+
+%% Inline annotations (disable for submission: uncomment the two \renewcommand lines)
+\newcommand{\red}[1]{{\color{red}#1}}
+\newcommand{\todo}[1]{{\color{red}#1}}
+\newcommand{\TODO}[1]{\textbf{\color{red}[TODO: #1]}}
+% \renewcommand{\TODO}[1]{}
+% \renewcommand{\todo}[1]{#1}
+
+%% Bold run-in paragraph headings (headings in the text end with a period)
+\renewcommand{\paragraph}[1]{\smallskip\noindent\textbf{#1}\hspace{0.45em}}
+
+%% Tables and math
+\usepackage{adjustbox}   % \begin{adjustbox}{max width=\linewidth}: shrink wide tables to the column
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{makecell}
+\usepackage{amsmath,amssymb}
+\usepackage{xspace}
+\usepackage{tikz}
+\usetikzlibrary{positioning,arrows.meta,fit,calc,backgrounds}
+
+%% Project macros
+\newcommand{\method}{CoCo\xspace}                         % placeholder method name
+\newcommand{\verify}{\textsuperscript{\color{orange}\,[verify]}}
+\newcommand{\floor}[1]{{\color{gray}\textit{#1}}}         % video-free floors in tables
+\newcommand{\pr}[1]{{\scriptsize [#1]}}                   % 95% confidence interval
+\newcommand{\Mem}{\mathcal{M}}
+\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator{\topop}{top}

@@ -1,0 +1,166 @@
+\section{Grounding under a Token Budget: a Diagnosis}
+\label{sec:diagnosis}
+
+This section establishes the three observations of the introduction on S-EMBER, before any method is introduced.
+Unless stated otherwise, numbers in this section use random 10\% pruning as the reference memory.
+
+\subsection{Setting}
+\label{sec:setting}
+
+A question $x$ is asked at time $q$ about a video $v_{0:q}$. The model sees $F{=}64$ frames from $[0,q]$, encoded
+into a KV cache $\Mem$ of $N$ visual tokens interleaved with timestamp tokens (one ``\texttt{<t seconds>}'' per
+pair of frames in Qwen3-VL). A budget $\rho$ (default $\rho{=}0.1$) limits the number of tokens kept in each layer
+to $\rho N$, with kept timestamps counted inside the budget. The model answers with a short \emph{timeline}:
+\begin{center}
+\small\ttfamily
+\begin{adjustbox}{max width=\linewidth}\begin{tabular}{l}
+Seen: $t_1$ seconds, \dots \\
+Seen: $t_k$ seconds, \dots \\
+Answer: \dots \\
+Time: [$s$, $e$]
+\end{tabular}\end{adjustbox}
+\end{center}
+from which the interval $[s,e]$ is parsed. Grounding is scored by its IoU with the gold interval (mIoU and
+R@$\{0.3, 0.5, 0.7\}$); grounded QA additionally requires the answer to be judged correct (GQ@0.5: correct answer
+and IoU $\geq 0.5$). We call an answer an \emph{early start} when its interval starts in the first 5\% of the window,
+and a \emph{leak} when it starts early although the gold evidence starts later.
+
+\subsection{QA pruners lose temporal coverage}
+\label{sec:coverage-loss}
+
+At 10\% of the tokens, FastVID, VidCom\textsuperscript{2}, FlashVID and SemVID all score below random token
+selection (\cref{sec:pruners}). The cause is visible in where the kept tokens lie (\cref{tab:retention}). HERMES's
+attention-plus-recency score keeps 27.6\% of the tokens in the last quarter of the window and only 2.5--4.7\%
+elsewhere; FastVID keeps a token from only 25\% of the sampled frames in a median question, because it retains one
+representative per run of similar frames, and runs of similar frames are exactly where a continuing event lives.
+Random selection keeps about 9\% everywhere and never empties a frame. A timestamp is useful only when visual content
+of its frame survives with it, so a selector that empties frames leaves holes in the timeline. Holes hurt even when
+the score itself is reasonable: ranking HERMES's scores within each frame (an equal per-frame share, ``stratified'')
+instead of globally gains 5.3 mIoU \pr{2.9, 7.6}$^*$.
+
+\begin{table}[t]
+  \centering
+  \small
+  \setlength{\tabcolsep}{3.5pt}
+  \caption{\textbf{Where pruning keeps tokens.} Share of the visual tokens kept, by position in the window
+  (S-EMBER, 10\% budget), and the resulting grounding (mIoU) and leak. FastVID (mIoU 17.9, leak 38\%) keeps
+  6.0\,/\,8.5\,/\,10.5\,/\,10.6\,/\,12.9\% over the five fifths of the window, and tokens from only 25\% of the frames.}
+  \label{tab:retention}
+  \begin{adjustbox}{max width=\linewidth}\begin{tabular}{@{}lccccccc@{}}
+    \toprule
+    Selector & 0--10\% & 10--25\% & 25--50\% & 50--75\% & 75--100\% & mIoU & Leak \\
+    \midrule
+    HERMES     & 4.7 & 3.9 & 2.6 & 2.5 & \textbf{27.6} & 18.3 & 49\% \\
+    Stratified & 8.7 & 8.7 & 8.6 & 8.6 & 8.7 & 23.7 & 29\% \\
+    Random     & 8.9 & 8.8 & 8.6 & 8.7 & 8.6 & 25.8 & 30\% \\
+    \bottomrule
+  \end{tabular}\end{adjustbox}
+\end{table}
+
+\subsection{The prior fills the gaps}
+\label{sec:prior}
+
+\paragraph{The model answers without video.}
+Asked every question with an empty visual memory, the model still writes a timeline: 89\% of its first
+\texttt{Seen:} moments are at 0\,s and 90\% of its intervals start in the first 5\% of the window (88\% leak). Its
+intervals are 0.45$\times$ the gold length (median) and 87\% of its ends are more than half an interval too early. We
+call this the model's \emph{temporal prior}: start early, stop soon.
+
+\paragraph{The prior leaks into answers with video.}
+The same signature appears in every memory, weaker (\cref{tab:leak}). About 30\% of intervals start early at every
+random budget and with no pruning at all, against 16\% of gold intervals, and the share rises when coverage is lost
+(HERMES 49\%, HERMES streaming 37--39\%). The leak is therefore not a matter of the number of tokens, but of where the
+memory is silent.
+
+\paragraph{Removing the evidence causes the leak.}
+To test causality we drop the uniform frames that fall inside the gold interval (``evidence'') or the same number of
+frames elsewhere (``control''), keeping every other frame with its true timestamp (\cref{tab:causal}). With the
+evidence removed, the answers do not spread out: they move to the start of the video, and the leak rises by 14 points
+for both the unpruned and the random 10\% memory. Within the HERMES 10\% memory, questions whose evidence keeps under
+5\% of its tokens leak 56\% of the time, against 33\% when at least 15\% survives.
+
+\paragraph{An instruction does not remove it.}
+Adding ``The relevant moments may occur at any point in the video; do not assume they are near the start'' to the
+prompt leaves the leak almost unchanged (29.5\%~$\rightarrow$~28.0\%) and grounding unchanged ($-0.1$ mIoU). The
+prior acts in the output distribution and has to be removed there.
+
+\paragraph{The end is the weak boundary.}
+Across memories, the median end error is 0.40--0.69 of the gold length without contrastive decoding, against
+0.14--0.30 for the start, and the most frequent failure is an interval entirely \emph{before} the gold one (33\% of
+all answers, \cref{tab:errors}).
+
+\begin{table}[t]
+  \centering
+  \small
+  \setlength{\tabcolsep}{4pt}
+  \caption{\textbf{The temporal prior leaks into every memory.} Early starts: share of intervals starting in the first
+  5\% of the window (gold: 16\%). S-EMBER, greedy decoding.}
+  \label{tab:leak}
+  \begin{adjustbox}{max width=\linewidth}\begin{tabular}{@{}lcc@{}}
+    \toprule
+    Memory & Early starts & mIoU \\
+    \midrule
+    No video                   & 90\% & \phantom{0}7.9 \\
+    HERMES 10\%                & 56\% & 18.3 \\
+    HERMES streaming, 4k / 6k  & 45\% / 46\% & 21.6 / 22.6 \\
+    Random 5\% / 10\% / 25\%   & 39\% / 38\% / 37\% & 23.6 / 25.8 / 28.2 \\
+    Stratified 10\%            & 36\% & 23.7 \\
+    All tokens                 & 41\% & 28.0 \\
+    \bottomrule
+  \end{tabular}\end{adjustbox}
+\end{table}
+
+\begin{table}[t]
+  \centering
+  \small
+  \setlength{\tabcolsep}{3pt}
+  \caption{\textbf{Causal test.} Frames inside the gold evidence (``evidence'') or as many frames elsewhere
+  (``control'') are removed. Acc.\,/\,mIoU\,/\,GQ@0.5 and leak; leak measured on the 397 questions whose evidence starts
+  after the first 5\% of the window. Contrast: adaptive PCD on time values (\cref{sec:contrast}), no reserve.}
+  \label{tab:causal}
+  \begin{adjustbox}{max width=\linewidth}\begin{tabular}{@{}llcccc@{}}
+    \toprule
+    & & \multicolumn{2}{c}{Greedy} & \multicolumn{2}{c}{Contrast} \\
+    \cmidrule(lr){3-4} \cmidrule(l){5-6}
+    Memory & Removed & Acc./mIoU/GQ & Leak & Acc./mIoU/GQ & Leak \\
+    \midrule
+    Random 10\% & control  & 16.6/28.8/8.8 & 31\% & 15.4/34.6/10.5 & 11\% \\
+                & evidence & \phantom{0}7.8/\phantom{0}8.6/1.7 & \textbf{46\%} & \phantom{0}9.3/10.3/1.1 & \textbf{23\%} \\
+    All tokens  & control  & 19.6/29.4/10.1 & 37\% & 18.1/35.9/12.6 & 15\% \\
+                & evidence & \phantom{0}9.1/\phantom{0}9.4/1.9 & \textbf{51\%} & \phantom{0}9.1/10.5/1.5 & \textbf{22\%} \\
+    \bottomrule
+  \end{tabular}\end{adjustbox}
+\end{table}
+
+\subsection{Benchmark floors}
+\label{sec:floors}
+
+Positional regularities make some intervals predictable without the video (\cref{tab:floors}). On S-EMBER, questions
+are asked while the stream is running and 67\% of gold intervals end within the last 20\% of the window, so the
+constant $[0.15q, q]$ scores 36.9 mIoU. On ActivityNet Captions, whose moments cover 38\% of the video on average,
+$[0, 0.95q]$ scores 37.9; on Charades-STA, $[0, 0.45q]$ scores 29.7. QVHighlights is the least biased (26.8 mIoU,
+17.6 R@0.5). These constants are tuned on the test questions, so they upper-bound any video-free rule of this form. On
+three of the four datasets the best constant beats the uncompressed model, which makes the floors a necessary
+reference for every comparison that follows.
+
+\begin{table}[t]
+  \centering
+  \small
+  \setlength{\tabcolsep}{3.5pt}
+  \caption{\textbf{Video-free floors.} Best constant interval $[aq, bq]$ on a $20{\times}20$ grid, tuned on the test
+  questions (each metric uses its own best constant; $[a,b]$ is the mIoU optimum), against the uncompressed model.
+  Closed: share of questions with gold end $<0.8q$.}
+  \label{tab:floors}
+  \begin{adjustbox}{max width=\linewidth}\begin{tabular}{@{}lccccccc@{}}
+    \toprule
+    & \multicolumn{4}{c}{Best constant} & & \multicolumn{2}{c}{All tokens} \\
+    \cmidrule(lr){2-5} \cmidrule(l){7-8}
+    Dataset & $[a,b]$ & mIoU & R@0.5 & R@0.7 & Closed & mIoU & R@0.5 \\
+    \midrule
+    S-EMBER      & $[.15, 1]$  & 36.9 & 34.7 & 24.2 & 33\% & 28.0 & 26.7 \\
+    QVHighlights & $[0, 1]$    & 26.8 & 17.6 & \phantom{0}8.8 & 62\% & 29.1 & 28.6 \\
+    ActivityNet  & $[0, .95]$  & 37.9 & 35.8 & 20.8 & 56\% & 22.9 & 18.2 \\
+    Charades-STA & $[0, .45]$  & 29.7 & 29.6 & 15.4 & 70\% & 16.6 & 14.2 \\
+    \bottomrule
+  \end{tabular}\end{adjustbox}
+\end{table}

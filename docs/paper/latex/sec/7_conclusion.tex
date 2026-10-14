@@ -1,0 +1,36 @@
+\section{Limitations}
+\label{sec:limitations}
+
+\paragraph{Base-model floors.}
+On ActivityNet Captions and Charades-STA, Qwen3-VL-8B with 64 frames stays below the best constant interval even
+without pruning, and so does every compressed variant. Our claims on these datasets are relative to the model.
+
+\paragraph{Minimum tokens per frame.}
+Equal quotas fail when a frame pair keeps only 2--4 tokens. Spending the budget on fewer frames avoids this
+(\cref{sec:frames}), but the rule we use (at least about eight tokens per frame pair) was derived from the same results
+and still needs held-out validation.
+
+\paragraph{Short, densely sampled videos.}
+When uniform frames are less than a second apart, spreading tokens at random beats question-driven selection.
+
+\paragraph{Not a streaming memory.}
+The memory is rebuilt per question from the frames before the question. It is causal, but the full memory is
+prefilled once per question, so peak memory and time-to-first-token are those of the uncompressed model: \method
+reduces the memory the decoder reads, not the cost of building it. Contrast also adds a second, prompt-only decoding
+pass for time-value tokens. \TODO{cost table; write-once memory re-ranked at question time.}
+
+\paragraph{Scope of the evaluation.}
+All results use one model, 475--500-question subsets, and a local judge with the official prompt. Every
+hyperparameter was chosen on the S-EMBER questions; the other datasets were run once with the frozen configuration,
+but a held-out S-EMBER split is still to be evaluated.
+
+\section{Conclusion}
+\label{sec:conclusion}
+
+Temporal grounding asks a compressed video memory for something multiple-choice QA does not: a complete timeline.
+Pruners designed for QA remove parts of it and fall below random selection, and the decoder's video-free prior fills
+the gaps, mostly by ending intervals too early. \method keeps every time anchor with an equal, question-filled quota
+and writes time values against the model's own no-video prediction. With a tenth of the visual tokens it grounds
+better than the uncompressed model on S-EMBER and QVHighlights, and it clears video-free floors wherever the base
+model does. The floors are a lesson of their own: on two standard benchmarks a constant interval beats the
+uncompressed model, and grounding results under compression should be read against them.
