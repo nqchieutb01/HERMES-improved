@@ -340,6 +340,10 @@ def inference_command(
         command.extend(["--uniform_start_frac", str(cfg.run.uniform_start_frac)])
     if float(cfg.run.get("frame_scale", 1.0)) != 1.0:
         command.extend(["--frame_scale", str(cfg.run.frame_scale)])
+    if float(cfg.run.get("protocol_fps", 0.0)) > 0:
+        command.extend(["--protocol_fps", str(cfg.run.protocol_fps),
+                        "--protocol_total_tokens", str(cfg.run.get("protocol_total_tokens", 14336)),
+                        "--protocol_min_tokens", str(cfg.run.get("protocol_min_tokens", 64))])
     if int(cfg.run.get("frame_max_pixels", 0)) > 0:
         command.extend(["--frame_max_pixels", str(cfg.run.frame_max_pixels),
                         "--frame_min_pixels", str(cfg.run.get("frame_min_pixels", 0))])

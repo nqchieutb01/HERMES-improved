@@ -303,6 +303,9 @@ class BaseVQA:
                     frames.append(np.array(image.convert('RGB')))
             return np.stack(frames, axis=0), frame_idx, [i / float(video_fps) for i in frame_idx]
 
+        protocol_fps = float(getattr(self, "protocol_fps", 0.0))
+        if protocol_fps > 0 and start_time is None:
+            return self._protocol_frames(video_path, protocol_fps)
         reader = self._open_reader(video_path)
         source_fps = float(reader.get_avg_fps())
         end_frame = frame_end_exclusive(
@@ -326,6 +329,26 @@ class BaseVQA:
             )
         return reader.get_batch(frame_idx).asnumpy(), frame_idx, [i / source_fps for i in frame_idx]
     
+    def _protocol_frames(self, video_path, fps):
+        """Frames of a whole video as qwen_vl_utils 0.0.14 samples them for Qwen3-VL (TimeLens-Bench protocol):
+        nframes = duration * fps floored to even within [4, min(768, frames)], indices linspace(0, frames - 1, nframes)
+        rounded; frames resized (multiples of 32) to at most max(min(768 * 32^2, total_pixels / nframes * 2),
+        1.05 * min_pixels) pixels, with total_pixels = protocol_total_tokens * 32^2, min_pixels = protocol_min_tokens * 32^2."""
+        from qwen_vl_utils.vision_process import smart_resize
+        probe = VideoReader(video_path, num_threads=1)
+        total, video_fps = len(probe), float(probe.get_avg_fps())
+        h, w = probe[0].shape[:2]
+        max_frames = min(768, total) // 2 * 2
+        nframes = min(min(max(total / video_fps * fps, 4), max_frames), total)
+        nframes = int(nframes // 2 * 2)  # floor_by_factor(nframes, 2), as smart_nframes
+        min_pixels = int(getattr(self, "protocol_min_tokens", 64)) * 1024
+        total_pixels = int(getattr(self, "protocol_total_tokens", 14336)) * 1024
+        max_pixels = max(min(768 * 1024, total_pixels / nframes * 2), int(min_pixels * 1.05))
+        h, w = smart_resize(h, w, factor=32, min_pixels=min_pixels, max_pixels=max_pixels)
+        reader = VideoReader(video_path, num_threads=1, width=w, height=h)
+        frame_idx = torch.linspace(0, total - 1, nframes).round().long().tolist()
+        return reader.get_batch(frame_idx).asnumpy(), frame_idx, [i / video_fps for i in frame_idx]
+
     def load_frames_at_times(self, video_path, times):
         """Decode the source frames nearest to the given times (seconds, sorted); sets ``last_uniform_frame_times``."""
         reader = self._open_reader(video_path)
@@ -570,6 +593,11 @@ def work(QA_CLASS):
                         help="Diagnostic: omit Qwen3's per-group timestamp text")
     parser.add_argument("--uniform_start_frac", type=float, default=0.0,
                         help="Diagnostic: uniform frames start at this fraction of the question time")
+    parser.add_argument("--protocol_fps", type=float, default=0.0,
+                        help="Uniform sampling: per-video frames and frame size as qwen_vl_utils (TimeLens-Bench "
+                             "protocol: 2 fps, protocol_total_tokens over the frames); overrides uniform_num_frames; 0 = off")
+    parser.add_argument("--protocol_total_tokens", type=int, default=14336)
+    parser.add_argument("--protocol_min_tokens", type=int, default=64)
     parser.add_argument("--frame_max_pixels", type=int, default=0,
                         help="Resize decoded frames as qwen_vl_utils does (multiples of 32) to at most this many pixels "
                              "(TimeLens-Bench: total_pixels / num_frames * 2); 0 = off")
@@ -781,6 +809,8 @@ def work(QA_CLASS):
         parser.error("frame_scale must be positive")
     analyzer.frame_scale = args.frame_scale
     analyzer.frame_max_pixels, analyzer.frame_min_pixels = args.frame_max_pixels, args.frame_min_pixels
+    analyzer.protocol_fps, analyzer.protocol_total_tokens, analyzer.protocol_min_tokens = (
+        args.protocol_fps, args.protocol_total_tokens, args.protocol_min_tokens)
     analyzer.retention_snapshot = args.retention_snapshot
     if not 0 < args.offline_keep_ratio <= 1:
         parser.error("offline_keep_ratio must be in (0, 1]")
