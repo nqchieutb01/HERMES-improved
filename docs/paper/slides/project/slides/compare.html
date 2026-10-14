@@ -1,0 +1,19 @@
+<section id="compare" data-transition="fade" style="background:#EEF1F5;color:#14213D;font-family:'IBM Plex Sans', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:36px">
+<p style="font-size:26px;letter-spacing:3px;text-transform:uppercase;color:#2B64A8">2 · The pipeline</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:64px;font-weight:600;line-height:1.1">How CoCo differs from existing methods</h2>
+<table style="width:1664px;font-size:24px;color:#14213D">
+<tr><th style="width:15%;text-align:left">Method</th><th style="width:18%;text-align:left">Uses the question</th><th style="width:19%;text-align:left">Token score</th><th style="width:14%;text-align:left">Per-frame floor</th><th style="width:12%;text-align:left">Set per layer</th><th style="width:22%;text-align:left">Fixes the decoder</th></tr>
+<tr><td>FastVID</td><td>no</td><td>vision density peaks</td><td>per segment</td><td>no (input)</td><td>no</td></tr>
+<tr><td>VidCom²</td><td>no</td><td>frame uniqueness</td><td>unequal</td><td>no (input)</td><td>no</td></tr>
+<tr><td>FlashVID</td><td>no</td><td>[CLS] attention + diversity</td><td>no</td><td>no (input)</td><td>no</td></tr>
+<tr><td>SemVID</td><td>word embeddings</td><td>text similarity + MMR</td><td>no</td><td>no (input)</td><td>no</td></tr>
+<tr><td>PruneVid</td><td>yes, one layer</td><td>LLM attention, layer 10</td><td>no</td><td>no</td><td>no</td></tr>
+<tr><td>LGTTP</td><td>temporal words</td><td>query word cues</td><td>soft floor</td><td>no</td><td>no</td></tr>
+<tr><td>SnapKV</td><td>prompt window</td><td>LLM attention</td><td>n/a (text)</td><td>yes</td><td>no</td></tr>
+<tr><td>HERMES</td><td>generic probes</td><td>attention + recency</td><td>no</td><td>yes</td><td>no</td></tr>
+<tr><td>VCD / M3ID</td><td>–</td><td>–</td><td>–</td><td>–</td><td>noised / no image, all tokens</td></tr>
+<tr style="background:#DCE6F3"><td><b>CoCo</b></td><td><b>the actual question</b></td><td><b>exact attention, all layers</b></td><td><b>equal quota</b></td><td><b>yes</b></td><td><b>no-video contrast on time values, adaptive</b></td></tr>
+</table>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#7A8394">No single operator is new; their combination for grounding is · input-level pruners keep one set for every layer</p>
+<aside>This slide positions the work honestly. Per-frame budgets exist (VidCom2, LGTTP), question attention exists (PruneVid, SnapKV), and contrastive decoding exists (VCD, M3ID). None of them targets grounding's two failures together: lost timestamps and the temporal prior. Our differences are the equal floor tied to timestamp survival, the real question's exact attention per layer, and contrast against no video restricted to time values with adaptive strength.</aside>
+</section>

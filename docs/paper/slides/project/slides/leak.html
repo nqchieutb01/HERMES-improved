@@ -1,0 +1,25 @@
+<section id="leak" data-transition="fade" style="background:#F7F5F0;color:#14213D;font-family:'IBM Plex Sans', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:40px">
+<p style="font-size:26px;letter-spacing:3px;text-transform:uppercase;color:#C2621A">1 · The blind setup</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:64px;font-weight:600;line-height:1.1">The prior leaks into every memory</h2>
+<div style="display:flex;gap:64px;align-items:start">
+<table style="width:1040px;font-size:28px;color:#14213D;font-family:'IBM Plex Sans', Arial, sans-serif">
+<tr><th style="width:52%;text-align:left">Memory (greedy decoding)</th><th style="width:24%;text-align:right">Early starts ↓</th><th style="width:24%;text-align:right">mIoU ↑</th></tr>
+<tr><td>No video</td><td style="text-align:right">90%</td><td style="text-align:right">7.9</td></tr>
+<tr><td>HERMES 10%</td><td style="text-align:right">56%</td><td style="text-align:right">18.3</td></tr>
+<tr><td>HERMES streaming 6k</td><td style="text-align:right">46%</td><td style="text-align:right">22.6</td></tr>
+<tr><td>HERMES streaming 4k</td><td style="text-align:right">45%</td><td style="text-align:right">21.6</td></tr>
+<tr><td>All tokens (no pruning)</td><td style="text-align:right">41%</td><td style="text-align:right"><u>28.0</u></td></tr>
+<tr><td>Random 5%</td><td style="text-align:right">39%</td><td style="text-align:right">23.6</td></tr>
+<tr><td>Random 10%</td><td style="text-align:right">38%</td><td style="text-align:right">25.8</td></tr>
+<tr><td>Random 25%</td><td style="text-align:right"><u>37%</u></td><td style="text-align:right"><b><span style="color:#2B64A8">28.2</span></b></td></tr>
+<tr><td>Stratified 10%</td><td style="text-align:right"><b><span style="color:#2B64A8">36%</span></b></td><td style="text-align:right">23.7</td></tr>
+</table>
+<div style="flex:1;display:flex;flex-direction:column;gap:28px">
+<p style="font-size:30px;line-height:1.4;color:#3D4756">Gold intervals start early only <b>16%</b> of the time.</p>
+<p style="font-size:30px;line-height:1.4;color:#3D4756">Every memory starts early <b>2–3× more often</b>, even with <b>all tokens</b>.</p>
+<p style="font-size:30px;line-height:1.4;color:#3D4756">The leak is <b>not</b> a token count: ~38% at 5%, 10%, 25%. It is worst where pruning loses <b>coverage</b> (HERMES 56%).</p>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#7A8394">Early start: interval starts in the first 5% of the window · bold blue = best, underline = second best per column</p>
+<aside>Every memory inherits part of the blind habit. The share of early starts barely moves with the budget (5, 10, 25%) and is highest for HERMES, which keeps most tokens near the end of the window and leaves the rest of the timeline nearly empty.</aside>
+</section>

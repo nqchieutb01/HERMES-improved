@@ -1,0 +1,21 @@
+{
+  "v": 4,
+  "createdOnFiles": {"v": 1, "at": "2026-10-14T16:00:00Z"},
+  "lists": "css",
+  "title": "Keep the Clock, Contrast the Prior",
+  "order": ["cover", "task", "blind", "leak", "causal", "notfix", "pcd", "counterfactual", "safe", "pcd8",
+            "pruners", "pipeline", "coverage", "compare", "reserve",
+            "floors", "main-miou", "main-r5", "qa", "paired", "ladder", "budget", "frames", "layers",
+            "oracle", "limits", "takeaways"],
+  "sections": {
+    "s1": {"description": "Title", "start": "cover"},
+    "s2": {"description": "The blind setup: the model answers without video, and that prior leaks into every pruned memory, which motivates prior-contrastive decoding", "start": "task"},
+    "s3": {"description": "The pipeline: Coverage, Contrast and the answer reserve, and how they differ from existing pruners and decoders", "start": "pruners"},
+    "s4": {"description": "Findings on four datasets, against video-free floors, with ablations and limits", "start": "floors"}
+  },
+  "faces": {
+    "source-serif-4": {"family": "Source Serif 4", "href": "https://fonts.googleapis.com/css2?family=Source+Serif+4:wght@400..700&display=swap"},
+    "ibm-plex-sans": {"family": "IBM Plex Sans", "href": "https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap"}
+  },
+  "designSystems": []
+}

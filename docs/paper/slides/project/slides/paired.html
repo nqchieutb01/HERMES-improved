@@ -1,0 +1,22 @@
+<section id="paired" data-transition="fade" style="background:#F7F5F0;color:#14213D;font-family:'IBM Plex Sans', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:36px">
+<p style="font-size:26px;letter-spacing:3px;text-transform:uppercase;color:#2E7D4F">3 · Findings</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:60px;font-weight:600;line-height:1.1">Paired gains of CoCo, including against the floors</h2>
+<table style="width:1664px;font-size:26px;color:#14213D">
+<tr><th style="width:22%;text-align:left">CoCo vs (ΔmIoU)</th><th style="width:15.6%;text-align:right">S-EMBER</th><th style="width:15.6%;text-align:right">S-EMBER closed</th><th style="width:15.6%;text-align:right">QVHighlights</th><th style="width:15.6%;text-align:right">ANet 30%</th><th style="width:15.6%;text-align:right">Charades</th></tr>
+<tr><td>All tokens</td><td style="text-align:right">+11.3</td><td style="text-align:right">–</td><td style="text-align:right"><b><span style="color:#2B64A8">+19.7*</span></b></td><td style="text-align:right"><u><span style="color:#2E7D4F">+11.8*</span></u></td><td style="text-align:right">–</td></tr>
+<tr><td>Random + Contrast</td><td style="text-align:right"><u><span style="color:#2E7D4F">+4.2*</span></u></td><td style="text-align:right">–</td><td style="text-align:right"><b><span style="color:#2B64A8">+11.0*</span></b></td><td style="text-align:right"><span style="color:#2E7D4F">+3.3*</span></td><td style="text-align:right"><span style="color:#B03A2E">−2.9*</span></td></tr>
+<tr><td>SemVID + Contrast</td><td style="text-align:right"><u><span style="color:#2E7D4F">+4.5*</span></u></td><td style="text-align:right">–</td><td style="text-align:right"><b><span style="color:#2B64A8">+14.1*</span></b></td><td style="text-align:right"><u><span style="color:#2E7D4F">+4.5*</span></u></td><td style="text-align:right">–</td></tr>
+<tr><td>Best constant</td><td style="text-align:right">+2.4</td><td style="text-align:right"><u><span style="color:#2E7D4F">+7.6*</span></u></td><td style="text-align:right"><b><span style="color:#2B64A8">+22.1*</span></b></td><td style="text-align:right"><span style="color:#B03A2E">−3.1*</span></td><td style="text-align:right"><span style="color:#B03A2E">−6.4*</span></td></tr>
+<tr><td>Length rescaling</td><td style="text-align:right">+1.0</td><td style="text-align:right"><u><span style="color:#2E7D4F">+7.5*</span></u></td><td style="text-align:right"><b><span style="color:#2B64A8">+8.6*</span></b></td><td style="text-align:right">+0.8</td><td style="text-align:right">−0.7</td></tr>
+</table>
+<div style="display:flex;gap:32px">
+<div style="flex:1;background:#FFFFFF;border:1px solid #E1DDD3;border-radius:16px;padding:28px 36px">
+<p style="font-size:27px;line-height:1.4;color:#3D4756"><b>Length rescaling</b>: the no-Contrast prediction stretched by a factor fitted on S-EMBER. It tests “is Contrast only a longer interval?”</p>
+</div>
+<div style="flex:1;background:#FFFFFF;border:1px solid #E1DDD3;border-radius:16px;padding:28px 36px">
+<p style="font-size:27px;line-height:1.4;color:#3D4756">Contrast moves intervals <b>toward the evidence</b> on QVHighlights and S-EMBER closed; elsewhere it ties a calibrated lengthening.</p>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#7A8394">95% paired bootstrap, * = excludes 0; green = significant gain, red = significant loss · bold blue = best, underline = second best per row</p>
+<aside>This is the honest scoreboard. CoCo significantly beats every baseline on QVHighlights, S-EMBER and ActivityNet. Against the video-free constant it wins clearly on QVHighlights and on S-EMBER closed intervals; on pooled S-EMBER the gain is not significant because the window end is a shortcut there. On ActivityNet and Charades the constant wins, because the base model itself is below it.</aside>
+</section>

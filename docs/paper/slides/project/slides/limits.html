@@ -1,0 +1,25 @@
+<section id="limits" data-transition="fade" style="background:#F7F5F0;color:#14213D;font-family:'IBM Plex Sans', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:40px">
+<p style="font-size:26px;letter-spacing:3px;text-transform:uppercase;color:#2E7D4F">3 · Findings</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:60px;font-weight:600;line-height:1.1">Where it does not help, and what is still open</h2>
+<div style="display:grid;grid-template-columns:repeat(2, 1fr);gap:28px">
+<div style="display:flex;flex-direction:column;gap:12px;background:#FFFFFF;border-left:6px solid #B03A2E;border-radius:12px;padding:28px 36px">
+<h3 style="font-size:32px;font-weight:600">Base model below the floor</h3>
+<p style="font-size:27px;line-height:1.4;color:#3D4756">ActivityNet and Charades: even all tokens (22.9, 16.6) lose to a constant (37.9, 29.7). Claims there are relative.</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:12px;background:#FFFFFF;border-left:6px solid #B03A2E;border-radius:12px;padding:28px 36px">
+<h3 style="font-size:32px;font-weight:600">Short, dense videos</h3>
+<p style="font-size:27px;line-height:1.4;color:#3D4756">Charades (30 s, ~2 frames per second): spreading tokens at random beats CoCo by 2.9 mIoU*.</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:12px;background:#FFFFFF;border-left:6px solid #C2621A;border-radius:12px;padding:28px 36px">
+<h3 style="font-size:32px;font-weight:600">Not a streaming memory</h3>
+<p style="font-size:27px;line-height:1.4;color:#3D4756">The memory is built per question with a full prefill; the cost table and a write-once memory are still to do.</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:12px;background:#FFFFFF;border-left:6px solid #C2621A;border-radius:12px;padding:28px 36px">
+<h3 style="font-size:32px;font-weight:600">Scope of the evidence</h3>
+<p style="font-size:27px;line-height:1.4;color:#3D4756">One model, 500-question subsets, a local judge; design chosen on S-EMBER (other datasets run once, frozen).</p>
+</div>
+</div>
+<p style="font-size:28px;line-height:1.4;color:#3D4756">Next: SnapKV / PruneVid baselines, FV-Action and attention readout on the same memory, a second model, held-out S-EMBER.</p>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#7A8394">* = 95% paired bootstrap excludes 0</p>
+<aside>The honest limits. On two standard benchmarks the base model is below a constant interval, so no compression method can claim absolute success there. On short videos, coverage by random spreading wins. The setting is query-time compression, not a persistent streaming memory, and the cost has not been measured yet. Everything is one model so far.</aside>
+</section>

@@ -1,0 +1,26 @@
+<section id="ladder" data-transition="fade" style="background:#F7F5F0;color:#14213D;font-family:'IBM Plex Sans', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:36px">
+<p style="font-size:26px;letter-spacing:3px;text-transform:uppercase;color:#2E7D4F">3 · Findings</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:60px;font-weight:600;line-height:1.1">Every component adds, Contrast the most</h2>
+<table style="width:1664px;font-size:28px;color:#14213D">
+<tr><th style="width:46%;text-align:left">Configuration (mIoU)</th><th style="width:18%;text-align:right">S-EMBER</th><th style="width:18%;text-align:right">QVHighlights</th><th style="width:18%;text-align:right">ANet 30%</th></tr>
+<tr><td>Uniform frames, random tokens</td><td style="text-align:right">25.6</td><td style="text-align:right">26.9</td><td style="text-align:right">22.9</td></tr>
+<tr><td>+ retrieval frames, random tokens</td><td style="text-align:right">29.4</td><td style="text-align:right">28.7</td><td style="text-align:right">–</td></tr>
+<tr><td>Coverage, uniform frames</td><td style="text-align:right">31.7</td><td style="text-align:right">33.7</td><td style="text-align:right">24.6</td></tr>
+<tr><td>Retrieval + Coverage</td><td style="text-align:right">32.5</td><td style="text-align:right">34.5</td><td style="text-align:right"><u>25.4</u></td></tr>
+<tr><td>+ PCD</td><td style="text-align:right"><u>37.5</u></td><td style="text-align:right"><u>42.8</u></td><td style="text-align:right">–</td></tr>
+<tr style="background:#E6EEF8"><td><b>+ answer reserve = CoCo</b></td><td style="text-align:right"><b><span style="color:#2B64A8">39.3</span></b></td><td style="text-align:right"><b><span style="color:#2B64A8">48.8</span></b></td><td style="text-align:right"><b><span style="color:#2B64A8">34.7</span></b></td></tr>
+</table>
+<div style="display:grid;grid-template-columns:repeat(3, 1fr);gap:28px">
+<div style="background:#FFFFFF;border:1px solid #E1DDD3;border-radius:16px;padding:28px 32px">
+<p style="font-size:27px;line-height:1.4;color:#3D4756"><b>Coverage</b>: +6.1* (S-EMBER), +6.8* (QVH) over random tokens</p>
+</div>
+<div style="background:#FFFFFF;border:1px solid #E1DDD3;border-radius:16px;padding:28px 32px">
+<p style="font-size:27px;line-height:1.4;color:#3D4756"><b>Retrieval</b>: +0.8 to +0.9 on top, not significant anywhere: optional</p>
+</div>
+<div style="background:#FFFFFF;border:1px solid #E1DDD3;border-radius:16px;padding:28px 32px">
+<p style="font-size:27px;line-height:1.4;color:#3D4756"><b>Contrast + reserve</b>: +7 to +14, the largest step</p>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#7A8394">10% of tokens (ActivityNet 30%) · * = 95% paired bootstrap excludes 0 · bold blue = best, underline = second best per column</p>
+<aside>Adding components one at a time. Coverage is the largest memory-side gain. Retrieval adds little once tokens are chosen by the question, so we treat it as optional. Contrast with the answer reserve is the largest single step, which ties back to part 1: the prior is the main failure.</aside>
+</section>

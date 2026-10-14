@@ -1,0 +1,39 @@
+<section id="pipeline" data-transition="fade" style="background:#EEF1F5;color:#14213D;font-family:'IBM Plex Sans', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:44px">
+<p style="font-size:26px;letter-spacing:3px;text-transform:uppercase;color:#2B64A8">2 · The pipeline</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:64px;font-weight:600;line-height:1.1">CoCo: Coverage for the memory, Contrast for the decoder</h2>
+<div style="display:flex;gap:24px;align-items:stretch">
+<div style="flex:1;display:flex;flex-direction:column;gap:14px;background:#FFFFFF;border:1px dashed #9AA6B8;border-radius:16px;padding:32px">
+<p style="font-size:24px;letter-spacing:2px;text-transform:uppercase;color:#7A8394">Optional</p>
+<h3 style="font-size:32px;font-weight:600">Retrieve frames</h3>
+<p style="font-size:26px;line-height:1.4;color:#3D4756">SigLIP 2 index at 1 fps; 64 frames from ½ uniform + ½ relevance (BOLT-style)</p>
+</div>
+<x-shape kind="arrow-right" style="width:56px;height:28px;background:#9AA6B8;align-self:center"></x-shape>
+<div style="flex:1.2;display:flex;flex-direction:column;gap:14px;background:#FFFFFF;border:3px solid #2B64A8;border-radius:16px;padding:32px">
+<p style="font-size:24px;letter-spacing:2px;text-transform:uppercase;color:#2B64A8">Memory</p>
+<h3 style="font-size:32px;font-weight:600">Coverage</h3>
+<p style="font-size:26px;line-height:1.4;color:#3D4756">Every frame keeps an <b>equal quota</b>, filled by the <b>actual question’s attention</b>, separately in <b>each layer</b></p>
+</div>
+<x-shape kind="arrow-right" style="width:56px;height:28px;background:#9AA6B8;align-self:center"></x-shape>
+<div style="flex:1.2;display:flex;flex-direction:column;gap:14px;background:#FFFFFF;border:3px solid #C2621A;border-radius:16px;padding:32px">
+<p style="font-size:24px;letter-spacing:2px;text-transform:uppercase;color:#C2621A">Decoder</p>
+<h3 style="font-size:32px;font-weight:600">Contrast</h3>
+<p style="font-size:26px;line-height:1.4;color:#3D4756"><b>PCD</b> against the no-video run, on <b>time values</b> only, with <b>adaptive</b> strength</p>
+</div>
+<x-shape kind="arrow-right" style="width:56px;height:28px;background:#9AA6B8;align-self:center"></x-shape>
+<div style="flex:1;display:flex;flex-direction:column;gap:14px;background:#FFFFFF;border:1px solid #D5DCE6;border-radius:16px;padding:32px">
+<p style="font-size:24px;letter-spacing:2px;text-transform:uppercase;color:#7A8394">Format</p>
+<h3 style="font-size:32px;font-weight:600">Answer reserve</h3>
+<p style="font-size:26px;line-height:1.4;color:#3D4756">With 64 tokens left and no Answer: line, write it</p>
+</div>
+</div>
+<div style="display:flex;gap:32px">
+<div style="flex:1;background:#14213D;border-radius:16px;padding:32px 40px">
+<p style="font-size:30px;line-height:1.4;color:#F4F1EA"><b><span style="color:#8DB3E2">Coverage</span></b> keeps every <b>time anchor</b>: fewer holes for the prior to fill.</p>
+</div>
+<div style="flex:1;background:#14213D;border-radius:16px;padding:32px 40px">
+<p style="font-size:30px;line-height:1.4;color:#F4F1EA"><b><span style="color:#E8A66B">Contrast</span></b> removes the prior from <b>whatever holes remain</b>.</p>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#7A8394">Training-free · no labelled calibration · no change to the model</p>
+<aside>The pipeline has two required parts, one for each failure from part 1. Coverage fixes the memory: every frame keeps its timestamp, and the question decides what each frame shows. Contrast fixes the decoder: the prior is removed where the memory is still silent. The answer reserve is a small format guard that PCD needs. Retrieval is optional; it adds less than one mIoU once tokens are chosen by the question.</aside>
+</section>

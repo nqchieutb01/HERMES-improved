@@ -1,0 +1,17 @@
+<section id="notfix" data-transition="fade" style="background:#F7F5F0;color:#14213D;font-family:'IBM Plex Sans', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:40px">
+<p style="font-size:26px;letter-spacing:3px;text-transform:uppercase;color:#C2621A">1 · The blind setup</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:64px;font-weight:600;line-height:1.1">Better memory or a better prompt do not remove it</h2>
+<table style="width:1664px;font-size:28px;color:#14213D">
+<tr><th style="width:46%;text-align:left">Attempt (S-EMBER, 10% unless noted)</th><th style="width:18%;text-align:right">mIoU ↑</th><th style="width:18%;text-align:right">GQ@0.5 ↑</th><th style="width:18%;text-align:right">Leak ↓</th></tr>
+<tr><td>Random tokens (reference)</td><td style="text-align:right">25.8</td><td style="text-align:right">7.2</td><td style="text-align:right">30%</td></tr>
+<tr><td>+ instruction “do not assume the start”</td><td style="text-align:right">25.7</td><td style="text-align:right">6.9</td><td style="text-align:right"><u>28%</u></td></tr>
+<tr><td>Oracle selector (gold frames’ tokens kept first)</td><td style="text-align:right">27.9</td><td style="text-align:right">8.4</td><td style="text-align:right">33%</td></tr>
+<tr><td>Oracle window: all 64 frames inside the gold</td><td style="text-align:right"><b><span style="color:#2B64A8">35.3</span></b></td><td style="text-align:right"><b><span style="color:#2B64A8">13.9</span></b></td><td style="text-align:right">45%</td></tr>
+<tr style="background:#E6EEF8"><td><b>Random tokens + PCD</b> (no gold information)</td><td style="text-align:right"><u>32.6</u></td><td style="text-align:right"><u>10.1</u></td><td style="text-align:right"><b><span style="color:#2B64A8">11%</span></b></td></tr>
+</table>
+<div style="background:#14213D;border-radius:16px;padding:40px 48px">
+<p style="font-size:34px;line-height:1.4;color:#F4F1EA">Even a <b>perfect selector</b> leaks 33%, and a memory made only of evidence still leaks 45%. The prior lives in the <b><span style="color:#E8A66B">output distribution</span></b>, so it must be removed there, while decoding.</p>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#7A8394">Oracles use the gold interval and are upper bounds, not methods · bold blue = best, underline = second best per column</p>
+<aside>Three tempting fixes fail. Telling the model in the prompt changes nothing. Giving it the perfect tokens raises mIoU only 2 points and the leak stays. Even filling the whole memory with evidence leaves a 45% leak. PCD, with no gold information at all, beats the oracle selector by 4.7 mIoU. That is the motivation for fixing decoding, not just selection.</aside>
+</section>

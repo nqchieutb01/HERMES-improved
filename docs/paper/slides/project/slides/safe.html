@@ -1,0 +1,24 @@
+<section id="safe" data-transition="fade" style="background:#F7F5F0;color:#14213D;font-family:'IBM Plex Sans', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:40px">
+<p style="font-size:26px;letter-spacing:3px;text-transform:uppercase;color:#C2621A">1 · The blind setup → PCD</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:64px;font-weight:600;line-height:1.1">Two refinements make the contrast safe</h2>
+<div style="display:flex;gap:40px">
+<div style="flex:1;display:flex;flex-direction:column;gap:20px;background:#FFFFFF;border:1px solid #E1DDD3;border-radius:16px;padding:40px">
+<h3 style="font-size:36px;font-weight:600">Time scope</h3>
+<p style="font-size:28px;line-height:1.4;color:#3D4756">Contrast only the <b>time values</b> (Seen: t, Time: [s, e]); decode the words greedily.</p>
+<p style="font-size:28px;line-height:1.4;color:#3D4756">Contrasting every token changed the answer text in 85% of questions and raised over-counting from 14% to 34%.</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:20px;background:#FFFFFF;border:1px solid #E1DDD3;border-radius:16px;padding:40px">
+<h3 style="font-size:36px;font-weight:600">Confidence-adaptive strength</h3>
+<p style="font-size:28px;line-height:1.4;color:#3D4756">α = 1 − max p(y | memory): the contrast <b>fades</b> where the memory makes the model sure.</p>
+<p style="font-size:28px;line-height:1.4;color:#3D4756">Protects the 78 questions whose evidence <b>really</b> starts at 0 s.</p>
+</div>
+</div>
+<table style="width:1664px;font-size:28px;color:#14213D">
+<tr><th style="width:52%;text-align:left">78 early-evidence questions, all tokens</th><th style="width:16%;text-align:right">Acc. ↑</th><th style="width:16%;text-align:right">mIoU ↑</th><th style="width:16%;text-align:right">GQ@0.5 ↑</th></tr>
+<tr><td>Greedy</td><td style="text-align:right"><u>21.8</u></td><td style="text-align:right">49.2</td><td style="text-align:right"><u>16.7</u></td></tr>
+<tr><td>PCD, constant α</td><td style="text-align:right">16.7</td><td style="text-align:right"><u>55.3</u></td><td style="text-align:right">12.8</td></tr>
+<tr style="background:#E6EEF8"><td><b>PCD, adaptive α (ours)</b></td><td style="text-align:right"><b><span style="color:#2B64A8">23.1</span></b></td><td style="text-align:right"><b><span style="color:#2B64A8">56.9</span></b></td><td style="text-align:right"><b><span style="color:#2B64A8">19.2</span></b></td></tr>
+</table>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#7A8394">S-EMBER · bold blue = best, underline = second best per column</p>
+<aside>Plain PCD pushes away from early times, which can hurt questions whose evidence really is at the start. The adaptive strength turns the contrast off where the memory is confident, and recovers those questions fully: accuracy 16.7 back to 23.1. The time scope keeps the answer words untouched.</aside>
+</section>

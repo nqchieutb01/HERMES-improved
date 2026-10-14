@@ -1,0 +1,29 @@
+<section id="coverage" data-transition="fade" style="background:#EEF1F5;color:#14213D;font-family:'IBM Plex Sans', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:40px">
+<p style="font-size:26px;letter-spacing:3px;text-transform:uppercase;color:#2B64A8">2 · The pipeline</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:64px;font-weight:600;line-height:1.1">Coverage: three design choices, each tested</h2>
+<div style="display:grid;grid-template-columns:repeat(3, 1fr);gap:32px">
+<div style="display:flex;flex-direction:column;gap:14px;background:#FFFFFF;border:1px solid #D5DCE6;border-radius:16px;padding:32px">
+<h3 style="font-size:32px;font-weight:600;color:#2B64A8">Equal quota per frame</h3>
+<p style="font-size:26px;line-height:1.4;color:#3D4756">Every timestamp survives. The same score ranked globally: <b>−5.3 mIoU*</b>.</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:14px;background:#FFFFFF;border:1px solid #D5DCE6;border-radius:16px;padding:32px">
+<h3 style="font-size:32px;font-weight:600;color:#2B64A8">The actual question</h3>
+<p style="font-size:26px;line-height:1.4;color:#3D4756">Exact attention through all 36 layers. Generic probe questions: <b>18.3</b> mIoU.</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:14px;background:#FFFFFF;border:1px solid #D5DCE6;border-radius:16px;padding:32px">
+<h3 style="font-size:32px;font-weight:600;color:#2B64A8">A set per layer</h3>
+<p style="font-size:26px;line-height:1.4;color:#3D4756">Each layer ranks by its own attention. One shared set: <b>−1.5 mIoU*</b>.</p>
+</div>
+</div>
+<table style="width:1664px;font-size:27px;color:#14213D">
+<tr><th style="width:52%;text-align:left">Token selection (S-EMBER, retrieval frames, greedy)</th><th style="width:16%;text-align:right">mIoU ↑</th><th style="width:32%;text-align:right">Δ vs equal quota</th></tr>
+<tr style="background:#DCE6F3"><td><b>Equal quota, question top-k (ours)</b></td><td style="text-align:right">32.5</td><td style="text-align:right">–</td></tr>
+<tr><td>Quota ∝ SigLIP relevance, 50% floor</td><td style="text-align:right"><b><span style="color:#2B64A8">33.0</span></b></td><td style="text-align:right">+0.5 [−0.5, +1.4], n.s.</td></tr>
+<tr><td>Quota ∝ SigLIP + attention</td><td style="text-align:right"><u>32.9</u></td><td style="text-align:right">+0.4 [−0.7, +1.5], n.s.</td></tr>
+<tr><td>Quota ∝ SigLIP relevance, 25% floor</td><td style="text-align:right">32.6</td><td style="text-align:right">+0.1 [−1.2, +1.3], n.s.</td></tr>
+<tr><td>One token set shared by all layers</td><td style="text-align:right">31.9</td><td style="text-align:right">−0.6 [−2.3, +1.1], n.s.</td></tr>
+</table>
+<p style="font-size:28px;line-height:1.4;color:#3D4756">No unequal quota beats the equal one, so we keep the simplest.</p>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#7A8394">* = 95% paired bootstrap excludes 0; n.s. = not significant · bold blue = best, underline = second best per column</p>
+<aside>Each of the three choices was tested against alternatives. The equal quota is not beaten by any relevance-weighted variant (the best is +0.5, not significant), so we keep the simplest one. The real question matters far more than the quota shape: generic probe questions give 18.3. Per-layer selection helps question-driven scores (sharing costs 1.5 for CoCo) and does nothing for random selection.</aside>
+</section>

@@ -1,0 +1,21 @@
+<section id="task" data-transition="fade" style="background:#F7F5F0;color:#14213D;font-family:'IBM Plex Sans', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:48px">
+<p style="font-size:26px;letter-spacing:3px;text-transform:uppercase;color:#C2621A">1 · The blind setup</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:64px;font-weight:600;line-height:1.1">The task: answer, and say when</h2>
+<div style="display:flex;gap:40px">
+<div style="flex:1;display:flex;flex-direction:column;gap:16px;background:#FFFFFF;padding:40px;border:1px solid #E1DDD3;border-radius:16px">
+<h3 style="font-size:36px;font-weight:600">Grounded question</h3>
+<p style="font-size:30px;line-height:1.4;color:#3D4756">“How long did I use the paper cutter?”<br>needs an <b>answer</b> and the <b>time interval</b> of its evidence.</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:16px;background:#FFFFFF;padding:40px;border:1px solid #E1DDD3;border-radius:16px">
+<h3 style="font-size:36px;font-weight:600">The memory is expensive</h3>
+<p style="font-size:30px;line-height:1.4;color:#3D4756">64 frames ≈ <b>21,000</b> visual tokens. Pruners keep <b>10%</b> and lose little on multiple-choice QA.</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:16px;background:#FFFFFF;padding:40px;border:1px solid #E1DDD3;border-radius:16px">
+<h3 style="font-size:36px;font-weight:600">The answer format</h3>
+<p style="font-size:28px;line-height:1.5;color:#3D4756;font-family:'Courier New', monospace">Seen: 12.0 seconds, …<br>Seen: 41.0 seconds, …<br>Answer: about 29 s<br>Time: [12.0, 41.0]</p>
+</div>
+</div>
+<p style="font-size:32px;line-height:1.4;color:#3D4756">Question: what happens to the <b>time</b> the model reports when most of the memory is gone?</p>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#7A8394">S-EMBER grounded QA: 300 videos, 475 questions (duration, counting, location) · Qwen3-VL-8B · 64 frames</p>
+<aside>Setting: the model sees 64 frames up to the question time, encoded into a KV cache, pruned to 10% of the visual tokens. It answers with a timeline: timestamped observations, then the answer, then the interval. Metrics: mIoU and R@0.5 of the interval; GQ@0.5 = correct answer and IoU at least 0.5.</aside>
+</section>

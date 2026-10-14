@@ -1,0 +1,22 @@
+<section id="reserve" data-transition="fade" style="background:#EEF1F5;color:#14213D;font-family:'IBM Plex Sans', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:40px">
+<p style="font-size:26px;letter-spacing:3px;text-transform:uppercase;color:#2B64A8">2 · The pipeline</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:64px;font-weight:600;line-height:1.1">The answer reserve: a small guard PCD needs</h2>
+<div style="display:flex;gap:48px">
+<div style="flex:1;display:flex;flex-direction:column;gap:20px">
+<p style="font-size:30px;line-height:1.4;color:#3D4756">PCD rewards fine time steps the prior finds unlikely, so it sometimes lists one activity second by second until the <b>384-token limit</b>, and the interval is never written.</p>
+<p style="font-size:30px;line-height:1.4;color:#3D4756">With <b>64 tokens left</b> and no <b>Answer:</b> line, the decoder writes it and continues. The interval is still chosen by PCD.</p>
+</div>
+<table style="width:820px;font-size:28px;color:#14213D">
+<tr><th style="width:40%;text-align:left">ΔmIoU from the reserve</th><th style="width:20%;text-align:right">S-EMBER</th><th style="width:20%;text-align:right">QVH</th><th style="width:20%;text-align:right">Charades</th></tr>
+<tr><td>Random + PCD</td><td style="text-align:right"><u>+1.9*</u></td><td style="text-align:right">+1.5*</td><td style="text-align:right">+2.7*</td></tr>
+<tr><td>SemVID + PCD</td><td style="text-align:right"><b><span style="color:#2B64A8">+2.5*</span></b></td><td style="text-align:right">–</td><td style="text-align:right"><b><span style="color:#2B64A8">+5.6*</span></b></td></tr>
+<tr style="background:#DCE6F3"><td><b>R + Coverage + PCD</b></td><td style="text-align:right">+1.8*</td><td style="text-align:right"><b><span style="color:#2B64A8">+6.1*</span></b></td><td style="text-align:right"><u>+2.4*</u></td></tr>
+<tr><td>Unparseable (of 500)</td><td style="text-align:right">26–39 → 0</td><td style="text-align:right">25–60 → 0</td><td style="text-align:right">28–68 → 0</td></tr>
+</table>
+</div>
+<div style="background:#14213D;border-radius:16px;padding:36px 48px">
+<p style="font-size:32px;line-height:1.4;color:#F4F1EA">Significant on <b>every</b> configuration and dataset tested; free when the model answers within the limit.</p>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#7A8394">* = 95% paired bootstrap excludes 0 · QVH: one test (SemVID + PCD not run without the reserve) · bold blue = best, underline = second best per column</p>
+<aside>The reserve is a format constraint, not a heuristic on content. It fixes a failure PCD itself causes: run-on lists of moments. Unparseable answers go to zero everywhere, and every PCD configuration improves significantly.</aside>
+</section>

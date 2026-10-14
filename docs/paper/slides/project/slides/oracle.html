@@ -1,0 +1,18 @@
+<section id="oracle" data-transition="fade" style="background:#F7F5F0;color:#14213D;font-family:'IBM Plex Sans', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:36px">
+<p style="font-size:26px;letter-spacing:3px;text-transform:uppercase;color:#2E7D4F">3 · Findings</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:60px;font-weight:600;line-height:1.1">Contrast beats perfect token selection</h2>
+<table style="width:1664px;font-size:27px;color:#14213D">
+<tr><th style="width:40%;text-align:left">S-EMBER (oracles use the gold interval)</th><th style="width:12%;text-align:right">Acc. ↑</th><th style="width:12%;text-align:right">mIoU ↑</th><th style="width:12%;text-align:right">R@0.5 ↑</th><th style="width:12%;text-align:right">GQ ↑</th><th style="width:12%;text-align:right">Leak ↓</th></tr>
+<tr><td>No video</td><td style="text-align:right">10.5</td><td style="text-align:right">7.9</td><td style="text-align:right">4.8</td><td style="text-align:right">0.8</td><td style="text-align:right">88%</td></tr>
+<tr><td>Random 10%</td><td style="text-align:right">15.2</td><td style="text-align:right">25.8</td><td style="text-align:right">24.2</td><td style="text-align:right">7.2</td><td style="text-align:right">30%</td></tr>
+<tr><td>Oracle selector 10%</td><td style="text-align:right">17.5</td><td style="text-align:right">27.9</td><td style="text-align:right">25.7</td><td style="text-align:right">8.4</td><td style="text-align:right">33%</td></tr>
+<tr><td>Gold-window zoom 10%</td><td style="text-align:right">14.5</td><td style="text-align:right">28.2</td><td style="text-align:right">26.1</td><td style="text-align:right">7.8</td><td style="text-align:right">25%</td></tr>
+<tr style="background:#E6EEF8"><td><b>Random 10% + Contrast</b></td><td style="text-align:right">16.2</td><td style="text-align:right">32.6</td><td style="text-align:right">33.1</td><td style="text-align:right">10.1</td><td style="text-align:right"><b><span style="color:#2B64A8">11%</span></b></td></tr>
+<tr><td>All tokens</td><td style="text-align:right">18.5</td><td style="text-align:right">28.0</td><td style="text-align:right">26.7</td><td style="text-align:right">8.6</td><td style="text-align:right">33%</td></tr>
+<tr style="background:#E6EEF8"><td><b>All tokens + Contrast</b></td><td style="text-align:right"><u>21.5</u></td><td style="text-align:right"><u>32.7</u></td><td style="text-align:right"><u>34.1</u></td><td style="text-align:right"><u>13.3</u></td><td style="text-align:right"><u>13%</u></td></tr>
+<tr><td>Oracle window (all frames inside the gold)</td><td style="text-align:right"><b><span style="color:#2B64A8">26.3</span></b></td><td style="text-align:right"><b><span style="color:#2B64A8">35.3</span></b></td><td style="text-align:right"><b><span style="color:#2B64A8">36.2</span></b></td><td style="text-align:right"><b><span style="color:#2B64A8">13.9</span></b></td><td style="text-align:right">45%</td></tr>
+</table>
+<p style="font-size:28px;line-height:1.4;color:#3D4756">Without gold information, Contrast beats the oracle selector by <b>+4.7* mIoU</b> and nearly matches the oracle window on GQ (13.3 vs 13.9, n.s.).</p>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#7A8394">Contrast without reserve (earlier phase) · bold blue = best, underline = second best per column</p>
+<aside>Upper bounds that cheat by using the gold interval. Knowing which tokens to keep is worth only about 2 mIoU and the prior keeps leaking. Contrast, with no gold information, is worth more than perfect selection. Even a memory made entirely of evidence still leaks 45%, so the two levers are complementary.</aside>
+</section>
