@@ -525,6 +525,9 @@ class Qwen3VL_Hermes(QwenVL_Hermes):
         "time_start" / "time_end": as "time", but on `Event:` lines only the start / only the end time.
         """
         line = text.rsplit("\n", 1)[-1].lstrip()
+        if "happens in" in line:
+            # TimeLens-Bench answer format: "The event happens in <start> - <end> seconds".
+            return "second" not in line.split("happens in", 1)[1]
         if line.startswith(("Seen:", "Event:")):
             if "," in line or "second" in line:
                 return False

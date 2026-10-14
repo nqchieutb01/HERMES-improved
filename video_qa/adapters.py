@@ -99,7 +99,7 @@ SEMBER_MCQ_METADATA_FIELDS = (
 )
 
 
-GROUNDING_PROMPT_STYLES = ("official", "full_span", "timeline", "timeline_debias", "events", "events_merged")
+GROUNDING_PROMPT_STYLES = ("official", "full_span", "timeline", "timeline_debias", "events", "events_merged", "timelens")
 # Models predict intervals ~3x shorter than the annotated evidence; ask for the whole event span.
 FULL_SPAN_INSTRUCTION = (
     "The time interval must cover the whole event, from the moment it begins until it has "
@@ -154,6 +154,14 @@ EVENTS_MERGED_PROMPT = EVENTS_PROMPT.replace(
     "action are one event, which ends only when the action stops.")
 
 
+# TimeLens-Bench protocol (TencentARC/TimeLens, evaluation/utils.py GROUNDER_PROMPT, verbatim); the question field holds
+# the raw query.
+TIMELENS_PROMPT = (
+    "Please find the visual event described by the sentence '{}', determining its starting and ending times. "
+    "The format should be: 'The event happens in <start time> - <end time> seconds'."
+)
+
+
 # Control for prior-contrastive decoding: state the bias in the instruction instead of removing it while decoding.
 DEBIAS_INSTRUCTION = (
     "The relevant moments may occur at any point in the video; do not assume they are near the start."
@@ -174,6 +182,8 @@ def sember_grounding_prompt(question: str, style: str = "official") -> str:
         return f"{EVENTS_PROMPT}\n\n{question}"
     if style == "events_merged":
         return f"{EVENTS_MERGED_PROMPT}\n\n{question}"
+    if style == "timelens":
+        return TIMELENS_PROMPT.format(question)
     raise ValueError(f"Unknown S-EMBER grounding prompt style: {style!r}")
 
 

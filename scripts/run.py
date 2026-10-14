@@ -340,6 +340,9 @@ def inference_command(
         command.extend(["--uniform_start_frac", str(cfg.run.uniform_start_frac)])
     if float(cfg.run.get("frame_scale", 1.0)) != 1.0:
         command.extend(["--frame_scale", str(cfg.run.frame_scale)])
+    if int(cfg.run.get("frame_max_pixels", 0)) > 0:
+        command.extend(["--frame_max_pixels", str(cfg.run.frame_max_pixels),
+                        "--frame_min_pixels", str(cfg.run.get("frame_min_pixels", 0))])
     if cfg.run.get("sample_schedule"):
         command.extend(["--sample_schedule", str(cfg.run.sample_schedule)])
     if cfg.run.uniform_num_frames is not None:

@@ -151,7 +151,17 @@ class BaseVQA:
             return video
     
     def _open_reader(self, video_path):
-        """VideoReader that decodes at ``frame_scale`` x the source resolution (1.0 = native)."""
+        """VideoReader that decodes at ``frame_scale`` x the source resolution (1.0 = native), or, with
+        ``frame_max_pixels``, at the size qwen_vl_utils gives a video frame: dimensions multiples of 32, at most
+        ``frame_max_pixels`` and at least ``frame_min_pixels`` (the TimeLens-Bench protocol sets
+        max = total_pixels / num_frames * 2)."""
+        max_pixels = int(getattr(self, "frame_max_pixels", 0))
+        if max_pixels > 0:
+            from qwen_vl_utils.vision_process import smart_resize
+            h, w = VideoReader(video_path, num_threads=1)[0].shape[:2]
+            h, w = smart_resize(h, w, factor=32, min_pixels=int(getattr(self, "frame_min_pixels", 0)),
+                                max_pixels=max_pixels)
+            return VideoReader(video_path, num_threads=1, width=w, height=h)
         scale = float(getattr(self, "frame_scale", 1.0))
         if scale == 1.0:
             return VideoReader(video_path, num_threads=1)
@@ -560,6 +570,11 @@ def work(QA_CLASS):
                         help="Diagnostic: omit Qwen3's per-group timestamp text")
     parser.add_argument("--uniform_start_frac", type=float, default=0.0,
                         help="Diagnostic: uniform frames start at this fraction of the question time")
+    parser.add_argument("--frame_max_pixels", type=int, default=0,
+                        help="Resize decoded frames as qwen_vl_utils does (multiples of 32) to at most this many pixels "
+                             "(TimeLens-Bench: total_pixels / num_frames * 2); 0 = off")
+    parser.add_argument("--frame_min_pixels", type=int, default=0,
+                        help="With --frame_max_pixels: lower bound on pixels per frame (TimeLens: 64 * 32 * 32)")
     parser.add_argument(
         "--frame_scale",
         type=float,
@@ -661,7 +676,7 @@ def work(QA_CLASS):
     )
     parser.add_argument(
         "--grounding_prompt",
-        choices=("official", "full_span", "timeline", "timeline_debias", "events", "events_merged"),
+        choices=("official", "full_span", "timeline", "timeline_debias", "events", "events_merged", "timelens"),
         default="official",
         help="S-EMBER grounding prompt: official; full_span (ask for the whole event span); or timeline "
         "(list the relevant timestamped moments first, then derive the answer and interval)",
@@ -765,6 +780,7 @@ def work(QA_CLASS):
     if args.frame_scale <= 0:
         parser.error("frame_scale must be positive")
     analyzer.frame_scale = args.frame_scale
+    analyzer.frame_max_pixels, analyzer.frame_min_pixels = args.frame_max_pixels, args.frame_min_pixels
     analyzer.retention_snapshot = args.retention_snapshot
     if not 0 < args.offline_keep_ratio <= 1:
         parser.error("offline_keep_ratio must be in (0, 1]")

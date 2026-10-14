@@ -23,6 +23,9 @@ run:
   sample_schedule: null
   # Decode frames at this fraction of source resolution (1.0 = native); fewer visual tokens per frame.
   frame_scale: 1.0
+  # Resize frames as qwen_vl_utils does to at most this many pixels (TimeLens-Bench: total_pixels / frames * 2); 0 = off.
+  frame_max_pixels: 0
+  frame_min_pixels: 0
   # Log per-question token retention per streamed frame (retention-<chunk>.jsonl).
   retention_snapshot: false
   # Offline pruning (uniform sampling): keep this fraction of visual tokens after encoding.
