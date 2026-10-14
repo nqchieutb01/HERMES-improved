@@ -1,5 +1,15 @@
 %% Preamble: CVPR author-kit defaults (trimmed) + project macros.
 
+%% XeTeX/Tectonic cannot load the Type 1 Times of cvpr.sty and silently falls back to Latin Modern without bold;
+%% use the TeX Gyre clones there. pdfLaTeX (Overleaf, latexmk -pdf) is unaffected.
+\usepackage{iftex}
+\ifXeTeX
+  \usepackage{fontspec}
+  \setmainfont{texgyretermes}[Extension=.otf, UprightFont=*-regular, BoldFont=*-bold, ItalicFont=*-italic, BoldItalicFont=*-bolditalic]
+  \setsansfont{texgyreheros}[Extension=.otf, UprightFont=*-regular, BoldFont=*-bold, ItalicFont=*-italic, BoldItalicFont=*-bolditalic]
+  \setmonofont{texgyrecursor}[Extension=.otf, UprightFont=*-regular, BoldFont=*-bold, ItalicFont=*-italic, BoldItalicFont=*-bolditalic]
+\fi
+
 \usepackage{cuted}      % two-column teaser (strip environment)
 \usepackage{capt-of}
 \usepackage{caption}

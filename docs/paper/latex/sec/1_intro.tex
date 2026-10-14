@@ -49,7 +49,7 @@ PCD), a training-free method with one component for each (\cref{fig:overview}):
   \item \textbf{Prior-contrastive decoding (PCD)} (\cref{sec:contrast}). While the answer is written, each time value is chosen by
   contrasting the model's prediction with its prediction from a video-free memory. PCD acts only on time
   values, and its strength fades where the model is already confident. An \emph{answer reserve}
-  (\cref{sec:reserve}) guarantees that the final interval is always written.
+  (\cref{sec:reserve}), part of PCD, guarantees that the final interval is always written.
 \end{itemize}
 
 Neither operator is new in isolation: per-frame budgets appear in VidCom\textsuperscript{2}, KTV and

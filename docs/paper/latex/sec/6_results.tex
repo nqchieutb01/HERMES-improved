@@ -10,8 +10,10 @@ with upper bounds that use the gold interval, \cref{sec:res-retrieval} analyses 
 \paragraph{Reading the tables.}
 Numbers are mIoU, or mIoU\,/\,R@0.5 where two are given. $\Delta$ is a paired difference with a 95\% bootstrap
 interval; $^*$ marks intervals that exclude 0. Tables built from the early S-EMBER phases (\cref{tab:pcd8,tab:cf,%
-tab:scope,tab:replay,tab:oracle,tab:errors}) predate the answer reserve and use the official parser and batch size 1;
-on S-EMBER the two parsers differ by at most 0.7 mIoU and batch size changes no paired result.
+tab:scope,tab:replay,tab:oracle,tab:errors} and \cref{tab:causal}) predate the answer reserve, so PCD there runs without it, and use the official parser and batch size 1;
+on S-EMBER the two parsers differ by at most 0.7 mIoU and batch size changes no paired result. In every table the best
+value is in \best{bold} and the second best \second{underlined}, per column unless a caption says per row; floors
+and differences ($\Delta$) are not ranked.
 
 %% ================================================================================================= 6.1 main
 \subsection{Main results}
@@ -23,9 +25,8 @@ on S-EMBER the two parsers differ by at most 0.7 mIoU and batch size changes no 
   \setlength{\tabcolsep}{5pt}
   \caption{\textbf{Grounding with 10\% of the visual tokens} (ActivityNet: 30\%), mIoU\,/\,R@0.5. Grey rows are floors:
   the best video-free constant interval, tuned on the test questions, and the Retrieve\,$+$\,Coverage prediction
-  without PCD lengthened by a factor fitted on S-EMBER. PCD includes the answer reserve. Coverage rows
-  include optional retrieval, which the coverage gate disables on Charades-STA. Empty cells: not yet computed. Best
-  non-floor result in \textbf{bold}. S-EMBER closed intervals: \cref{tab:closed}.}
+  without PCD lengthened by a factor fitted on S-EMBER. Coverage rows
+  include optional retrieval, which the coverage gate disables on Charades-STA. Empty cells: not yet computed. S-EMBER closed intervals: \cref{tab:closed}.}
   \label{tab:main}
   \begin{adjustbox}{max width=\linewidth}\begin{tabular}{@{}lcccc@{}}
     \toprule
@@ -34,17 +35,17 @@ on S-EMBER the two parsers differ by at most 0.7 mIoU and batch size changes no 
     \floor{Best constant interval}       & \floor{36.9 / 34.7} & \floor{26.8 / 17.6} & \floor{37.9 / 35.8} & \floor{29.7 / 29.6} \\
     \floor{Length rescaling of R $+$ C}  & \floor{38.3 / 40.0} & \floor{40.2 / 42.4} & \floor{34.0 / 33.0} & \floor{24.0 / 17.6} \\
     \midrule
-    All tokens (no pruning)          & 28.0 / 26.7 & 29.1 / 28.6 & 22.9 / 18.2 & 16.6 / 14.2 \\
-    Random tokens                    & 25.6 / 24.6 & 26.9 / 25.0 & 22.9 / 18.6 & 17.4 / 13.8 \\
-    FastVID~\cite{fastvid}           & 17.9 / 15.8 & 19.2 / 15.4 &             & 13.3 / 11.6 \\
-    VidCom\textsuperscript{2}~\cite{vidcom2} & 20.4 / 18.7 & 19.9 / 18.2 &             & 12.3 / \phantom{0}8.4 \\
-    FlashVID~\cite{flashvid}         & 22.7 / 21.5 & 22.8 / 20.4 & 20.5 / 15.4$^\dagger$ & 14.1 / 10.8 \\
-    SemVID~\cite{semvid}             & 23.3 / 20.6 & 24.5 / 21.2 & 22.8 / 18.6 & 14.6 / 11.2 \\
+    All tokens (no pruning)          & 28.0 / 26.7 & 29.1 / 28.6 & 22.9 / 18.2 & 16.6 / 14.2    \\
+    Random tokens                    & 25.6 / 24.6 & 26.9 / 25.0 & 22.9 / 18.6 & 17.4 / 13.8    \\
+    FastVID~\cite{fastvid}           & 17.9 / 15.8 & 19.2 / 15.4 &             & 13.3 / 11.6    \\
+    VidCom\textsuperscript{2}~\cite{vidcom2} & 20.4 / 18.7 & 19.9 / 18.2 &             & 12.3 / \phantom{0}8.4    \\
+    FlashVID~\cite{flashvid}         & 22.7 / 21.5 & 22.8 / 20.4 & 20.5 / 15.4$^\dagger$ & 14.1 / 10.8    \\
+    SemVID~\cite{semvid}             & 23.3 / 20.6 & 24.5 / 21.2 & 22.8 / 18.6 & 14.6 / 11.2    \\
     \midrule
-    Random $+$ PCD              & 35.0 / 33.9 & 37.8 / 39.2 & 31.4 / 29.4 & \textbf{26.2} / \textbf{24.0} \\
-    SemVID $+$ PCD              & 34.8 / 35.8 & 34.8 / 34.8 & 30.2 / 27.8 & 21.7 / 19.2 \\
-    Coverage only                    & 32.5 / 34.1 & 34.5 / 35.6 & 25.4 / 21.2 & 16.4 / 13.6 \\
-    \oursrow \textbf{\method} (Coverage $+$ PCD) & \textbf{39.3} / \textbf{40.8} & \textbf{48.8} / \textbf{54.8} & \textbf{34.7} / \textbf{32.4} & 23.3 / 21.2 \\
+    Random $+$ PCD              & \second{35.0} / 33.9 & \second{37.8} / \second{39.2} & \second{31.4} / \second{29.4} & \best{26.2} / \best{24.0}    \\
+    SemVID $+$ PCD              & 34.8 / \second{35.8} & 34.8 / 34.8 & 30.2 / 27.8 & 21.7 / 19.2    \\
+    Coverage only                    & 32.5 / 34.1 & 34.5 / 35.6 & 25.4 / 21.2 & 16.4 / 13.6    \\
+    \oursrow \textbf{\method} (Coverage $+$ PCD) & \best{39.3} / \best{40.8} & \best{48.8} / \best{54.8} & \best{34.7} / \best{32.4} & \second{23.3} / \second{21.2}    \\
     \bottomrule
     \multicolumn{5}{@{}l}{\footnotesize $^\dagger$ at 10\%.}
   \end{tabular}\end{adjustbox}
@@ -96,18 +97,19 @@ ActivityNet, but no method reaches the floor, and on Charades-STA Coverage is wo
     \toprule
     Method & Acc. & GQ@0.5 & mIoU & $\Delta$Acc. \\
     \midrule
-    All tokens             & 19.8 & \phantom{0}8.8 & 28.0 & $+2.5$ \\
-    Random tokens          & 17.3 & \phantom{0}7.4 & 25.6 & -- \\
-    FastVID                & 15.2 & \phantom{0}4.8 & 17.9 & $-2.1$ \\
-    VidCom\textsuperscript{2} & 16.2 & \phantom{0}5.9 & 20.4 & $-1.1$ \\
-    FlashVID               & 17.3 & \phantom{0}6.1 & 22.7 & $+0.0$ \\
-    SemVID                 & 19.8 & \phantom{0}7.6 & 23.3 & $+2.5$ \\
-    Coverage, uniform frames & \textbf{22.5} & 11.2 & 31.7 & \up{$+5.3^*$} \\
-    Random $+$ PCD    & 20.4 & 12.2 & 35.0 & $+3.2$ \\
-    SemVID $+$ PCD\textsuperscript{\,(no reserve)} & 17.9 & \phantom{0}9.9 & 32.3 & $+0.6$ \\
-    \oursrow \method                & 21.7 & 13.3 & \textbf{39.3} & \up{$+4.4^*$} \\
-    \oursrow \method $+$ coverage gate & 22.1 & \textbf{13.5} & \textbf{39.3} & \up{$+4.8^*$} \\
+    All tokens             & 19.8 & \phantom{0}8.8 & 28.0 & $+2.5$    \\
+    Random tokens          & 17.3 & \phantom{0}7.4 & 25.6 & --    \\
+    FastVID                & 15.2 & \phantom{0}4.8 & 17.9 & $-2.1$    \\
+    VidCom\textsuperscript{2} & 16.2 & \phantom{0}5.9 & 20.4 & $-1.1$    \\
+    FlashVID               & 17.3 & \phantom{0}6.1 & 22.7 & $+0.0$    \\
+    SemVID                 & 19.8 & \phantom{0}7.6 & 23.3 & $+2.5$    \\
+    Coverage, uniform frames & \best{22.5} & 11.2 & 31.7 & \up{$+5.3^*$}    \\
+    Random $+$ PCD    & 20.4 & 12.2 & \second{35.0} & $+3.2$    \\
+    SemVID $+$ PCD$^\circ$ & 17.9 & \phantom{0}9.9 & 32.3 & $+0.6$    \\
+    \oursrow \method                & 21.7 & \second{13.3} & \best{39.3} & \up{$+4.4^*$}    \\
+    \oursrow \method $+$ coverage gate & \second{22.1} & \best{13.5} & \best{39.3} & \up{$+4.8^*$}    \\
     \bottomrule
+    \multicolumn{5}{@{}l}{\footnotesize $^\circ$ earlier runs: PCD without its answer reserve.}
   \end{tabular}\end{adjustbox}
 \end{table}
 
@@ -115,7 +117,7 @@ ActivityNet, but no method reaches the floor, and on Charades-STA Coverage is wo
 \method also improves the answers (\cref{tab:qa}): accuracy 21.7 \vs 17.3 for random tokens ($+4.4^*$) and 19.8 for
 all tokens, and GQ@0.5 13.3 \vs 7.4 and 8.8. Coverage alone gives the best accuracy (22.5); PCD trades about one
 point of accuracy for its grounding gain, and differences below about two points of accuracy are within the decoding
-noise of the judge setup. \TODO{SemVID $+$ PCD with reserve in the same judging session.}
+noise of the judge setup. \TODO{SemVID $+$ PCD (with reserve) in the same judging session.}
 
 \begin{table}[t]
   \centering
@@ -127,12 +129,12 @@ noise of the judge setup. \TODO{SemVID $+$ PCD with reserve in the same judging 
     \toprule
     Method & Duration (191) & Counting (184) & Location (100) \\
     \midrule
-    All tokens            & 37.6 / 40.3 & 30.1 / 25.5 & \phantom{0}5.9 / 3.0 \\
-    Random tokens         & 33.2 / 35.1 & 29.6 / 26.1 & \phantom{0}3.5 / 2.0 \\
-    Coverage              & 43.2 / 46.6 & 35.3 / 36.4 & \phantom{0}7.1 / 6.0 \\
-    Random $+$ PCD   & 41.0 / 40.8 & 41.9 / 40.2 & \textbf{11.0} / \textbf{9.0} \\
-    SemVID $+$ PCD   & 38.9 / 36.6 & 44.6 / \textbf{50.0} & \phantom{0}8.9 / 8.0 \\
-    \oursrow \method               & \textbf{47.6} / \textbf{50.8} & \textbf{46.9} / 48.4 & \phantom{0}9.3 / 8.0 \\
+    All tokens            & 37.6 / 40.3 & 30.1 / 25.5 & \phantom{0}5.9 / 3.0    \\
+    Random tokens         & 33.2 / 35.1 & 29.6 / 26.1 & \phantom{0}3.5 / 2.0    \\
+    Coverage              & \second{43.2} / \second{46.6} & 35.3 / 36.4 & \phantom{0}7.1 / 6.0    \\
+    Random $+$ PCD   & 41.0 / 40.8 & 41.9 / 40.2 & \best{11.0} / \best{9.0}    \\
+    SemVID $+$ PCD   & 38.9 / 36.6 & \second{44.6} / \best{50.0} & \phantom{0}8.9 / \second{8.0}    \\
+    \oursrow \method               & \best{47.6} / \best{50.8} & \best{46.9} / \second{48.4} & \phantom{0}\second{9.3} / \second{8.0}    \\
     \bottomrule
   \end{tabular}\end{adjustbox}
 \end{table}
@@ -155,7 +157,7 @@ selection varies little across seeds ($26.0 \pm 0.6$ mIoU over three seeds on S-
 The ordering follows coverage (\cref{tab:retention}): the methods that empty frames most aggressively lose most, and
 those that spread tokens lose least. Accuracy, in contrast, is barely affected (\cref{tab:qa}): FastVID's accuracy
 is within noise of random selection ($-2.1$, n.s.) while its mIoU is 7.6 lower. A pruner built to keep answers keeps answers, not time.
-PCD helps every pruner ($+7$ to $+12$ mIoU with the reserve) but does not close the gap to \method.
+PCD helps every pruner ($+7$ to $+12$ mIoU) but does not close the gap to \method.
 
 %% ================================================================================================= 6.3 coverage
 \subsection{Analysis of Coverage}
@@ -166,18 +168,17 @@ PCD helps every pruner ($+7$ to $+12$ mIoU with the reserve) but does not close 
   \small
   \setlength{\tabcolsep}{3pt}
   \caption{\textbf{Component ladder} (mIoU\,/\,R@0.5; ActivityNet at 30\%). R: retrieval frames; C: Coverage;
-  PCD: prior-contrastive decoding; res.: answer reserve.}
+  PCD: prior-contrastive decoding.}
   \label{tab:ladder}
   \begin{adjustbox}{max width=\linewidth}\begin{tabular}{@{}lccc@{}}
     \toprule
     Configuration & S-EMBER & QVHighlights & ActivityNet \\
     \midrule
-    Uniform, random tokens        & 25.6 / 24.6 & 26.9 / 25.0 & 22.9 / 18.6 \\
-    R, random tokens              & 29.4 / 29.5 & 28.7 / 28.0 & -- \\
-    C (uniform frames)            & 31.7 / 32.4 & 33.7 / 33.0 & 24.6 / 21.6 \\
-    R $+$ C                       & 32.5 / 34.1 & 34.5 / 35.6 & 25.4 / 21.2 \\
-    R $+$ C $+$ PCD               & 37.5 / 39.2 & 42.8 / 48.2 & -- \\
-    \oursrow R $+$ C $+$ PCD $+$ res. (\method) & \textbf{39.3 / 40.8} & \textbf{48.8 / 54.8} & \textbf{34.7 / 32.4} \\
+    Uniform, random tokens        & 25.6 / 24.6 & 26.9 / 25.0 & 22.9 / 18.6    \\
+    R, random tokens              & 29.4 / 29.5 & 28.7 / 28.0 & --    \\
+    C (uniform frames)            & 31.7 / 32.4 & 33.7 / 33.0 & 24.6 / \second{21.6}    \\
+    R $+$ C                       & \second{32.5} / \second{34.1} & \second{34.5} / \second{35.6} & \second{25.4} / 21.2    \\
+    \oursrow R $+$ C $+$ PCD (\method) & \best{39.3} / \best{40.8} & \best{48.8} / \best{54.8} & \best{34.7} / \best{32.4}    \\
     \bottomrule
   \end{tabular}\end{adjustbox}
 \end{table}
@@ -199,21 +200,21 @@ on any dataset); once tokens are chosen by the question, which frames are encode
     \toprule
     Token selection & Frames & mIoU & $\Delta$ \\
     \midrule
-    \textbf{Equal quota, question top-$k$}       & R & 32.5 & -- \\
-    Quota $\propto$ SigLIP relevance (floor 50\%) & R & 33.0 & $+0.5$ \pr{$-0.5$, 1.4} \\
-    Quota $\propto$ SigLIP (floor 25\%)          & R & 32.6 & $+0.1$ \pr{$-1.2$, 1.3} \\
-    Quota $\propto$ SigLIP $+$ attention         & R & 32.9 & $+0.4$ \pr{$-0.7$, 1.5} \\
-    Quota $\propto$ attention mass               & R & 32.1 & $-0.4$ \\
-    Contrastive token score$^\ddagger$           & R & 33.0 & $+0.5$, n.s. \\
-    One token set shared by all layers           & R & 31.9 & $-0.6$ \pr{$-2.3$, 1.1} \\
+    \textbf{Equal quota, question top-$k$}       & R & 32.5 & --    \\
+    Quota $\propto$ SigLIP relevance (floor 50\%) & R & \best{33.0} & $+0.5$ \pr{$-0.5$, 1.4}    \\
+    Quota $\propto$ SigLIP (floor 25\%)          & R & 32.6 & $+0.1$ \pr{$-1.2$, 1.3}    \\
+    Quota $\propto$ SigLIP $+$ attention         & R & \second{32.9} & $+0.4$ \pr{$-0.7$, 1.5}    \\
+    Quota $\propto$ attention mass               & R & 32.1 & $-0.4$    \\
+    Contrastive token score$^\ddagger$           & R & \best{33.0} & $+0.5$, n.s.    \\
+    One token set shared by all layers           & R & 31.9 & $-0.6$ \pr{$-2.3$, 1.1}    \\
     \midrule
-    \textbf{Equal quota, question top-$k$}       & U & 31.7 & -- \\
-    Quota $\propto$ SigLIP relevance             & U & 31.4 & $-0.2$ \pr{$-1.2$, 0.8} \\
-    Equal quota, sampling instead of top-$k$     & U & 30.0 & $-1.7$ \\
-    Contrastive token score$^\ddagger$           & U & 30.5 & $-1.2$ \\
-    HERMES score, equal quota (stratified)       & U & 23.7 & \\
-    HERMES score, global top-$k$                 & U & 18.3 & \\
-    Question, global top-$k$, no quota           & U & \TODO{} & \\
+    \textbf{Equal quota, question top-$k$}       & U & 31.7 & --    \\
+    Quota $\propto$ SigLIP relevance             & U & 31.4 & $-0.2$ \pr{$-1.2$, 0.8}    \\
+    Equal quota, sampling instead of top-$k$     & U & 30.0 & $-1.7$    \\
+    Contrastive token score$^\ddagger$           & U & 30.5 & $-1.2$    \\
+    HERMES score, equal quota (stratified)       & U & 23.7 &    \\
+    HERMES score, global top-$k$                 & U & 18.3 &    \\
+    Question, global top-$k$, no quota           & U & \TODO{} &    \\
     \bottomrule
     \multicolumn{4}{@{}l}{\footnotesize $^\ddagger$ $\log a(\text{question}) - \log a(\text{generic sentence})$.}
   \end{tabular}\end{adjustbox}
@@ -245,10 +246,10 @@ letting each choose.
     \toprule
     Method & Per layer & Shared & $\Delta$mIoU \\
     \midrule
-    Random tokens           & 25.6 & 26.3 & $+0.7$ \pr{$-0.7$, 2.2} \\
-    Random $+$ PCD     & 35.0 & 35.8 & $+0.7$ \pr{$-0.9$, 2.3} \\
-    R $+$ C                 & 32.5 & 31.9 & $-0.6$ \pr{$-2.3$, 1.1} \\
-    \oursrow \method                 & 39.3 & 37.8 & \dn{$-1.5$ \pr{$-2.9$, $-0.0$}$^*$} \\
+    Random tokens           & 25.6 & 26.3 & $+0.7$ \pr{$-0.7$, 2.2}    \\
+    Random $+$ PCD     & \second{35.0} & \second{35.8} & $+0.7$ \pr{$-0.9$, 2.3}    \\
+    R $+$ C                 & 32.5 & 31.9 & $-0.6$ \pr{$-2.3$, 1.1}    \\
+    \oursrow \method                 & \best{39.3} & \best{37.8} & \dn{$-1.5$ \pr{$-2.9$, $-0.0$}$^*$}    \\
     \bottomrule
   \end{tabular}\end{adjustbox}
 \end{table}
@@ -261,24 +262,24 @@ letting each choose.
   \centering
   \small
   \setlength{\tabcolsep}{5pt}
-  \caption{\textbf{PCD on eight memories} (S-EMBER, Acc.\,/\,mIoU\,/\,GQ@0.5; no answer reserve). Plain PCD: on all
+  \caption{\textbf{PCD on eight memories} (S-EMBER, Acc.\,/\,mIoU\,/\,GQ@0.5; earlier runs: PCD without its answer reserve). Plain PCD: on all
   tokens with constant $\alpha{=}0.5$; PCD: confidence-adaptive strength on time values only (ours). $\Delta$ PCD
-  \vs greedy.}
+  \vs greedy. Best and second best per row.}
   \label{tab:pcd8}
   \begin{adjustbox}{max width=\linewidth}\begin{tabular}{@{}lcccccc@{}}
     \toprule
     Memory & Greedy & Plain PCD & PCD & $\Delta$mIoU & $\Delta$GQ@0.5 & Early starts \\
     \midrule
-    Random 5\%            & 15.8 / 23.6 / 5.9  & 15.4 / 29.2 / 9.1  & \textbf{16.4 / 31.5 / 9.9}  & \up{$+8.0^*$} & \up{$+4.0^*$} & 39\% $\rightarrow$ 20\% \\
-    Random 10\%           & 15.2 / 25.8 / 7.2  & 16.2 / 32.1 / 10.1 & \textbf{16.2 / 32.6 / 10.1} & \up{$+6.8^*$} & $+2.9$   & 38\% $\rightarrow$ 19\% \\
-    Random 25\%           & 17.7 / 28.2 / 8.2  & 18.9 / 33.0 / 11.8 & \textbf{18.9 / 34.9 / 13.3} & \up{$+6.7^*$} & \up{$+5.1^*$} & 37\% $\rightarrow$ 21\% \\
-    All tokens            & 18.5 / 28.0 / 8.6  & 19.8 / 31.5 / 11.2 & \textbf{21.5 / 32.7 / 13.3} & \up{$+4.6^*$} & \up{$+4.6^*$} & 41\% $\rightarrow$ 23\% \\
-    HERMES 10\%           & 13.1 / 18.3 / 4.0  & 15.4 / 22.6 / 7.2  & 13.3 / \textbf{24.1} / 5.9  & \up{$+5.7^*$} & $+1.9$   & 56\% $\rightarrow$ 31\% \\
-    Stratified 10\%       & 14.1 / 23.7 / 6.1  & 14.5 / 29.9 / 8.8  & \textbf{15.8 / 31.0 / 10.5} & \up{$+7.3^*$} & \up{$+4.4^*$} & 36\% $\rightarrow$ 17\% \\
-    HERMES streaming 4k   & 13.5 / 21.6 / 4.0  & 17.1 / 27.4 / 8.2  & 15.4 / \textbf{28.6} / 8.2  & \up{$+6.9^*$} & \up{$+4.2^*$} & 45\% $\rightarrow$ 24\% \\
-    HERMES streaming 6k   & 14.3 / 22.6 / 4.8  & 14.7 / 28.1 / 7.6  & \textbf{15.4 / 29.8 / 8.4}  & \up{$+7.2^*$} & \up{$+3.6^*$} & 46\% $\rightarrow$ 24\% \\
+    Random 5\%            & \second{15.8} / 23.6 / 5.9  & 15.4 / \second{29.2} / \second{9.1}  & \best{16.4} / \best{31.5} / \best{9.9}  & \up{$+8.0^*$} & \up{$+4.0^*$} & 39\% $\rightarrow$ 20\%    \\
+    Random 10\%           & 15.2 / 25.8 / 7.2  & \best{16.2} / \second{32.1} / \best{10.1} & \best{16.2} / \best{32.6} / \best{10.1} & \up{$+6.8^*$} & $+2.9$   & 38\% $\rightarrow$ 19\%    \\
+    Random 25\%           & 17.7 / 28.2 / 8.2  & \best{18.9} / \second{33.0} / \second{11.8} & \best{18.9} / \best{34.9} / \best{13.3} & \up{$+6.7^*$} & \up{$+5.1^*$} & 37\% $\rightarrow$ 21\%    \\
+    All tokens            & 18.5 / 28.0 / 8.6  & \second{19.8} / \second{31.5} / \second{11.2} & \best{21.5} / \best{32.7} / \best{13.3} & \up{$+4.6^*$} & \up{$+4.6^*$} & 41\% $\rightarrow$ 23\%    \\
+    HERMES 10\%           & 13.1 / 18.3 / 4.0  & \best{15.4} / \second{22.6} / \best{7.2}  & \second{13.3} / \best{24.1} / \second{5.9}  & \up{$+5.7^*$} & $+1.9$   & 56\% $\rightarrow$ 31\%    \\
+    Stratified 10\%       & 14.1 / 23.7 / 6.1  & \second{14.5} / \second{29.9} / \second{8.8}  & \best{15.8} / \best{31.0} / \best{10.5} & \up{$+7.3^*$} & \up{$+4.4^*$} & 36\% $\rightarrow$ 17\%    \\
+    HERMES streaming 4k   & 13.5 / 21.6 / 4.0  & \best{17.1} / \second{27.4} / \best{8.2}  & \second{15.4} / \best{28.6} / \best{8.2}  & \up{$+6.9^*$} & \up{$+4.2^*$} & 45\% $\rightarrow$ 24\%    \\
+    HERMES streaming 6k   & 14.3 / 22.6 / 4.8  & \second{14.7} / \second{28.1} / \second{7.6}  & \best{15.4} / \best{29.8} / \best{8.4}  & \up{$+7.2^*$} & \up{$+3.6^*$} & 46\% $\rightarrow$ 24\%    \\
     \midrule
-    Mean of 8             & 15.3 / 24.0 / 6.1  & 16.5 / 29.2 / 9.3  & \textbf{16.6 / 30.7 / 10.0} & $+6.7$   & $+3.9$   & \\
+    Mean of 8             & 15.3 / 24.0 / 6.1  & \second{16.5} / \second{29.2} / \second{9.3}  & \best{16.6} / \best{30.7} / \best{10.0} & $+6.7$   & $+3.9$   &    \\
     \bottomrule
   \end{tabular}\end{adjustbox}
 \end{table*}
@@ -302,14 +303,14 @@ most.
     \toprule
     Counterfactual & mIoU & GQ@0.5 & Early \\
     \midrule
-    None (greedy)                         & 25.8 & \phantom{0}7.2 & 38\% \\
-    \textbf{No video (ours)}              & \textbf{32.1} (\up{$+6.2^*$}) & \textbf{10.1} (\up{$+2.9^*$}) & \textbf{19\%} \\
-    Noised frames (VCD~\cite{vcd})        & 26.3 ($+0.5$) & \phantom{0}7.8 & 30\% \\
-    Permuted timestamps                   & $+0.9$ (n.s.) & -- & -- \\
+    None (greedy)                         & 25.8 & \phantom{0}7.2 & 38\%    \\
+    \textbf{No video (ours)}              & \best{32.1} (\up{$+6.2^*$}) & \best{10.1} (\up{$+2.9^*$}) & \best{19\%}    \\
+    Noised frames (VCD~\cite{vcd})        & 26.3 ($+0.5$) & \phantom{0}\second{7.8} & \second{30\%}    \\
+    Permuted timestamps                   & $+0.9$ (n.s.) & -- & --    \\
     \midrule
-    Evidence-against rule, $\alpha{=}1$\,/\,2 & 26.5\,/\,27.3 & -- & -- \\
-    Attention gain (PAI-style)            & $+1.3$ (n.s.) & $+0.8$ & 42\% \\
-    Instruction ``do not assume early''   & 25.7 & \phantom{0}6.9 & 37\% \\
+    Evidence-against rule, $\alpha{=}1$\,/\,2 & \second{26.5}\,/\,27.3 & -- & --    \\
+    Attention gain (PAI-style)            & $+1.3$ (n.s.) & $+0.8$ & 42\%    \\
+    Instruction ``do not assume early''   & 25.7 & \phantom{0}6.9 & 37\%    \\
     \bottomrule
   \end{tabular}\end{adjustbox}
 \end{table}
@@ -328,22 +329,23 @@ the instruction, leaves the prior in place.
   \small
   \setlength{\tabcolsep}{3pt}
   \caption{\textbf{Time scope and adaptive strength} (S-EMBER, Acc.\,/\,mIoU\,/\,GQ@0.5). Top: PCD on all tokens
-  \vs time values only. Bottom: the 78 questions whose evidence truly starts in the first 5\% of the window.}
+  \vs time values only. Bottom: the 78 questions whose evidence truly starts in the first 5\% of the window.
+  Top: best per row.}
   \label{tab:scope}
   \begin{adjustbox}{max width=\linewidth}\begin{tabular}{@{}lcc@{}}
     \toprule
     Memory & All tokens & Time values only \\
     \midrule
-    Random 10\%  & 16.2 / 32.1 / 10.1 & 16.0 / 32.1 / 10.3 \\
-    Random 25\%  & 18.9 / 33.0 / 11.8 & 17.7 / 34.0 / 11.8 \\
-    All tokens   & 19.8 / 31.5 / 11.2 & \textbf{20.8 / 32.9 / 12.4} \\
-    HERMES 10\%  & 15.4 / 22.6 / \phantom{0}7.2 & 14.7 / 24.3 / \phantom{0}7.4 \\
-    Streaming 4k & 17.1 / 27.4 / \phantom{0}8.2 & 16.2 / 29.2 / \phantom{0}9.3 \\
+    Random 10\%  & \best{16.2} / 32.1 / 10.1 & 16.0 / 32.1 / \best{10.3}    \\
+    Random 25\%  & \best{18.9} / 33.0 / 11.8 & 17.7 / \best{34.0} / 11.8    \\
+    All tokens   & 19.8 / 31.5 / 11.2 & \best{20.8} / \best{32.9} / \best{12.4}    \\
+    HERMES 10\%  & \best{15.4} / 22.6 / \phantom{0}7.2 & 14.7 / \best{24.3} / \phantom{0}\best{7.4}    \\
+    Streaming 4k & \best{17.1} / 27.4 / \phantom{0}8.2 & 16.2 / \best{29.2} / \phantom{0}\best{9.3}    \\
     \midrule
     \multicolumn{3}{@{}l}{\emph{Early-evidence questions (78), all tokens memory}} \\
-    Greedy                & \multicolumn{2}{c}{21.8 / 49.2 / 16.7} \\
-    PCD, constant $\alpha$ & \multicolumn{2}{c}{16.7 / 55.3 / 12.8} \\
-    PCD, adaptive $\alpha$ & \multicolumn{2}{c}{\textbf{23.1 / 56.9 / 19.2}} \\
+    Greedy                & \multicolumn{2}{c}{\second{21.8} / 49.2 / \second{16.7}}    \\
+    PCD, constant $\alpha$ & \multicolumn{2}{c}{16.7 / \second{55.3} / 12.8}    \\
+    PCD, adaptive $\alpha$ & \multicolumn{2}{c}{\best{23.1} / \best{56.9} / \best{19.2}}    \\
     \bottomrule
   \end{tabular}\end{adjustbox}
 \end{table}
@@ -369,12 +371,12 @@ others (56.4 \vs 49.6 for greedy, all-tokens memory).
     \toprule
     Rule & Early evidence $\uparrow$ & Other (leak) $\downarrow$ \\
     \midrule
-    Greedy                       & 69\% & 16\% \\
-    PCD, $\alpha{=}0.5$          & 46\% & \phantom{0}6\% \\
-    PCD, adaptive                & 51\% & \phantom{0}7\% \\
-    Evidence-against, $\alpha{=}4$ & 51\% & \phantom{0}9\% \\
-    Skewed or tempered prior     & 50--55\% & 8--11\% \\
-    Best threshold (uses gold)   & 46\% & \phantom{0}6\% \\
+    Greedy                       & \best{69\%} & 16\%    \\
+    PCD, $\alpha{=}0.5$          & 46\% & \phantom{0}\best{6\%}    \\
+    PCD, adaptive                & \second{51\%} & \phantom{0}\second{7\%}    \\
+    Evidence-against, $\alpha{=}4$ & \second{51\%} & \phantom{0}9\%    \\
+    Skewed or tempered prior     & 50--55\% & 8--11\%    \\
+    Best threshold (uses gold)   & 46\% & \phantom{0}\best{6\%}    \\
     \bottomrule
   \end{tabular}\end{adjustbox}
 \end{table}
@@ -400,7 +402,8 @@ negatives.}
   \centering
   \small
   \setlength{\tabcolsep}{3pt}
-  \caption{\textbf{Answer reserve} (paired $\Delta$mIoU) and unparseable answers before\,$\rightarrow$\,after.}
+  \caption{\textbf{The answer reserve inside PCD}: PCD \vs PCD without the reserve (paired $\Delta$mIoU), and
+  unparseable answers without\,$\rightarrow$\,with it.}
   \label{tab:reserve}
   \begin{adjustbox}{max width=\linewidth}\begin{tabular}{@{}lccc@{}}
     \toprule
@@ -445,12 +448,12 @@ leak. \method uses the simpler timeline in all main results. \TODO{event timelin
     Budget & 5\% & 10\% & 20\% & 5\% & 10\% & 20\% & 10\% & 30\% & 50\% \\
     Kept tokens & ${\sim}$1{,}070 & ${\sim}$2{,}140 & ${\sim}$4{,}280 & ${\sim}$260 & ${\sim}$520 & ${\sim}$1{,}040 & 120--300 & 400--900 & 600--1{,}500 \\
     \midrule
-    Random                  & 23.9 & 25.6 & 27.4 &      & 26.9 &      & 17.8 & 22.9 & 23.5 \\
-    SemVID                  & 20.9 & 23.3 & 26.5 &      & 24.5 &      & 21.2 & 22.8 & 22.3 \\
-    R $+$ C (no PCD)   & 34.6 & 32.5 & 31.0 &      & 34.5 &      & 11.3 & 25.4 & 25.0 \\
-    SemVID $+$ PCD     & 31.9 & 34.8 & 35.3 &      & 34.8 &      & \textbf{26.8} & 30.2 & 31.4 \\
-    Random $+$ PCD     & 34.5 & 35.0 & 36.5 &      & 37.8 &      & 21.5 & 31.4 & 32.2 \\
-    \oursrow \method                 & \textbf{39.3} & \textbf{39.3} & \textbf{36.8} & 9.7 & \textbf{48.8} & \textbf{49.4} & 11.6 & \textbf{34.7} & \textbf{34.4} \\
+    Random                  & 23.9 & 25.6 & 27.4 &      & 26.9 &      & 17.8 & 22.9 & 23.5    \\
+    SemVID                  & 20.9 & 23.3 & 26.5 &      & 24.5 &      & 21.2 & 22.8 & 22.3    \\
+    R $+$ C (no PCD)   & \second{34.6} & 32.5 & 31.0 &      & 34.5 &      & 11.3 & 25.4 & 25.0    \\
+    SemVID $+$ PCD     & 31.9 & 34.8 & 35.3 &      & 34.8 &      & \best{26.8} & 30.2 & 31.4    \\
+    Random $+$ PCD     & 34.5 & \second{35.0} & \second{36.5} &      & \second{37.8} &      & \second{21.5} & \second{31.4} & \second{32.2}    \\
+    \oursrow \method                 & \best{39.3} & \best{39.3} & \best{36.8} & 9.7 & \best{48.8} & 49.4 & 11.6 & \best{34.7} & \best{34.4}    \\
     \bottomrule
   \end{tabular}\end{adjustbox}
 \end{table*}
@@ -475,23 +478,23 @@ copies.
   \centering
   \small
   \setlength{\tabcolsep}{5pt}
-  \caption{\textbf{Spending a fixed token budget on fewer frames} (mIoU\,/\,R@0.5, all with PCD and reserve).
-  Within each block every row keeps the same number of tokens: $F$ frames at keep ratio $\rho \cdot 64/F$.}
+  \caption{\textbf{Spending a fixed token budget on fewer frames} (mIoU\,/\,R@0.5, all with PCD).
+  Within each block every row keeps the same number of tokens: $F$ frames at keep ratio $\rho \cdot 64/F$. Best and second best per row.}
   \label{tab:frames}
   \begin{adjustbox}{max width=\linewidth}\begin{tabular}{@{}llccc@{}}
     \toprule
     Dataset (kept tokens) & Frames $\times$ keep ratio & Random $+$ PCD & SemVID $+$ PCD & \method \\
     \midrule
-    \multirow{3}{*}{QVHighlights (${\sim}$260)} & 64 $\times$ 5\%  & --          & --          & \phantom{0}9.7 / \phantom{0}6.6 \\
-                                                & 32 $\times$ 10\% & 32.4 / 29.2 & 35.5 / 33.6 & \textbf{43.1} / \textbf{46.6} \\
-                                                & 16 $\times$ 20\% & 33.3 / 32.4 & 30.6 / 28.0 & 40.4 / 41.0 \\
+    \multirow{3}{*}{QVHighlights (${\sim}$260)} & 64 $\times$ 5\%  & --          & --          & \phantom{0}9.7 / \phantom{0}6.6    \\
+                                                & 32 $\times$ 10\% & 32.4 / 29.2 & \second{35.5} / \second{33.6} & \best{43.1} / \best{46.6}    \\
+                                                & 16 $\times$ 20\% & \second{33.3} / \second{32.4} & 30.6 / 28.0 & \best{40.4} / \best{41.0}    \\
     \midrule
-    \multirow{3}{*}{ActivityNet (120--300)}     & 64 $\times$ 10\% & 21.5 / 18.2 & 26.8 / 23.6 & 11.6 / \phantom{0}7.6 \\
-                                                & 32 $\times$ 20\% & 29.5 / 26.8 & 28.4 / 25.8 & \textbf{33.9} / \textbf{32.0} \\
-                                                & 16 $\times$ 40\% & 30.5 / 26.8 & 30.0 / 27.6 & 32.0 / 29.8 \\
+    \multirow{3}{*}{ActivityNet (120--300)}     & 64 $\times$ 10\% & \second{21.5} / \second{18.2} & \best{26.8} / \best{23.6} & 11.6 / \phantom{0}7.6    \\
+                                                & 32 $\times$ 20\% & \second{29.5} / \second{26.8} & 28.4 / 25.8 & \best{33.9} / \best{32.0}    \\
+                                                & 16 $\times$ 40\% & \second{30.5} / 26.8 & 30.0 / \second{27.6} & \best{32.0} / \best{29.8}    \\
     \midrule
-    \multirow{2}{*}{Charades-STA (${\sim}$10\% of 64)} & 64 $\times$ 10\% & \textbf{26.2} / \textbf{24.0} & 21.7 / 19.2 & 23.3 / 21.2 \\
-                                                       & 32 $\times$ 20\% & 24.6 / 22.0 & 20.8 / 16.0 & 23.6 / 21.0$^\S$ \\
+    \multirow{2}{*}{Charades-STA (${\sim}$10\% of 64)} & 64 $\times$ 10\% & \best{26.2} / \best{24.0} & 21.7 / 19.2 & \second{23.3} / \second{21.2}    \\
+                                                       & 32 $\times$ 20\% & \best{24.6} / \best{22.0} & 20.8 / 16.0 & \second{23.6} / \second{21.0}$^\S$    \\
     \bottomrule
     \multicolumn{5}{@{}l}{\footnotesize $^\S$ Coverage on uniform frames; retrieval is gated off on Charades-STA.}
   \end{tabular}\end{adjustbox}
@@ -516,23 +519,22 @@ $+1.2$ mIoU (n.s.) without PCD and $-3.6^*$ with it, with 74--78 unparseable ans
   \centering
   \small
   \setlength{\tabcolsep}{2.5pt}
-  \caption{\textbf{Upper bounds that use the gold interval} (S-EMBER, greedy unless noted; PCD without
-  reserve). Oracle selector: the gold frames' tokens are kept first. Oracle window: all 64 frames inside the gold
+  \caption{\textbf{Upper bounds that use the gold interval} (S-EMBER, greedy unless noted; earlier runs: PCD without its answer reserve). Oracle selector: the gold frames' tokens are kept first. Oracle window: all 64 frames inside the gold
   interval.}
   \label{tab:oracle}
   \begin{adjustbox}{max width=\linewidth}\begin{tabular}{@{}lccccc@{}}
     \toprule
     Memory & Acc. & mIoU & R@0.5 & GQ & Leak \\
     \midrule
-    No video                          & 10.5 & \phantom{0}7.9 & \phantom{0}4.8 & 0.8 & 88\% \\
-    Random 10\%                       & 15.2 & 25.8 & 24.2 & 7.2 & 30\% \\
-    Random 10\% $+$ PCD          & 16.2 & \textbf{32.6} & \textbf{33.1} & \textbf{10.1} & \textbf{11\%} \\
-    Oracle selector 10\%              & \textbf{17.5} & 27.9 & 25.7 & 8.4 & 33\% \\
-    Gold-window zoom 10\%             & 14.5 & 28.2 & 26.1 & 7.8 & 25\% \\
+    No video                          & 10.5 & \phantom{0}7.9 & \phantom{0}4.8 & 0.8 & 88\%    \\
+    Random 10\%                       & 15.2 & 25.8 & 24.2 & 7.2 & 30\%    \\
+    Random 10\% $+$ PCD          & 16.2 & 32.6 & 33.1 & 10.1 & \best{11\%}    \\
+    Oracle selector 10\%              & 17.5 & 27.9 & 25.7 & 8.4 & 33\%    \\
+    Gold-window zoom 10\%             & 14.5 & 28.2 & 26.1 & 7.8 & 25\%    \\
     \midrule
-    All tokens                        & 18.5 & 28.0 & 26.7 & 8.6 & 33\% \\
-    All tokens $+$ PCD           & 21.5 & 32.7 & 34.1 & 13.3 & \textbf{13\%} \\
-    Oracle window                     & \textbf{26.3} & \textbf{35.3} & \textbf{36.2} & \textbf{13.9} & 45\% \\
+    All tokens                        & 18.5 & 28.0 & 26.7 & 8.6 & 33\%    \\
+    All tokens $+$ PCD           & \second{21.5} & \second{32.7} & \second{34.1} & \second{13.3} & \second{13\%}    \\
+    Oracle window                     & \best{26.3} & \best{35.3} & \best{36.2} & \best{13.9} & 45\%    \\
     \bottomrule
   \end{tabular}\end{adjustbox}
 \end{table}
@@ -601,7 +603,7 @@ prior where it acts (PCD) or guaranteeing coverage (the equal quota) gives large
   \small
   \setlength{\tabcolsep}{3pt}
   \caption{\textbf{Error types} on S-EMBER, pooled over eight memories (3{,}800 answers), greedy \vs PCD
-  (no reserve).}
+  (earlier runs: PCD without its answer reserve).}
   \label{tab:errors}
   \begin{adjustbox}{max width=\linewidth}\begin{tabular}{@{}lccc@{}}
     \toprule
@@ -611,7 +613,7 @@ prior where it acts (PCD) or guaranteeing coverage (the equal quota) gives large
     IoU $\geq 0.5$, answer wrong        & 16.3\% & 20.7\% & \up{$+4.4^*$} \\
     Partial overlap (IoU $<0.5$)        & 17.0\% & 15.7\% & $-1.3$ \\
     Inside gold, too short              & 22.2\% & 18.5\% & \dn{$-3.7^*$} \\
-    Entirely \emph{before} gold         & \textbf{33.1\%} & \textbf{18.9\%} & $\mathbf{-14.2^*}$ \\
+    Entirely \emph{before} gold         & 33.1\% & 18.9\% & $-14.2^*$ \\
     Entirely after gold                 & \phantom{0}2.7\% & \phantom{0}5.7\% & \up{$+3.0^*$} \\
     Covers gold, too long               & \phantom{0}2.2\% & \phantom{0}2.5\% & $+0.3$ \\
     No answer / unparsed$^\P$           & \phantom{0}0.5\% & \phantom{0}8.1\% & \up{$+7.6^*$} \\
