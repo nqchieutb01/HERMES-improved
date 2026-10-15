@@ -44,7 +44,7 @@
   %% ------------------------------------------------------------------ bar chart (drawn directly)
   \begin{scope}[shift={(19.4, 0)}]
     \def\sc{0.085}   % cm per R@0.5 point
-    \node[font=\sffamily\small\bfseries, anchor=west] at (-3.3, 3.15) {QVHighlights, 500 queries};
+    \node[font=\sffamily\small\bfseries, anchor=west] at (-3.3, 3.15) {QVHighlights, 500 queries, timeline answers};
     \node[font=\sffamily\scriptsize, anchor=west, text=black!65] at (-3.3, 2.7) {R@0.5 with 10\% of the visual tokens};
     \foreach \lab/\v/\c/\y in {%
         best constant (no video)/17.6/floorc!55/2.0,
@@ -63,14 +63,15 @@
       \draw[black!50] (\t*\sc, -2.1) -- (\t*\sc, -2.18);
       \node[font=\sffamily\tiny, text=black!60, anchor=north] at (\t*\sc, -2.18) {\t};
     }
-    \node[font=\sffamily\scriptsize\bfseries, text=ours, anchor=west] at (2.5, -2.75) {$\times$1.9 the uncompressed model};
   \end{scope}
 \end{tikzpicture}}
 \captionof{figure}{\textbf{Temporal grounding from a pruned video memory.} Left: a QVHighlights query, with the
 intervals predicted by each method at 10\% of the visual tokens (real outputs). With random pruning the model falls
 back on a video-free prior and answers ``1.2 seconds''; QA-oriented pruning and the uncompressed model pick a later,
 wrong scene. \method keeps every frame anchored in time and contrasts the answer against the model's no-video
-prediction, and recovers the interval (IoU 0.97). Right: over 500 queries, \method nearly doubles the R@0.5 of the
-uncompressed model and is far above the best video-free constant.}
+prediction, and recovers the interval (IoU 0.97). Right: R@0.5 over 500 queries when every method answers with a
+timeline of observations, the format of grounded QA. In this format the prior writes many of the times and \method
+is far above the uncompressed model and the best video-free constant. With a one-line answer the uncompressed model is
+much stronger, and Coverage alone matches it with a quarter of the tokens (\cref{sec:transfer}).}
 \label{fig:teaser}
 \end{center}

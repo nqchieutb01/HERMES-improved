@@ -42,7 +42,8 @@
 \end{groupplot}
 \end{tikzpicture}}
 \caption{\textbf{Budget and how to spend it.} \textbf{(a)}~At 64 frames, question-driven selection improves as the
-budget shrinks while random selection and SemVID degrade; \method leads at every budget. \textbf{(b, c)}~At a fixed,
+budget shrinks while random selection and SemVID degrade; \method leads at every budget that leaves at least
+about eight tokens per frame pair, and collapses below it (QVHighlights 5\%, ActivityNet 10\%). \textbf{(b, c)}~At a fixed,
 very small number of kept tokens, 64 frames leave 2--4 tokens per frame pair and \method collapses; spending the same
 tokens on 32 frames recovers it (QVHighlights 9.7\,$\rightarrow$\,43.1, ActivityNet 11.6\,$\rightarrow$\,33.9). Dotted
 grey: best video-free constant.}

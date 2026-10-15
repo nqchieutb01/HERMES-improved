@@ -1,22 +1,23 @@
 \begin{abstract}
 Video LLMs are increasingly asked not only \emph{what} happened but \emph{when}: a grounded question such as
-``how long did I use the paper cutter?'' needs an answer and the time interval of its evidence. To keep long
-videos tractable, the visual memory of these models is pruned to a small fraction of its tokens, and published
-pruners lose little multiple-choice accuracy at 10\% of the tokens. We show that temporal grounding behaves
-differently. Four recent training-free pruners fall \emph{below random token selection} on grounding, because a
-model reads time from the timestamps that survive in memory, and selection by saliency, uniqueness or text
-similarity removes whole stretches of the timeline. Where the memory is silent, the decoder fills the gap with a
-prior that does not depend on the video: asked with no video at all, the model still answers, starting intervals
-early and ending them too soon. We propose \method, a training-free method with two parts. \emph{Coverage} gives
-every frame an equal token quota and fills it with the tokens the actual question attends to, so that every time
-anchor survives pruning. \emph{Prior-contrastive decoding} (PCD) writes each time value against the model's own no-video prediction, with
-a strength that fades as the model grows confident, and reserves room for the final interval. Because grounding
-benchmarks carry strong positional biases, we evaluate every method against video-free floors. With 10\% of the
-visual tokens, \method raises R@0.5 on QVHighlights from 25.0 (random tokens) and 28.6 (all tokens) to
-\key{54.8} with our reasoning-style prompt, where the best video-free constant reaches 17.6, and from 24.6 to
-\key{40.8} on S-EMBER grounded QA; on S-EMBER the gain over the uncompressed model transfers to the grounding-tuned
-TimeLens-8B (\key{$+10.7$} mIoU). Under the standard one-line grounding prompt, Coverage alone matches the
-uncompressed model with a quarter of the tokens and beats random selection on both models, while contrastive
-decoding helps only answers that list times before the interval. We also report where the method does not help:
-on short, densely sampled videos (Charades-STA, NExT-GQA) Coverage keeps the answers but not more of the interval.
+``how long did I use the paper cutter?'' needs an answer and the time interval of its evidence. To keep long videos
+tractable, the visual memory of these models is pruned to a small fraction of its tokens, and published pruners lose
+little multiple-choice accuracy at 10\% of the tokens. We show that temporal grounding needs something different:
+\emph{pruning for QA keeps what is salient, but grounding needs what is everywhere}. A video LLM reads time from
+timestamps that survive only together with visual tokens of their frame, so pruners that select by saliency,
+uniqueness or text similarity empty frames, delete their timestamps, and fall \emph{below random token selection} on
+grounding. When the answer lists observed moments before the interval, the gaps are filled by a video-free prior:
+asked with no video at all, the model still starts its intervals at the beginning of the window. We propose
+\method, a training-free method with two parts. \emph{Coverage} gives every frame an equal token quota, chosen per
+layer by the actual question's attention, so that every time anchor survives. \emph{Prior-contrastive decoding}
+(PCD) writes each time value against the model's own no-video prediction. The two parts behave differently across
+answer formats, which we study directly. Under the standard one-line grounding prompt, Coverage alone matches the
+uncompressed model with a quarter of the visual tokens on a general and a grounding-tuned model of the same family
+(QVHighlights, 61.7 \vs 60.5 and 67.3 \vs 67.1 mIoU) and beats random selection (\key{$+3.5$} and \key{$+2.0$}),
+while PCD has no effect. In reasoning-style grounded QA (S-EMBER), PCD is what matters: with 10\% of the tokens
+\method improves on the uncompressed model by \key{$+11.2$} and \key{$+10.7$} mIoU under the same prompt. Asking
+for a timeline of observations instead of a single interval costs single-moment grounding about 30 mIoU, so the
+answer format is a first-order variable in evaluating compressed memories. We evaluate every method against
+video-free floors and report where the method does not help: on short, densely sampled videos (Charades-STA,
+NExT-GQA), Coverage keeps the answers but not more of the interval.
 \end{abstract}

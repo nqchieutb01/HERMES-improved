@@ -4,9 +4,16 @@
 \paragraph{Answer format.}
 The main tables use a reasoning-style timeline prompt. On single-moment grounding it costs the uncompressed model
 about 30 mIoU against the standard one-line prompt, and with it Qwen3-VL-8B stays below the best constant interval on
-ActivityNet Captions and Charades-STA. PCD helps only this kind of answer. Our gains over the uncompressed model on
-QVHighlights, ActivityNet and Charades-STA are therefore relative to the prompt; the full TimeLens-Bench comparison
-under the one-line prompt is in progress.
+ActivityNet Captions and Charades-STA. Our gains over the uncompressed model on QVHighlights, ActivityNet and
+Charades-STA (\cref{tab:main}) are therefore relative to this format; under the one-line prompt the comparison is
+\cref{tab:standard}, and the full TimeLens-Bench sweep is in progress. On S-EMBER, \method beats the uncompressed
+model when both answer in the timeline format; the uncompressed model under the official direct-answer prompt is
+still to be reported. \TODO{S-EMBER without pruning under the direct-answer and one-line prompts.}
+
+\paragraph{Where the prior is measured.}
+Every measurement of the video-free prior (\cref{sec:prior}) uses the timeline format. PCD has no effect with a
+one-line answer, so the prior may decide few of the times written in that format, or none; we have not yet measured
+the no-video answers in it.
 
 \paragraph{Minimum tokens per frame.}
 Equal quotas fail when a frame pair keeps only 2--4 tokens. Spending the budget on fewer frames avoids this
@@ -14,27 +21,33 @@ Equal quotas fail when a frame pair keeps only 2--4 tokens. Spending the budget 
 and still needs held-out validation.
 
 \paragraph{Short, densely sampled videos.}
-When uniform frames are less than a second apart, spreading tokens at random beats question-driven selection.
+When uniform frames are less than a second apart (Charades-STA) or 64 frames already cover a 40\,s video
+(NExT-GQA), question-driven selection keeps the answers but grounds no better than random selection.
 
 \paragraph{Not a streaming memory.}
 The memory is rebuilt per question from the frames before the question. It is causal, but the full memory is
 prefilled once per question, so peak memory and time-to-first-token are those of the uncompressed model: \method
-reduces the memory the decoder reads, not the cost of building it. PCD also adds a second, prompt-only decoding
-pass for time-value tokens. \TODO{cost table; write-once memory re-ranked at question time.}
+reduces the memory the decoder reads, not the cost of building it. PCD also decodes a second, prompt-only row at
+every step. \TODO{cost table; amortisation over several questions per video; write-once memory re-ranked at question
+time.}
 
 \paragraph{Scope of the evaluation.}
-Most results use one model and 475--500-question subsets (TimeLens-8B, NExT-GQA and the TimeLens-Bench subsets
-are the exceptions), and a local judge with the official prompt. Every
-hyperparameter was chosen on the S-EMBER questions; the other datasets were run once with the frozen configuration,
-but a held-out S-EMBER split is still to be evaluated.
+Our two models come from one family: TimeLens-8B is fine-tuned from Qwen3-VL-8B, and both read time from text
+timestamps. Most diagnostic results use 475--500-question subsets, and answers are judged by a local model with the
+official prompt. Every hyperparameter was chosen on the S-EMBER questions; the other datasets were run once with the
+frozen configuration, but a held-out S-EMBER split is still to be evaluated. \TODO{a second model family; held-out
+S-EMBER split.}
 
 \section{Conclusion}
 \label{sec:conclusion}
 
-Temporal grounding asks a compressed video memory for something multiple-choice QA does not: a complete timeline.
-Pruners designed for QA remove parts of it and fall below random selection, and the decoder's video-free prior fills
-the gaps, mostly by ending intervals too early. \method keeps every time anchor with an equal, question-filled quota
-and writes time values against the model's own no-video prediction. With a tenth of the visual tokens it grounds
-better than the uncompressed model on S-EMBER grounded QA, for a general and a grounding-tuned model; under the
-standard grounding prompt, Coverage alone keeps the accuracy of the uncompressed model with a quarter of the tokens. The floors are a lesson of their own: with a reasoning-style prompt a constant interval beats
-the uncompressed model on two standard benchmarks, and grounding results under compression should be read against them.
+Pruning for QA keeps what is salient; grounding needs what is everywhere. A video LLM reads time from anchors that
+survive only with their frames, so pruners built for QA, which empty unremarkable frames, fall below random selection
+on grounding. Keeping one anchor in every frame, filled with what the question attends to, is enough to match the
+uncompressed model with a quarter of the visual tokens under the standard grounding prompt, on a general and a
+grounding-tuned model. When the answer lists what was seen before it states the interval, as grounded QA does, a
+second failure appears: where the memory is silent, a video-free prior writes the times. Contrasting each time value
+with the model's own no-video prediction removes it, and with a tenth of the tokens \method then grounds better than
+the uncompressed model answering in the same format. The answer format itself turns out to be a first-order variable,
+worth about 30 mIoU on single-moment grounding, and with video-free floors it belongs in every evaluation of
+compressed video memories.

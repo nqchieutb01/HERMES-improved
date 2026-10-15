@@ -1,7 +1,8 @@
 \section{Grounding under a Token Budget: a Diagnosis}
 \label{sec:diagnosis}
 
-This section establishes the three observations of the introduction on S-EMBER, before any method is introduced.
+This section establishes Observations 1, 2 and 4 of the introduction on S-EMBER, before any method is introduced;
+Observation 3, on the answer format, is studied in \cref{sec:transfer}.
 Unless stated otherwise, numbers in this section use random 10\% pruning as the reference memory.
 
 \subsection{Setting}
@@ -20,7 +21,9 @@ Answer: \dots \\
 Time: [$s$, $e$]
 \end{tabular}\end{adjustbox}
 \end{center}
-from which the interval $[s,e]$ is parsed. Grounding is scored by its IoU with the gold interval (mIoU and
+from which the interval $[s,e]$ is parsed. This reasoning-style format is natural for grounded QA, where the answer
+explains what was seen before it states the interval, and the whole diagnosis uses it. \Cref{sec:transfer} compares
+it with the one-line format of grounding benchmarks (\emph{``The event happens in $s$--$e$ seconds''}). Grounding is scored by its IoU with the gold interval (mIoU and
 R@$\{0.3, 0.5, 0.7\}$); grounded QA additionally requires the answer to be judged correct (GQ@0.5: correct answer
 and IoU $\geq 0.5$). We call an answer an \emph{early start} when its interval starts in the first 5\% of the window,
 and a \emph{leak} when it starts early although the gold evidence starts later.
@@ -50,9 +53,9 @@ instead of globally gains $5.3^*$ mIoU.
     \toprule
     Selector & 0--10\% & 10--25\% & 25--50\% & 50--75\% & 75--100\% & mIoU & Leak \\
     \midrule
-    HERMES     & 4.7 & 3.9 & 2.6 & 2.5 & 27.6 & 18.3 & 49\%      \\
-    Stratified & 8.7 & 8.7 & 8.6 & 8.6 & 8.7 & \second{23.7} & \best{29\%}      \\
-    Random     & 8.9 & 8.8 & 8.6 & 8.7 & 8.6 & \best{25.8} & \second{30\%}      \\
+    HERMES     & 4.7 & 3.9 & 2.6 & 2.5 & 27.6 & 18.3 & 49\%       \\
+    Stratified & 8.7 & 8.7 & 8.6 & 8.6 & 8.7 & \second{23.7} & \best{29\%}       \\
+    Random     & 8.9 & 8.8 & 8.6 & 8.7 & 8.6 & \best{25.8} & \second{30\%}       \\
     \bottomrule
   \end{tabular}\end{adjustbox}
 \end{table}
@@ -81,8 +84,11 @@ for both the unpruned and the random 10\% memory. Within the HERMES 10\% memory,
 
 \paragraph{An instruction does not remove it.}
 Adding ``The relevant moments may occur at any point in the video; do not assume they are near the start'' to the
-prompt leaves the leak almost unchanged (29.5\%~$\rightarrow$~28.0\%) and grounding unchanged ($-0.1$ mIoU). The
-prior acts in the output distribution and has to be removed there.
+prompt leaves the leak almost unchanged (29.5\%~$\rightarrow$~28.0\%) and grounding unchanged ($-0.1$ mIoU). Within this answer format, the
+prior acts in the output distribution and has to be removed there. Whether the same prior appears when the model
+answers with a single interval is an open question: there PCD has no effect (\cref{sec:transfer}), which suggests
+that the prior decides fewer of the written times. \TODO{no-video answers and leak under the one-line and
+direct-answer prompts.}
 
 \paragraph{The end is the weak boundary.}
 Across memories, the median end error is 0.40--0.69 of the gold length without contrastive decoding, against
@@ -105,10 +111,10 @@ all answers, \cref{tab:errors}).
     \cmidrule(lr){3-4} \cmidrule(l){5-6}
     Memory & Removed & Acc./mIoU/GQ & Leak & Acc./mIoU/GQ & Leak \\
     \midrule
-    Random 10\% & control  & \second{16.6}/\second{28.8}/\second{8.8} & \best{31\%} & \second{15.4}/\second{34.6}/\second{10.5} & \best{11\%}      \\
-                & evidence & \phantom{0}7.8/\phantom{0}8.6/1.7 & 46\% & \phantom{0}9.3/10.3/1.1 & 23\%      \\
-    All tokens  & control  & \best{19.6}/\best{29.4}/\best{10.1} & \second{37\%} & \best{18.1}/\best{35.9}/\best{12.6} & \second{15\%}      \\
-                & evidence & \phantom{0}9.1/\phantom{0}9.4/1.9 & 51\% & \phantom{0}9.1/10.5/1.5 & 22\%      \\
+    Random 10\% & control  & \second{16.6}/\second{28.8}/\second{8.8} & \best{31\%} & \second{15.4}/\second{34.6}/\second{10.5} & \best{11\%}       \\
+                & evidence & \phantom{0}7.8/\phantom{0}8.6/1.7 & 46\% & \phantom{0}9.3/10.3/1.1 & 23\%       \\
+    All tokens  & control  & \best{19.6}/\best{29.4}/\best{10.1} & \second{37\%} & \best{18.1}/\best{35.9}/\best{12.6} & \second{15\%}       \\
+                & evidence & \phantom{0}9.1/\phantom{0}9.4/1.9 & 51\% & \phantom{0}9.1/10.5/1.5 & 22\%       \\
     \bottomrule
   \end{tabular}\end{adjustbox}
 \end{table}
@@ -121,7 +127,8 @@ are asked while the stream is running and 67\% of gold intervals end within the 
 constant $[0.15q, q]$ scores 36.9 mIoU. On ActivityNet Captions, whose moments cover 38\% of the video on average,
 $[0, 0.95q]$ scores 37.9; on Charades-STA, $[0, 0.45q]$ scores 29.7. QVHighlights is the least biased (26.8 mIoU,
 17.6 R@0.5). These constants are tuned on the test questions, so they upper-bound any video-free rule of this form. On
-three of the four datasets the best constant beats the uncompressed model, which makes the floors a necessary
+three of the four datasets the best constant beats the uncompressed model answering with a timeline (with a
+one-line answer, Qwen3-VL-8B is well above it on ActivityNet and Charades-STA, \cref{sec:transfer}), which makes the floors a necessary
 reference for every comparison that follows.
 
 \begin{table}[t]

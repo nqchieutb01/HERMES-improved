@@ -58,8 +58,11 @@ lose. As a rule we use $F{=}64$ when each frame pair keeps at least ${\sim}8$ to
 \TODO{this rule was derived from the results of \cref{sec:frames}; validate it on held-out data.}
 
 \paragraph{Cost.}
-Coverage adds one forward pass of the question over the uncompressed memory per question.
-\TODO{measured latency and peak memory; the current implementation runs 3--4 scoring passes, reducible to one.}
+Coverage adds one forward pass of the question over the uncompressed memory per question; the full memory is
+prefilled first, so Coverage reduces the memory the decoder reads, not the cost of building it. PCD decodes a second,
+prompt-only row in lockstep at every step (its scores are used only inside time values), so it roughly doubles the
+decoder's per-step work on a much shorter context. \TODO{measured prefill, time to first token, total latency, peak
+memory and KV size; the current implementation runs 3--4 scoring passes, reducible to one.}
 
 \subsection{PCD: prior-contrastive decoding of time values}
 \label{sec:contrast}

@@ -30,13 +30,28 @@ InfiniPot-V~\cite{infinipotv} maintain bounded memories. These works report QA o
 question from the frames up to the question time: it is causal, but it is not a persistent streaming memory, and
 we make no claim about the cost of building it (\cref{sec:limitations}).
 
-\paragraph{Contrastive decoding.}
-VCD~\cite{vcd} contrasts the output distribution against a noised image, ICD~\cite{icd} against a disturbed
-instruction, M3ID~\cite{m3id} against the absence of the image, and PAI~\cite{pai} amplifies image attention
-while subtracting text-only logits; SEASON~\cite{season} extends the idea to video with temporally corrupted
-negatives. These methods target object hallucination or QA. We apply the no-input contrast to \emph{time values
-only}, with a confidence-adaptive strength, and test whether its benefit for grounding is more than a uniform
-lengthening of the interval (\cref{sec:lengthening}).
+\paragraph{Contrastive decoding and prior correction.}
+Contrasting a model's prediction with a weaker or less informed one is an established decoding tool. Contrastive
+Decoding~\cite{contrastivedecoding} subtracts a small ``amateur'' model and introduced the plausibility constraint we
+use; classifier-free guidance for language models~\cite{cfglm} and context-aware decoding~\cite{cad} amplify the
+difference between the predictions with and without the conditioning context, which is the form of our
+\cref{eq:pcd}. The idea of measuring the prior with a content-free input and correcting for it is older still:
+contextual calibration~\cite{calibratebeforeuse} rescales label probabilities by the model's answer to ``N/A'',
+and domain-conditional PMI~\cite{dcpmi} reweighs answers by their task-conditioned prior. For vision-language
+models, VCD~\cite{vcd} contrasts against a noised image, ICD~\cite{icd} against a disturbed instruction,
+M3ID~\cite{m3id} against the absence of the image, and PAI~\cite{pai} amplifies image attention while subtracting
+text-only logits; SEASON~\cite{season} extends the idea to video with temporally corrupted negatives. These methods
+target hallucination, faithfulness or classification. PCD uses the same contrast for a different purpose: it is
+applied only to \emph{time values}, with a confidence-adaptive strength, and we study when it helps and when it does
+not (\cref{sec:res-contrast,sec:transfer}), including whether its benefit is more than a uniform lengthening of the
+interval (\cref{sec:lengthening}).
+
+\paragraph{Grounding-tuned video LLMs.}
+TimeChat~\cite{timechat}, VTimeLLM~\cite{vtimellm} and LITA~\cite{lita} train video LLMs to localise moments, with
+timestamp-aware encoders, boundary-aware training stages or dedicated time tokens; TimeLens~\cite{timelens}
+re-annotates the standard grounding benchmarks and fine-tunes Qwen-VL models with reinforcement learning. These works
+improve grounding with full visual memories. We use TimeLens-8B as a grounding-tuned model and TimeLens-Bench as the
+standard protocol, and ask what happens to such a model when its memory is pruned.
 
 \paragraph{Training-free temporal grounding.}
 NumPro~\cite{numpro} draws frame numbers on the frames, FV-Action~\cite{fvaction} scans the video with yes/no
@@ -47,5 +62,6 @@ complementary problem of grounding from a \emph{compressed} memory; these readou
 
 \paragraph{Benchmark biases.}
 \citet{otani2020uncovering} showed that blind baselines are competitive on Charades-STA and ActivityNet Captions
-because of positional priors in the annotations. We find the same on the datasets we use, and make video-free
-floors part of every comparison.
+because of positional priors in the annotations. We find the same on the datasets we use, adopt their blind
+baselines as video-free floors in every comparison, and add a length-rescaling floor for methods that lengthen
+intervals.
