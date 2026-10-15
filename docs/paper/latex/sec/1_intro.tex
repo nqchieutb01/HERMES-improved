@@ -6,8 +6,8 @@ the interval it comes from. Such \emph{grounded} questions are central to egocen
 step-by-step guidance. They are hard for the same reason they are useful: the model must know \emph{when} things
 happened across the whole window, including the moments just before and after the event.
 
-At the same time, video LLMs pay for every frame. Qwen3-VL~\cite{qwen3vl} spends about 330 visual tokens per pair
-of frames, so 64 frames already cost about 21{,}000 tokens, and long or streaming video multiplies this. Pruning
+At the same time, video LLMs pay for every frame. Qwen3-VL~\cite{qwen3vl} spends about 330 visual tokens per frame
+(660 per pair of frames), so 64 frames already cost about 21{,}000 tokens, and long or streaming video multiplies this. Pruning
 the visual tokens to a small budget is therefore the default, and a fast-growing literature reports that
 10--25\% of the tokens preserve multiple-choice accuracy~\cite{fastvid,vidcom2,flashvid,semvid,prunevid,dycoke}.
 This paper asks what pruning does to \emph{temporal grounding}, and finds that the answer differs from QA in three
@@ -66,10 +66,11 @@ temporal grounding needs this particular combination, and to make it work:
   video-free constant interval, a length-rescaling baseline, and closed versus open intervals, with paired
   confidence intervals. All design choices were made on S-EMBER; the other three datasets were run once with the
   frozen configuration.
-  \item \textbf{Results on four datasets} (\cref{sec:results}). With 10\% of the tokens, \method exceeds the
-  uncompressed model and every pruner on S-EMBER and QVHighlights, and clears the video-free floors by
+  \item \textbf{Results on six benchmarks and two models} (\cref{sec:results}). With 10\% of the tokens and the
+  timeline prompt, \method exceeds the uncompressed model and every pruner on S-EMBER and QVHighlights, and clears the video-free floors by
   \key{$+7.6$} mIoU on S-EMBER closed intervals (appendix) and \key{$+22.1$} on QVHighlights, both significant. Question-driven
   selection improves as the budget shrinks, as long as each frame keeps enough tokens; at very small budgets, fewer
-  frames with more tokens each recover what 64 frames lose. We also report the two datasets where the base model
-  itself stays below the floor, and a broad set of negative results.
+  frames with more tokens each recover what 64 frames lose. Under the standard one-line prompt, Coverage transfers
+  to TimeLens-8B and matches the uncompressed model; PCD helps only reasoning-style answers. We also report the
+  limits on short videos and a broad set of negative results.
 \end{enumerate}

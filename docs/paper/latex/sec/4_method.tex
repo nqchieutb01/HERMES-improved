@@ -99,7 +99,9 @@ model confident (\eg evidence that truly starts at 0\,s), PCD fades and the earl
 model hesitates between times, the evidence term decides.
 
 The timeline prompt matters: PCD acts on the listed \texttt{Seen:} moments and then on the interval, so the interval
-is written from contrasted observations. \TODO{report PCD with a direct-answer prompt, where it does not help.}
+is written from contrasted observations. When the answer is a single interval, PCD has little to correct: with the
+one-line grounding prompt it changes mIoU by $-0.1$ (n.s., \cref{sec:transfer}), and with the direct-answer prompt by
+$+0.4$.
 
 \paragraph{Answer reserve.}
 \label{sec:reserve}

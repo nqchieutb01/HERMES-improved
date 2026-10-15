@@ -13,7 +13,10 @@ anchor survives pruning. \emph{Prior-contrastive decoding} (PCD) writes each tim
 a strength that fades as the model grows confident, and reserves room for the final interval. Because grounding
 benchmarks carry strong positional biases, we evaluate every method against video-free floors. With 10\% of the
 visual tokens, \method raises R@0.5 on QVHighlights from 25.0 (random tokens) and 28.6 (all tokens) to
-\key{54.8}, where the best video-free constant reaches 17.6, and from 24.6 to \key{40.8} on S-EMBER grounded QA. We also report
-where it does not help: on Charades-STA and ActivityNet Captions the uncompressed model itself stays below the
-video-free floor, and no pruning method, ours included, rises above it.
+\key{54.8} with our reasoning-style prompt, where the best video-free constant reaches 17.6, and from 24.6 to
+\key{40.8} on S-EMBER grounded QA; on S-EMBER the gain over the uncompressed model transfers to the grounding-tuned
+TimeLens-8B (\key{$+10.7$} mIoU). Under the standard one-line grounding prompt, Coverage alone matches the
+uncompressed model with a quarter of the tokens and beats random selection on both models, while contrastive
+decoding helps only answers that list times before the interval. We also report where the method does not help:
+on short, densely sampled videos (Charades-STA, NExT-GQA) Coverage keeps the answers but not more of the interval.
 \end{abstract}

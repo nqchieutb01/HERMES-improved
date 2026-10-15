@@ -1,9 +1,12 @@
 \section{Limitations}
 \label{sec:limitations}
 
-\paragraph{Base-model floors.}
-On ActivityNet Captions and Charades-STA, Qwen3-VL-8B with 64 frames stays below the best constant interval even
-without pruning, and so does every compressed variant. Our claims on these datasets are relative to the model.
+\paragraph{Answer format.}
+The main tables use a reasoning-style timeline prompt. On single-moment grounding it costs the uncompressed model
+about 30 mIoU against the standard one-line prompt, and with it Qwen3-VL-8B stays below the best constant interval on
+ActivityNet Captions and Charades-STA. PCD helps only this kind of answer. Our gains over the uncompressed model on
+QVHighlights, ActivityNet and Charades-STA are therefore relative to the prompt; the full TimeLens-Bench comparison
+under the one-line prompt is in progress.
 
 \paragraph{Minimum tokens per frame.}
 Equal quotas fail when a frame pair keeps only 2--4 tokens. Spending the budget on fewer frames avoids this
@@ -20,7 +23,8 @@ reduces the memory the decoder reads, not the cost of building it. PCD also adds
 pass for time-value tokens. \TODO{cost table; write-once memory re-ranked at question time.}
 
 \paragraph{Scope of the evaluation.}
-All results use one model, 475--500-question subsets, and a local judge with the official prompt. Every
+Most results use one model and 475--500-question subsets (TimeLens-8B, NExT-GQA and the TimeLens-Bench subsets
+are the exceptions), and a local judge with the official prompt. Every
 hyperparameter was chosen on the S-EMBER questions; the other datasets were run once with the frozen configuration,
 but a held-out S-EMBER split is still to be evaluated.
 
@@ -31,6 +35,6 @@ Temporal grounding asks a compressed video memory for something multiple-choice 
 Pruners designed for QA remove parts of it and fall below random selection, and the decoder's video-free prior fills
 the gaps, mostly by ending intervals too early. \method keeps every time anchor with an equal, question-filled quota
 and writes time values against the model's own no-video prediction. With a tenth of the visual tokens it grounds
-better than the uncompressed model on S-EMBER and QVHighlights, and it clears video-free floors wherever the base
-model does. The floors are a lesson of their own: on two standard benchmarks a constant interval beats the
-uncompressed model, and grounding results under compression should be read against them.
+better than the uncompressed model on S-EMBER grounded QA, for a general and a grounding-tuned model; under the
+standard grounding prompt, Coverage alone keeps the accuracy of the uncompressed model with a quarter of the tokens. The floors are a lesson of their own: with a reasoning-style prompt a constant interval beats
+the uncompressed model on two standard benchmarks, and grounding results under compression should be read against them.

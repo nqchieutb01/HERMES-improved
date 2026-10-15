@@ -29,6 +29,10 @@ SPECS = {
     "frames": ("row", [2, 3, 4], set(), None),
     "oracle": ("col", [1, 2, 3, 4, 5], {5}, None),
     "closed": ("col", [1], set(), None),
+    "prompt": ("col", [1, 2, 3, 4], set(), None),
+    "standard": ("colblock", [2, 3], set(), None),
+    "tl8b": ("col", [1, 2], set(), None),
+    "nextgqa": ("colblock", [2, 3, 4, 5, 6], set(), None),
 }
 
 
@@ -58,7 +62,17 @@ def mark_table(block, mode, cols, lower, keep):
     cells = {i: lines[i].rstrip()[:-2].split("&") for i in body}
     marks = {}  # (row, col, start, end) -> macro
     groups = []
-    if mode == "col":
+    if mode == "colblock":
+        mids = [j for j, x in enumerate(lines) if x.strip().startswith("\\midrule")]
+        blocks = {}
+        for i in body:
+            blocks.setdefault(max(j for j in mids if j < i), []).append(i)
+        for rows in blocks.values():
+            for c in cols:
+                n = max(len(numbers(cells[i][c])) for i in rows)
+                for k in range(n):
+                    groups.append(([(i, c, k) for i in rows], c in lower))
+    elif mode == "col":
         for c in cols:
             n = max(len(numbers(cells[i][c])) for i in body if c < len(cells[i]))
             for k in range(n):
@@ -107,6 +121,6 @@ def process(path):
     open(path, "w").write("".join(parts))
 
 
-for f in ["sec/3_diagnosis.tex", "sec/6_results.tex", "sec/X_suppl.tex"]:
+for f in ["sec/3_diagnosis.tex", "sec/6_results.tex", "sec/6b_transfer.tex", "sec/X_suppl.tex"]:
     process(f)
 print("ok")

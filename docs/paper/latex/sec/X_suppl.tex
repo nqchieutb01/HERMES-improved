@@ -28,12 +28,45 @@ is a strong floor on the pooled set. \Cref{tab:closed} restricts the main compar
     \floor{Best constant interval}       & \floor{32.1 / 29.9} & \up{$+7.6^*$} \\
     \floor{Length rescaling of R $+$ C}  & \floor{32.3 / 33.1} & \up{$+7.5^*$} \\
     \midrule
-    All tokens (no pruning)              & 30.0 / 27.4 &    \\
-    Random tokens                        & 28.3 / 27.4 &    \\
-    Random $+$ PCD                       & \second{36.8} / \second{38.2} &    \\
-    SemVID $+$ PCD                       & 34.3 / 34.4 &    \\
-    Coverage only                        & 33.0 / 35.7 &    \\
-    \oursrow \textbf{\method} (Coverage $+$ PCD) & \best{39.7} / \best{43.3} & --    \\
+    All tokens (no pruning)              & 30.0 / 27.4 &      \\
+    Random tokens                        & 28.3 / 27.4 &      \\
+    Random $+$ PCD                       & \second{36.8} / \second{38.2} &      \\
+    SemVID $+$ PCD                       & 34.3 / 34.4 &      \\
+    Coverage only                        & 33.0 / 35.7 &      \\
+    \oursrow \textbf{\method} (Coverage $+$ PCD) & \best{39.7} / \best{43.3} & --      \\
+    \bottomrule
+  \end{tabular}\end{adjustbox}
+\end{table}
+
+\section{Checks against published numbers}
+\label{sec:suppl-anchors}
+
+Before comparing pruning methods under the TimeLens-Bench protocol, we reproduce the published unpruned scores
+with the TimeLens evaluation script, and check that our own inference pipeline gives the same scores on the same
+queries (\cref{tab:anchors}).
+
+\begin{table}[h]
+  \centering
+  \small
+  \setlength{\tabcolsep}{3pt}
+  \caption{\textbf{Reproduction of TimeLens-Bench} (mIoU, no pruning). Top: TimeLens script on the full sets
+  \vs published. Bottom: our pipeline \vs the TimeLens script on the same queries (paired $\Delta$).}
+  \label{tab:anchors}
+  \begin{adjustbox}{max width=\linewidth}\begin{tabular}{@{}llccc@{}}
+    \toprule
+    Model & Dataset (queries) & Ours & Reference & $\Delta$ \\
+    \midrule
+    Qwen3-VL-8B & Charades-STA (3{,}363) & 48.5 & 48.3 (published) & \\
+    Qwen3-VL-8B & QVHighlights (1{,}541) & 59.6 & 59.4 (published) & \\
+    Qwen3-VL-8B & ActivityNet (4{,}500)  & 47.1 & 46.8 (published) & \\
+    TimeLens-8B & Charades-STA (3{,}363) & 55.4 & 55.2 (published) & \\
+    TimeLens-8B & QVHighlights (1{,}541) & 65.7 & 65.5 (published) & \\
+    TimeLens-8B & ActivityNet (4{,}500)  & 53.2 & 53.2 (published) & \\
+    \midrule
+    Qwen3-VL-8B & Charades-STA (400)     & 48.0 & 47.5 (script) & $+0.5$ \\
+    Qwen3-VL-8B & ActivityNet (400)      & 47.1 & 45.7 (script) & $+1.4$ \\
+    Qwen3-VL-8B & QVHighlights (513)     & 60.5 & 60.5 (script) & $\phantom{+}0.0$ \\
+    TimeLens-8B & QVHighlights (513)     & 67.1 & 66.1 (script) & $+1.0$ \\
     \bottomrule
   \end{tabular}\end{adjustbox}
 \end{table}

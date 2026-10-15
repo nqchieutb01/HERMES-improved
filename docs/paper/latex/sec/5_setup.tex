@@ -1,9 +1,13 @@
 \section{Experimental Setup}
 \label{sec:setup}
 
-\paragraph{Model.}
+\paragraph{Models.}
 Qwen3-VL-8B-Instruct~\cite{qwen3vl}, 64 frames sampled uniformly from $[0,q]$ (or by \cref{sec:retrieval}) at native
-resolution, greedy decoding or PCD, at most 384 new tokens, batch size 8. All methods share the timeline prompt.
+resolution, greedy decoding or PCD, at most 384 new tokens, batch size 8. Unless stated otherwise all methods share
+the timeline prompt. In \cref{sec:transfer} we add TimeLens-8B~\cite{timelens}, a Qwen3-VL-8B model fine-tuned for
+grounding, and the one-line prompt of TimeLens-Bench. Batch size changes about half of the greedy outputs and up to
+about two points of a score; comparisons with the uncompressed model, which runs at batch size 1--2, carry this
+noise.
 
 \paragraph{Datasets.}
 \textbf{S-EMBER} grounded QA~\cite{sember}: 475 questions (191 duration, 184 counting, 100 location) on the first
@@ -13,7 +17,10 @@ resolution, greedy decoding or PCD, at most 384 new tokens, batch size 8. All me
 \textbf{ActivityNet Captions}~\cite{activitynet} val\_1: 500 queries, one sentence per video, videos of about
 115\,s. \textbf{Charades-STA}~\cite{charadessta} test: 500 queries, videos of about 30\,s. For the last three, the
 question is \emph{``When does the following happen in the video: \textless query\textgreater?''} and the window is
-the whole video. Our QVHighlights and ActivityNet copies are low-resolution re-encodes (153 and about 84 visual
+the whole video.
+\textbf{TimeLens-Bench}~\cite{timelens}: the re-annotated Charades-STA, QVHighlights and ActivityNet sets, evaluated
+with their one-line prompt (full sets and a 513-query QVHighlights subset). \textbf{NExT-GQA}~\cite{nextgqa} test:
+1{,}005 questions on about 40\,s videos, answer and interval asked in two separate queries. Our QVHighlights and ActivityNet copies are low-resolution re-encodes (153 and about 84 visual
 tokens per frame pair, against 660 on S-EMBER), so we also report budgets in absolute tokens.
 
 \paragraph{Budget.}
