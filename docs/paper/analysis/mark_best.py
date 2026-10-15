@@ -100,7 +100,7 @@ def mark_table(block, mode, cols, lower, keep):
             for (ri, ci, s, e), macro in sorted(((k, m) for k, m in marks.items() if k[0] == i and k[1] == c),
                                                 key=lambda x: -x[0][2]):
                 row[c] = row[c][:s] + f"\\{macro}{{{row[c][s:e]}}}" + row[c][e:]
-        lines[i] = "&".join(row) + " \\\\"
+        lines[i] = "&".join(row).rstrip() + " \\\\"
     return "\n".join(lines)
 
 
