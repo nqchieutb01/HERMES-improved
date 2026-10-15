@@ -75,7 +75,8 @@ each of them, \emph{when} each one matters, and to make them work together:
   \item \textbf{Coverage}, a per-layer equal quota filled by the question (\cref{sec:coverage}). Under the standard
   one-line prompt it matches the uncompressed model with 24\% of the visual tokens on Qwen3-VL-8B and the
   grounding-tuned TimeLens-8B, beats random selection, SemVID and a matched low-resolution input, and at 897 tokens
-  exceeds a 1\,fps input of 1{,}125 tokens by $+8.8^*$ mIoU (\cref{sec:transfer}).
+  exceeds a 1\,fps input of 1{,}125 tokens by $+8.8^*$ mIoU; on the full Charades-STA set it matches the
+  uncompressed model and beats random selection (\cref{sec:transfer}).
   \item \textbf{PCD and an answer-format study} (\cref{sec:contrast,sec:transfer}). PCD helps reasoning-style answers
   on all eight memories we test and on both models; with 10\% of the tokens \method improves on the uncompressed
   model by $+11.2^*$ and $+10.7^*$ mIoU on S-EMBER grounded QA under the same prompt. The same study shows that the

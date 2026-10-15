@@ -33,6 +33,7 @@ SPECS = {
     "standard": ("colblock", [2, 3], set(), None),
     "tl8b": ("col", [1, 2], set(), None),
     "nextgqa": ("colblock", [2, 3, 4, 5, 6], set(), None),
+    "fullsweep": ("col", [1, 2], set(), None),
 }
 
 

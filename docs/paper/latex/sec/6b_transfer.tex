@@ -80,10 +80,37 @@ budget ($+3.7^*$, $+3.0^*$). It matches the uncompressed model ($+1.2$ for Qwen3
 zero; $+0.2$ for TimeLens-8B). At 897 tokens, retrieval with Coverage exceeds a 1\,fps TimeLens input of 1{,}125 tokens
 by $+8.8^*$ and $+6.8^*$, and retrieval with random tokens by $+2.8^*$. At this budget
 the grounding-tuned model does lose accuracy: TimeLens-8B with retrieval and Coverage is $2.8^*$ mIoU below its
-uncompressed memory, whereas at 3{,}271 tokens it is level ($+0.2$). On the full Charades-STA set (2{,}202 of 3{,}363
-queries so far), Coverage at 31\% matches the uncompressed TimeLens-Bench score ($48.9$ \vs $48.7$, $+0.2$, n.s.).
-\TODO{full TimeLens-Bench sweep: Coverage \vs random at 31\% on all three datasets and both models, with matched-budget
-TimeLens inputs.}
+uncompressed memory, whereas at 3{,}271 tokens it is level ($+0.2$). \begin{table}[t]
+  \centering
+  \small
+  \setlength{\tabcolsep}{3pt}
+  \caption{\textbf{Full TimeLens-Bench sets} (Qwen3-VL-8B, one-line prompt, TimeLens input at 2\,fps, 31\% of the
+  tokens), R@0.5\,/\,mIoU. Unpruned: the TimeLens evaluation script. QVHighlights: the 1{,}030 queries finished so far
+  for both methods (random selection still running). Paired $\Delta$mIoU below.}
+  \label{tab:fullsweep}
+  \begin{adjustbox}{max width=\linewidth}\begin{tabular}{@{}lcc@{}}
+    \toprule
+    Method & Charades-STA (3{,}363) & QVHighlights (1{,}030) \\
+    \midrule
+    All tokens (no pruning)  & \best{54.0} / \second{48.5} & \best{65.4} / \best{60.6} \\
+    Random tokens (31\%)     & 52.3 / 48.2 & 63.2 / 58.9 \\
+    \oursrow Coverage (31\%) & \best{54.0} / \best{48.6} & \second{65.2} / \second{60.5} \\
+    \midrule
+    Coverage \vs random      & $+0.5^*$ & $+1.6^*$ \\
+    Coverage \vs all tokens  & $+0.1$   & $-0.1$ \\
+    \bottomrule
+  \end{tabular}\end{adjustbox}
+\end{table}
+
+\paragraph{The same holds on the full sets.}
+On the complete Charades-STA set of TimeLens-Bench (\cref{tab:fullsweep}), Coverage at 31\% of the tokens matches the
+uncompressed model ($+0.1$ mIoU, n.s.; R@0.5 54.0 \vs 54.0) and beats random selection ($+0.5^*$ mIoU, $+1.6^*$
+R@0.5, $+1.4^*$ R@0.3), whose R@0.5 and R@0.3 fall significantly below the uncompressed model ($-1.7^*$, $-1.0^*$).
+On the 1{,}030 QVHighlights queries finished for both methods, Coverage beats random selection on every metric
+($+1.6^*$ mIoU, $+2.0^*$ R@0.5, $+1.7^*$ R@0.7) and is level with the uncompressed model ($-0.1$), while random
+selection is below it ($-1.7^*$). Charades-STA videos are short, so 31\% leaves about 3{,}350 of 10{,}800 visual tokens and
+the gap to random is small, as on NExT-GQA below. \TODO{rest of the sweep: QVHighlights random (2 chunks),
+ActivityNet, all TimeLens-8B cells, and the matched-budget TimeLens inputs.}
 
 \begin{table}[t]
   \centering
