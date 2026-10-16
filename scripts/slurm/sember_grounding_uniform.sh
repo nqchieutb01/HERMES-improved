@@ -13,7 +13,7 @@
 
 set -euo pipefail
 
-repo_dir="${HERMES_ROOT:-${SLURM_SUBMIT_DIR:-/l/users/chieu.nguyen/HERMES}}"
+repo_dir="${HERMES_ROOT:-${SLURM_SUBMIT_DIR:-/home/chieu.nguyen/HERMES}}"
 cd "$repo_dir"
 export PYTHONPATH="$repo_dir${PYTHONPATH:+:$PYTHONPATH}"
 export OMP_NUM_THREADS="${OMP_NUM_THREADS:-8}"

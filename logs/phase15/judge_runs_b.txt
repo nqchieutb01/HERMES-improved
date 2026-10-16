@@ -1,0 +1,9 @@
+qwen3_vl_8b/sember_grounding/uniform-n64-time-count-location-dx-aattn-v300-native-time
+qwen3_vl_8b/sember_grounding/uniform-n64-time-count-location-dx-aattn-timeline-v300-native-time
+qwen3_vl_8b/sember_grounding/uniform-n64-time-count-location-dx-aattn-hermes-keep0.1-timeline-v300-native-time
+qwen3_vl_8b/sember_grounding/uniform-n64-time-count-location-dx-aattn-stratified-keep0.1-timeline-v300-native-time
+qwen3_vl_8b/sember_grounding/uniform-n64-time-count-location-dx-blind-v300-native-time
+qwen3_vl_8b/sember_grounding/uniform-n64-time-count-location-dx-blind-timeline-v300-native-time
+qwen3_vl_8b/sember_grounding/uniform-n64-time-count-location-dx-shufframes-v300-native-time
+qwen3_vl_8b/sember_grounding/uniform-n64-time-count-location-dx-shufframes-timeline-v300-native-time
+qwen3_vl_8b/sember_grounding/uniform-n64-time-count-location-dx-shufstamps-v300-native-time

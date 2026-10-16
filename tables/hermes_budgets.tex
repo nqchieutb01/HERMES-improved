@@ -1,0 +1,33 @@
+% CVPR two-column: spans both columns. Requires \usepackage{booktabs} and \usepackage{multirow}.
+\begin{table*}[t]
+\centering
+\setlength{\tabcolsep}{7pt}
+\caption{\textbf{HERMES streaming memory} with Qwen3-VL-8B on S-EMBER (300 videos): frames stream at 0.2\,fps into a KV cache that is compressed whenever it exceeds the budget. \emph{Timestamps}: how Qwen3's per-frame timestamp tokens are treated during compression: compressed like other tokens, kept for frames that still have visual tokens, or always kept. Uniform rows re-encode 32 or 64 frames per question without compression (reference). \emph{Open-ended}: Acc.\ is answer accuracy judged with the official S-EMBER judge prompt; mIoU and R@0.5 measure temporal grounding; GQ@$\tau$ counts an answer only if it is judged correct and its interval has IoU $\geq \tau$. MCQ: 5-way multiple-choice accuracy. All numbers in \%; -- = not run. Best per budget in bold.}
+\label{tab:hermes-budgets}
+\begin{tabular}{llcccccc}
+\toprule
+& & \multicolumn{5}{c}{Open-ended} & \\
+\cmidrule(lr){3-7}
+KV budget & Timestamps & Acc. & mIoU & R@0.5 & GQ@0.3 & GQ@0.5 & MCQ \\
+\midrule
+\multicolumn{2}{l}{Uniform, 32 frames} & 13.3 & 27.5 & 26.7 & 6.5 & 5.3 & 25.0 \\
+\multicolumn{2}{l}{Uniform, 64 frames} & 13.5 & 26.9 & 25.3 & 5.7 & 4.4 & 25.3 \\
+\midrule
+\multirow{3}{*}{4k} & Compressed & 10.9 & 20.2 & 18.3 & \textbf{4.4} & \textbf{3.8} & \textbf{25.0} \\
+ & Kept if frame survives & \textbf{11.8} & \textbf{23.9} & \textbf{21.9} & 4.2 & \textbf{3.8} & \textbf{25.0} \\
+ & Always kept & \textbf{11.8} & \textbf{23.9} & \textbf{21.9} & 4.2 & 3.6 & -- \\
+\midrule
+\multirow{3}{*}{6k} & Compressed & 12.0 & 22.9 & 22.1 & 3.6 & 2.9 & \textbf{26.0} \\
+ & Kept if frame survives & \textbf{12.4} & \textbf{24.8} & \textbf{24.4} & \textbf{4.0} & \textbf{3.6} & 25.7 \\
+ & Always kept & 12.2 & 24.5 & \textbf{24.4} & \textbf{4.0} & \textbf{3.6} & -- \\
+\midrule
+\multirow{3}{*}{10.7k} & Compressed & \textbf{11.6} & 23.5 & \textbf{22.9} & \textbf{4.2} & \textbf{3.6} & 25.7 \\
+ & Kept if frame survives & 11.2 & 23.6 & 22.5 & 3.6 & 3.4 & \textbf{26.0} \\
+ & Always kept & 11.2 & \textbf{23.9} & 22.7 & 3.6 & 3.4 & -- \\
+\midrule
+\multirow{3}{*}{21.4k} & Compressed & 12.4 & 23.1 & \textbf{22.1} & 3.8 & \textbf{3.2} & \textbf{25.3} \\
+ & Kept if frame survives & \textbf{12.8} & \textbf{23.3} & \textbf{22.1} & \textbf{4.0} & \textbf{3.2} & \textbf{25.3} \\
+ & Always kept & \textbf{12.8} & \textbf{23.3} & \textbf{22.1} & \textbf{4.0} & \textbf{3.2} & -- \\
+\bottomrule
+\end{tabular}
+\end{table*}

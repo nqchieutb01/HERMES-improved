@@ -1,0 +1,189 @@
+{
+ "slots": [
+  {
+   "partition": "long",
+   "qos": "gpu-debug-qos",
+   "batch": true,
+   "gpus_per_job": 2,
+   "mem_per_gpu": "16G",
+   "time": "03:00:00",
+   "max_jobs": 2
+  },
+  {
+   "partition": "cscc-gpu-p",
+   "qos": "cscc-gpu-qos",
+   "batch": true,
+   "gpus_per_job": 2,
+   "mem_per_gpu": "16G",
+   "time": "03:00:00",
+   "max_jobs": 2
+  }
+ ],
+ "runs": [
+  {
+   "name": "p38-tlp-unpruned",
+   "code": "/home/chieu.nguyen/HERMES/.claude/worktrees/p31-gate-pcdfix",
+   "chunks": 8,
+   "est_min": 50,
+   "priority": 23,
+   "env": {
+    "HERMES_QWEN3_ATTENTION_BACKEND": "flash_attention_2",
+    "HERMES_RETRIEVAL_INDEX": "/nfs-stor/chieu.nguyen/timelens-bench/siglip2_1fps"
+   },
+   "overrides": [
+    "model=qwen3_vl_8b",
+    "experiment=sember_grounding_uniform",
+    "dataset.annotation=/nfs-stor/chieu.nguyen/timelens-bench/qvh_tl_subset_timeline.jsonl",
+    "dataset.video_root=/nfs-stor/chieu.nguyen/timelens-bench/videos_flat",
+    "dataset.max_videos=1000",
+    "dataset.question_categories=[moment_retrieval]",
+    "dataset.grounding_prompt=timeline",
+    "run.keep_time_tokens=surviving",
+    "run.max_new_tokens=512",
+    "run.repetition_penalty=1.0",
+    "run.uniform_num_frames=300",
+    "run.frame_max_pixels=97867",
+    "run.frame_min_pixels=65536",
+    "run.prune_score=random",
+    "run.offline_keep_ratio=1.0",
+    "run.prefetch_videos=4",
+    "run.batch_size=1",
+    "paths.save_dir=/home/chieu.nguyen/HERMES/results/qwen3_vl_8b/timelens_qvh/tlp-unpruned"
+   ]
+  },
+  {
+   "name": "p38-tlp-random31",
+   "code": "/home/chieu.nguyen/HERMES/.claude/worktrees/p31-gate-pcdfix",
+   "chunks": 8,
+   "est_min": 35,
+   "priority": 23,
+   "env": {
+    "HERMES_QWEN3_ATTENTION_BACKEND": "flash_attention_2",
+    "HERMES_RETRIEVAL_INDEX": "/nfs-stor/chieu.nguyen/timelens-bench/siglip2_1fps"
+   },
+   "overrides": [
+    "model=qwen3_vl_8b",
+    "experiment=sember_grounding_uniform",
+    "dataset.annotation=/nfs-stor/chieu.nguyen/timelens-bench/qvh_tl_subset_timeline.jsonl",
+    "dataset.video_root=/nfs-stor/chieu.nguyen/timelens-bench/videos_flat",
+    "dataset.max_videos=1000",
+    "dataset.question_categories=[moment_retrieval]",
+    "dataset.grounding_prompt=timeline",
+    "run.keep_time_tokens=surviving",
+    "run.max_new_tokens=512",
+    "run.repetition_penalty=1.0",
+    "run.uniform_num_frames=300",
+    "run.frame_max_pixels=97867",
+    "run.frame_min_pixels=65536",
+    "run.prune_score=random",
+    "run.offline_keep_ratio=0.31",
+    "run.prefetch_videos=4",
+    "run.batch_size=8",
+    "paths.save_dir=/home/chieu.nguyen/HERMES/results/qwen3_vl_8b/timelens_qvh/tlp-random31"
+   ]
+  },
+  {
+   "name": "p38-tlp-random31-pcd-ar64",
+   "code": "/home/chieu.nguyen/HERMES/.claude/worktrees/p31-gate-pcdfix",
+   "chunks": 8,
+   "est_min": 40,
+   "priority": 23,
+   "env": {
+    "HERMES_QWEN3_ATTENTION_BACKEND": "flash_attention_2",
+    "HERMES_RETRIEVAL_INDEX": "/nfs-stor/chieu.nguyen/timelens-bench/siglip2_1fps"
+   },
+   "overrides": [
+    "model=qwen3_vl_8b",
+    "experiment=sember_grounding_uniform",
+    "dataset.annotation=/nfs-stor/chieu.nguyen/timelens-bench/qvh_tl_subset_timeline.jsonl",
+    "dataset.video_root=/nfs-stor/chieu.nguyen/timelens-bench/videos_flat",
+    "dataset.max_videos=1000",
+    "dataset.question_categories=[moment_retrieval]",
+    "dataset.grounding_prompt=timeline",
+    "run.keep_time_tokens=surviving",
+    "run.max_new_tokens=512",
+    "run.repetition_penalty=1.0",
+    "run.uniform_num_frames=300",
+    "run.frame_max_pixels=97867",
+    "run.frame_min_pixels=65536",
+    "run.prune_score=random",
+    "run.offline_keep_ratio=0.31",
+    "run.prefetch_videos=4",
+    "run.contrastive_mode=blind",
+    "run.contrastive_alpha=1.0",
+    "run.contrastive_adaptive=true",
+    "run.contrastive_scope=time",
+    "run.answer_reserve=64",
+    "run.batch_size=8",
+    "paths.save_dir=/home/chieu.nguyen/HERMES/results/qwen3_vl_8b/timelens_qvh/tlp-random31-pcd-ar64"
+   ]
+  },
+  {
+   "name": "p38-tlp-cover31",
+   "code": "/home/chieu.nguyen/HERMES/.claude/worktrees/p31-gate-pcdfix",
+   "chunks": 8,
+   "est_min": 35,
+   "priority": 23,
+   "env": {
+    "HERMES_QWEN3_ATTENTION_BACKEND": "flash_attention_2",
+    "HERMES_RETRIEVAL_INDEX": "/nfs-stor/chieu.nguyen/timelens-bench/siglip2_1fps"
+   },
+   "overrides": [
+    "model=qwen3_vl_8b",
+    "experiment=sember_grounding_uniform",
+    "dataset.annotation=/nfs-stor/chieu.nguyen/timelens-bench/qvh_tl_subset_timeline.jsonl",
+    "dataset.video_root=/nfs-stor/chieu.nguyen/timelens-bench/videos_flat",
+    "dataset.max_videos=1000",
+    "dataset.question_categories=[moment_retrieval]",
+    "dataset.grounding_prompt=timeline",
+    "run.keep_time_tokens=surviving",
+    "run.max_new_tokens=512",
+    "run.repetition_penalty=1.0",
+    "run.uniform_num_frames=300",
+    "run.frame_max_pixels=97867",
+    "run.frame_min_pixels=65536",
+    "run.prune_score=core_topk",
+    "run.offline_keep_ratio=0.31",
+    "run.prefetch_videos=4",
+    "run.batch_size=8",
+    "paths.save_dir=/home/chieu.nguyen/HERMES/results/qwen3_vl_8b/timelens_qvh/tlp-cover31"
+   ]
+  },
+  {
+   "name": "p38-tlp-cover31-pcd-ar64",
+   "code": "/home/chieu.nguyen/HERMES/.claude/worktrees/p31-gate-pcdfix",
+   "chunks": 8,
+   "est_min": 40,
+   "priority": 23,
+   "env": {
+    "HERMES_QWEN3_ATTENTION_BACKEND": "flash_attention_2",
+    "HERMES_RETRIEVAL_INDEX": "/nfs-stor/chieu.nguyen/timelens-bench/siglip2_1fps"
+   },
+   "overrides": [
+    "model=qwen3_vl_8b",
+    "experiment=sember_grounding_uniform",
+    "dataset.annotation=/nfs-stor/chieu.nguyen/timelens-bench/qvh_tl_subset_timeline.jsonl",
+    "dataset.video_root=/nfs-stor/chieu.nguyen/timelens-bench/videos_flat",
+    "dataset.max_videos=1000",
+    "dataset.question_categories=[moment_retrieval]",
+    "dataset.grounding_prompt=timeline",
+    "run.keep_time_tokens=surviving",
+    "run.max_new_tokens=512",
+    "run.repetition_penalty=1.0",
+    "run.uniform_num_frames=300",
+    "run.frame_max_pixels=97867",
+    "run.frame_min_pixels=65536",
+    "run.prune_score=core_topk",
+    "run.offline_keep_ratio=0.31",
+    "run.prefetch_videos=4",
+    "run.contrastive_mode=blind",
+    "run.contrastive_alpha=1.0",
+    "run.contrastive_adaptive=true",
+    "run.contrastive_scope=time",
+    "run.answer_reserve=64",
+    "run.batch_size=8",
+    "paths.save_dir=/home/chieu.nguyen/HERMES/results/qwen3_vl_8b/timelens_qvh/tlp-cover31-pcd-ar64"
+   ]
+  }
+ ]
+}

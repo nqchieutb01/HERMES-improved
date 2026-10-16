@@ -1,0 +1,146 @@
+{
+ "slots": [
+  {
+   "partition": "long",
+   "qos": "gpu-debug-qos",
+   "batch": true,
+   "gpus_per_job": 2,
+   "mem_per_gpu": "48G",
+   "time": "03:00:00",
+   "max_jobs": 2
+  },
+  {
+   "partition": "cscc-gpu-p",
+   "qos": "cscc-gpu-qos",
+   "batch": true,
+   "gpus_per_job": 2,
+   "mem_per_gpu": "48G",
+   "time": "03:00:00",
+   "max_jobs": 2
+  }
+ ],
+ "runs": [
+  {
+   "name": "p40-sember-t8-random10",
+   "code": "/home/chieu.nguyen/HERMES/.claude/worktrees/p31-gate-pcdfix",
+   "chunks": 4,
+   "est_min": 50,
+   "priority": 9,
+   "env": {
+    "HERMES_QWEN3_ATTENTION_BACKEND": "flash_attention_2"
+   },
+   "overrides": [
+    "model=qwen3_vl_8b",
+    "model.model_path=/nfs-stor/chieu.nguyen/models/TimeLens-8B",
+    "dataset.max_videos=300",
+    "experiment=sember_grounding_uniform",
+    "run.uniform_num_frames=64",
+    "run.keep_time_tokens=surviving",
+    "dataset.grounding_prompt=timeline",
+    "run.max_new_tokens=384",
+    "run.offline_keep_ratio=0.1",
+    "run.batch_size=8",
+    "run.retention_snapshot=true",
+    "run.frame_max_pixels=1572864",
+    "run.frame_min_pixels=0",
+    "run.prune_score=random",
+    "run.prefetch_videos=4",
+    "paths.save_dir=/home/chieu.nguyen/HERMES/results/timelens_8b/sember_grounding/random10-timeline-v300"
+   ]
+  },
+  {
+   "name": "p40-sember-t8-rc64-qtopk10",
+   "code": "/home/chieu.nguyen/HERMES/.claude/worktrees/p31-gate-pcdfix",
+   "chunks": 4,
+   "est_min": 50,
+   "priority": 9,
+   "env": {
+    "HERMES_QWEN3_ATTENTION_BACKEND": "flash_attention_2"
+   },
+   "overrides": [
+    "model=qwen3_vl_8b",
+    "model.model_path=/nfs-stor/chieu.nguyen/models/TimeLens-8B",
+    "dataset.max_videos=300",
+    "experiment=sember_grounding_uniform",
+    "run.uniform_num_frames=64",
+    "run.keep_time_tokens=surviving",
+    "dataset.grounding_prompt=timeline",
+    "run.max_new_tokens=384",
+    "run.offline_keep_ratio=0.1",
+    "run.batch_size=8",
+    "run.retention_snapshot=true",
+    "run.frame_max_pixels=1572864",
+    "run.frame_min_pixels=0",
+    "run.prune_score=core_topk",
+    "run.retrieval=frames_cont",
+    "paths.save_dir=/home/chieu.nguyen/HERMES/results/timelens_8b/sember_grounding/rc64-qtopk10-timeline-v300"
+   ]
+  },
+  {
+   "name": "p40-sember-t8-rc64-qtopk10-pcd-ar64",
+   "code": "/home/chieu.nguyen/HERMES/.claude/worktrees/p31-gate-pcdfix",
+   "chunks": 4,
+   "est_min": 50,
+   "priority": 9,
+   "env": {
+    "HERMES_QWEN3_ATTENTION_BACKEND": "flash_attention_2"
+   },
+   "overrides": [
+    "model=qwen3_vl_8b",
+    "model.model_path=/nfs-stor/chieu.nguyen/models/TimeLens-8B",
+    "dataset.max_videos=300",
+    "experiment=sember_grounding_uniform",
+    "run.uniform_num_frames=64",
+    "run.keep_time_tokens=surviving",
+    "dataset.grounding_prompt=timeline",
+    "run.max_new_tokens=384",
+    "run.offline_keep_ratio=0.1",
+    "run.batch_size=8",
+    "run.retention_snapshot=true",
+    "run.frame_max_pixels=1572864",
+    "run.frame_min_pixels=0",
+    "run.prune_score=core_topk",
+    "run.retrieval=frames_cont",
+    "run.contrastive_mode=blind",
+    "run.contrastive_alpha=1.0",
+    "run.contrastive_adaptive=true",
+    "run.contrastive_scope=time",
+    "run.answer_reserve=64",
+    "paths.save_dir=/home/chieu.nguyen/HERMES/results/timelens_8b/sember_grounding/rc64-qtopk10-pcd-ar64-timeline-v300"
+   ]
+  },
+  {
+   "name": "p40-sember-t8-random10-pcd-ar64",
+   "code": "/home/chieu.nguyen/HERMES/.claude/worktrees/p31-gate-pcdfix",
+   "chunks": 4,
+   "est_min": 50,
+   "priority": 9,
+   "env": {
+    "HERMES_QWEN3_ATTENTION_BACKEND": "flash_attention_2"
+   },
+   "overrides": [
+    "model=qwen3_vl_8b",
+    "model.model_path=/nfs-stor/chieu.nguyen/models/TimeLens-8B",
+    "dataset.max_videos=300",
+    "experiment=sember_grounding_uniform",
+    "run.uniform_num_frames=64",
+    "run.keep_time_tokens=surviving",
+    "dataset.grounding_prompt=timeline",
+    "run.max_new_tokens=384",
+    "run.offline_keep_ratio=0.1",
+    "run.batch_size=8",
+    "run.retention_snapshot=true",
+    "run.frame_max_pixels=1572864",
+    "run.frame_min_pixels=0",
+    "run.prune_score=random",
+    "run.prefetch_videos=4",
+    "run.contrastive_mode=blind",
+    "run.contrastive_alpha=1.0",
+    "run.contrastive_adaptive=true",
+    "run.contrastive_scope=time",
+    "run.answer_reserve=64",
+    "paths.save_dir=/home/chieu.nguyen/HERMES/results/timelens_8b/sember_grounding/random10-pcd-ar64-timeline-v300"
+   ]
+  }
+ ]
+}

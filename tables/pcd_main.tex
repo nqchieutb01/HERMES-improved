@@ -1,0 +1,25 @@
+% CVPR two-column: spans both columns. Requires \usepackage{booktabs} and \usepackage{multirow}.
+\begin{table*}[t]
+\centering
+\small
+\setlength{\tabcolsep}{4pt}
+\caption{\textbf{Prior-contrastive decoding (PCD) on pruned video memory.} Qwen3-VL-8B on S-EMBER grounded QA (475 questions, 300 videos), timeline-reasoning prompt. Each cell: baseline $\rightarrow$ +PCD ($\alpha$=0.5, $\beta$=0.1), with the paired difference in parentheses; bold when its 95\% paired bootstrap interval excludes zero. Offline rows prune 64 uniform frames once to the given share of visual tokens; streaming rows use HERMES KV compression at 0.2\,fps. Acc.: answer accuracy with the official S-EMBER judge prompt; GQ@0.5: correct answer and IoU $\geq$ 0.5. Early start: share of intervals starting in the first 5\% of the video (the model's temporal prior; 90\% without video).}
+\label{tab:pcd-main}
+\begin{tabular}{llccccc}
+\toprule
+& Setting & Acc. & mIoU & R@0.5 & GQ@0.5 & Early start (\%) \\
+\midrule
+\multirow{4}{*}{Token budget (random)} & 5\% & 15.8 $\rightarrow$ 15.4 ($-$0.4) & 23.6 $\rightarrow$ 29.2 (\textbf{+5.6}) & 21.1 $\rightarrow$ 27.4 (\textbf{+6.3}) & 5.9 $\rightarrow$ 9.1 (\textbf{+3.2}) & 39 $\rightarrow$ 20 \\
+ & 10\% & 15.2 $\rightarrow$ 16.2 (+1.1) & 25.8 $\rightarrow$ 32.1 (\textbf{+6.2}) & 24.2 $\rightarrow$ 31.2 (\textbf{+6.9}) & 7.2 $\rightarrow$ 10.1 (\textbf{+2.9}) & 38 $\rightarrow$ 19 \\
+ & 25\% & 17.7 $\rightarrow$ 18.9 (+1.3) & 28.2 $\rightarrow$ 33.0 (\textbf{+4.8}) & 27.4 $\rightarrow$ 33.5 (\textbf{+6.1}) & 8.2 $\rightarrow$ 11.8 (\textbf{+3.6}) & 37 $\rightarrow$ 21 \\
+ & 100\% & 18.5 $\rightarrow$ 19.8 (+1.3) & 28.0 $\rightarrow$ 31.5 (\textbf{+3.5}) & 26.7 $\rightarrow$ 31.8 (\textbf{+5.1}) & 8.6 $\rightarrow$ 11.2 (+2.5) & 41 $\rightarrow$ 23 \\
+\midrule
+\multirow{3}{*}{Selector (10\%)} & HERMES & 13.1 $\rightarrow$ 15.4 (+2.3) & 18.3 $\rightarrow$ 22.6 (\textbf{+4.3}) & 16.2 $\rightarrow$ 21.9 (\textbf{+5.7}) & 4.0 $\rightarrow$ 7.2 (\textbf{+3.2}) & 56 $\rightarrow$ 31 \\
+ & Stratified & 14.1 $\rightarrow$ 14.5 (+0.4) & 23.7 $\rightarrow$ 29.9 (\textbf{+6.3}) & 21.7 $\rightarrow$ 29.9 (\textbf{+8.2}) & 6.1 $\rightarrow$ 8.8 (\textbf{+2.7}) & 36 $\rightarrow$ 17 \\
+ & Random & 15.2 $\rightarrow$ 16.2 (+1.1) & 25.8 $\rightarrow$ 32.1 (\textbf{+6.2}) & 24.2 $\rightarrow$ 31.2 (\textbf{+6.9}) & 7.2 $\rightarrow$ 10.1 (\textbf{+2.9}) & 38 $\rightarrow$ 19 \\
+\midrule
+\multirow{2}{*}{HERMES streaming} & KV 6k & 14.3 $\rightarrow$ 14.7 (+0.4) & 22.6 $\rightarrow$ 28.1 (\textbf{+5.6}) & 21.1 $\rightarrow$ 28.8 (\textbf{+7.8}) & 4.8 $\rightarrow$ 7.6 (\textbf{+2.7}) & 46 $\rightarrow$ 24 \\
+ & KV 4k & 13.5 $\rightarrow$ 17.1 (+3.6) & 21.6 $\rightarrow$ 27.4 (\textbf{+5.8}) & 20.6 $\rightarrow$ 28.4 (\textbf{+7.8}) & 4.0 $\rightarrow$ 8.2 (\textbf{+4.2}) & 45 $\rightarrow$ 24 \\
+\bottomrule
+\end{tabular}
+\end{table*}

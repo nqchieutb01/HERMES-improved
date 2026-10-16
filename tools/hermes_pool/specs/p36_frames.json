@@ -1,0 +1,631 @@
+{
+ "slots": [
+  {
+   "partition": "long",
+   "qos": "gpu-debug-qos",
+   "batch": true,
+   "gpus_per_job": 2,
+   "mem_per_gpu": "16G",
+   "time": "03:00:00",
+   "max_jobs": 2
+  },
+  {
+   "partition": "cscc-gpu-p",
+   "qos": "cscc-gpu-qos",
+   "batch": true,
+   "gpus_per_job": 2,
+   "mem_per_gpu": "16G",
+   "time": "03:00:00",
+   "max_jobs": 2
+  }
+ ],
+ "runs": [
+  {
+   "name": "p36c-f32-unpruned",
+   "code": "/home/chieu.nguyen/HERMES/.claude/worktrees/p31-gate-pcdfix",
+   "chunks": 4,
+   "est_min": 30,
+   "priority": 25,
+   "env": {
+    "HERMES_QWEN3_ATTENTION_BACKEND": "flash_attention_2",
+    "HERMES_RETRIEVAL_INDEX": "/nfs-stor/chieu.nguyen/charades-sta/siglip2_1fps"
+   },
+   "overrides": [
+    "model=qwen3_vl_8b",
+    "experiment=sember_grounding_uniform",
+    "run.keep_time_tokens=surviving",
+    "dataset.grounding_prompt=timeline",
+    "run.max_new_tokens=384",
+    "dataset.annotation=/nfs-stor/chieu.nguyen/charades-sta/charades_sta_test_500.jsonl",
+    "dataset.video_root=/nfs-stor/chieu.nguyen/charades-sta/videos",
+    "dataset.max_videos=1000",
+    "dataset.question_categories=[moment_retrieval]",
+    "run.prune_score=random",
+    "run.prefetch_videos=4",
+    "run.uniform_num_frames=32",
+    "run.offline_keep_ratio=1.0",
+    "run.batch_size=1",
+    "paths.save_dir=/home/chieu.nguyen/HERMES/results/qwen3_vl_8b/charades_sta/f32-unpruned"
+   ]
+  },
+  {
+   "name": "p36c-f32-random20",
+   "code": "/home/chieu.nguyen/HERMES/.claude/worktrees/p31-gate-pcdfix",
+   "chunks": 4,
+   "est_min": 15,
+   "priority": 25,
+   "env": {
+    "HERMES_QWEN3_ATTENTION_BACKEND": "flash_attention_2",
+    "HERMES_RETRIEVAL_INDEX": "/nfs-stor/chieu.nguyen/charades-sta/siglip2_1fps"
+   },
+   "overrides": [
+    "model=qwen3_vl_8b",
+    "experiment=sember_grounding_uniform",
+    "run.keep_time_tokens=surviving",
+    "dataset.grounding_prompt=timeline",
+    "run.max_new_tokens=384",
+    "dataset.annotation=/nfs-stor/chieu.nguyen/charades-sta/charades_sta_test_500.jsonl",
+    "dataset.video_root=/nfs-stor/chieu.nguyen/charades-sta/videos",
+    "dataset.max_videos=1000",
+    "dataset.question_categories=[moment_retrieval]",
+    "run.prune_score=random",
+    "run.prefetch_videos=4",
+    "run.uniform_num_frames=32",
+    "run.offline_keep_ratio=0.2",
+    "run.batch_size=8",
+    "paths.save_dir=/home/chieu.nguyen/HERMES/results/qwen3_vl_8b/charades_sta/f32-random20"
+   ]
+  },
+  {
+   "name": "p36c-f32-random20-pcd-ar64",
+   "code": "/home/chieu.nguyen/HERMES/.claude/worktrees/p31-gate-pcdfix",
+   "chunks": 4,
+   "est_min": 20,
+   "priority": 25,
+   "env": {
+    "HERMES_QWEN3_ATTENTION_BACKEND": "flash_attention_2",
+    "HERMES_RETRIEVAL_INDEX": "/nfs-stor/chieu.nguyen/charades-sta/siglip2_1fps"
+   },
+   "overrides": [
+    "model=qwen3_vl_8b",
+    "experiment=sember_grounding_uniform",
+    "run.keep_time_tokens=surviving",
+    "dataset.grounding_prompt=timeline",
+    "run.max_new_tokens=384",
+    "dataset.annotation=/nfs-stor/chieu.nguyen/charades-sta/charades_sta_test_500.jsonl",
+    "dataset.video_root=/nfs-stor/chieu.nguyen/charades-sta/videos",
+    "dataset.max_videos=1000",
+    "dataset.question_categories=[moment_retrieval]",
+    "run.prune_score=random",
+    "run.prefetch_videos=4",
+    "run.contrastive_mode=blind",
+    "run.contrastive_alpha=1.0",
+    "run.contrastive_adaptive=true",
+    "run.contrastive_scope=time",
+    "run.answer_reserve=64",
+    "run.uniform_num_frames=32",
+    "run.offline_keep_ratio=0.2",
+    "run.batch_size=8",
+    "paths.save_dir=/home/chieu.nguyen/HERMES/results/qwen3_vl_8b/charades_sta/f32-random20-pcd-ar64"
+   ]
+  },
+  {
+   "name": "p36c-f32-semvid20",
+   "code": "/home/chieu.nguyen/HERMES/.claude/worktrees/p31-gate-pcdfix",
+   "chunks": 4,
+   "est_min": 15,
+   "priority": 25,
+   "env": {
+    "HERMES_QWEN3_ATTENTION_BACKEND": "flash_attention_2",
+    "HERMES_RETRIEVAL_INDEX": "/nfs-stor/chieu.nguyen/charades-sta/siglip2_1fps"
+   },
+   "overrides": [
+    "model=qwen3_vl_8b",
+    "experiment=sember_grounding_uniform",
+    "run.keep_time_tokens=surviving",
+    "dataset.grounding_prompt=timeline",
+    "run.max_new_tokens=384",
+    "dataset.annotation=/nfs-stor/chieu.nguyen/charades-sta/charades_sta_test_500.jsonl",
+    "dataset.video_root=/nfs-stor/chieu.nguyen/charades-sta/videos",
+    "dataset.max_videos=1000",
+    "dataset.question_categories=[moment_retrieval]",
+    "run.prune_score=semvid",
+    "run.prefetch_videos=4",
+    "run.uniform_num_frames=32",
+    "run.offline_keep_ratio=0.2",
+    "run.batch_size=8",
+    "paths.save_dir=/home/chieu.nguyen/HERMES/results/qwen3_vl_8b/charades_sta/f32-semvid20"
+   ]
+  },
+  {
+   "name": "p36c-f32-semvid20-pcd-ar64",
+   "code": "/home/chieu.nguyen/HERMES/.claude/worktrees/p31-gate-pcdfix",
+   "chunks": 4,
+   "est_min": 20,
+   "priority": 25,
+   "env": {
+    "HERMES_QWEN3_ATTENTION_BACKEND": "flash_attention_2",
+    "HERMES_RETRIEVAL_INDEX": "/nfs-stor/chieu.nguyen/charades-sta/siglip2_1fps"
+   },
+   "overrides": [
+    "model=qwen3_vl_8b",
+    "experiment=sember_grounding_uniform",
+    "run.keep_time_tokens=surviving",
+    "dataset.grounding_prompt=timeline",
+    "run.max_new_tokens=384",
+    "dataset.annotation=/nfs-stor/chieu.nguyen/charades-sta/charades_sta_test_500.jsonl",
+    "dataset.video_root=/nfs-stor/chieu.nguyen/charades-sta/videos",
+    "dataset.max_videos=1000",
+    "dataset.question_categories=[moment_retrieval]",
+    "run.prune_score=semvid",
+    "run.prefetch_videos=4",
+    "run.contrastive_mode=blind",
+    "run.contrastive_alpha=1.0",
+    "run.contrastive_adaptive=true",
+    "run.contrastive_scope=time",
+    "run.answer_reserve=64",
+    "run.uniform_num_frames=32",
+    "run.offline_keep_ratio=0.2",
+    "run.batch_size=8",
+    "paths.save_dir=/home/chieu.nguyen/HERMES/results/qwen3_vl_8b/charades_sta/f32-semvid20-pcd-ar64"
+   ]
+  },
+  {
+   "name": "p36c-f32-u32-qtopk20",
+   "code": "/home/chieu.nguyen/HERMES/.claude/worktrees/p31-gate-pcdfix",
+   "chunks": 4,
+   "est_min": 15,
+   "priority": 25,
+   "env": {
+    "HERMES_QWEN3_ATTENTION_BACKEND": "flash_attention_2",
+    "HERMES_RETRIEVAL_INDEX": "/nfs-stor/chieu.nguyen/charades-sta/siglip2_1fps"
+   },
+   "overrides": [
+    "model=qwen3_vl_8b",
+    "experiment=sember_grounding_uniform",
+    "run.keep_time_tokens=surviving",
+    "dataset.grounding_prompt=timeline",
+    "run.max_new_tokens=384",
+    "dataset.annotation=/nfs-stor/chieu.nguyen/charades-sta/charades_sta_test_500.jsonl",
+    "dataset.video_root=/nfs-stor/chieu.nguyen/charades-sta/videos",
+    "dataset.max_videos=1000",
+    "dataset.question_categories=[moment_retrieval]",
+    "run.prune_score=core_topk",
+    "run.prefetch_videos=4",
+    "run.uniform_num_frames=32",
+    "run.offline_keep_ratio=0.2",
+    "run.batch_size=8",
+    "paths.save_dir=/home/chieu.nguyen/HERMES/results/qwen3_vl_8b/charades_sta/f32-u32-qtopk20"
+   ]
+  },
+  {
+   "name": "p36c-f32-u32-qtopk20-pcd-ar64",
+   "code": "/home/chieu.nguyen/HERMES/.claude/worktrees/p31-gate-pcdfix",
+   "chunks": 4,
+   "est_min": 20,
+   "priority": 25,
+   "env": {
+    "HERMES_QWEN3_ATTENTION_BACKEND": "flash_attention_2",
+    "HERMES_RETRIEVAL_INDEX": "/nfs-stor/chieu.nguyen/charades-sta/siglip2_1fps"
+   },
+   "overrides": [
+    "model=qwen3_vl_8b",
+    "experiment=sember_grounding_uniform",
+    "run.keep_time_tokens=surviving",
+    "dataset.grounding_prompt=timeline",
+    "run.max_new_tokens=384",
+    "dataset.annotation=/nfs-stor/chieu.nguyen/charades-sta/charades_sta_test_500.jsonl",
+    "dataset.video_root=/nfs-stor/chieu.nguyen/charades-sta/videos",
+    "dataset.max_videos=1000",
+    "dataset.question_categories=[moment_retrieval]",
+    "run.prune_score=core_topk",
+    "run.prefetch_videos=4",
+    "run.contrastive_mode=blind",
+    "run.contrastive_alpha=1.0",
+    "run.contrastive_adaptive=true",
+    "run.contrastive_scope=time",
+    "run.answer_reserve=64",
+    "run.uniform_num_frames=32",
+    "run.offline_keep_ratio=0.2",
+    "run.batch_size=8",
+    "paths.save_dir=/home/chieu.nguyen/HERMES/results/qwen3_vl_8b/charades_sta/f32-u32-qtopk20-pcd-ar64"
+   ]
+  },
+  {
+   "name": "p36q-f32-random10-pcd-ar64",
+   "code": "/home/chieu.nguyen/HERMES/.claude/worktrees/p31-gate-pcdfix",
+   "chunks": 8,
+   "est_min": 25,
+   "priority": 26,
+   "env": {
+    "HERMES_QWEN3_ATTENTION_BACKEND": "flash_attention_2",
+    "HERMES_RETRIEVAL_INDEX": "/nfs-stor/chieu.nguyen/qvhighlights/siglip2_1fps"
+   },
+   "overrides": [
+    "model=qwen3_vl_8b",
+    "experiment=sember_grounding_uniform",
+    "dataset.annotation=/nfs-stor/chieu.nguyen/qvhighlights/qvh_val_single_500.jsonl",
+    "dataset.video_root=/nfs-stor/chieu.nguyen/qvhighlights/videos_flat",
+    "dataset.max_videos=1000",
+    "dataset.question_categories=[moment_retrieval]",
+    "run.keep_time_tokens=surviving",
+    "dataset.grounding_prompt=timeline",
+    "run.max_new_tokens=384",
+    "run.prune_score=random",
+    "run.prefetch_videos=4",
+    "run.contrastive_mode=blind",
+    "run.contrastive_alpha=1.0",
+    "run.contrastive_adaptive=true",
+    "run.contrastive_scope=time",
+    "run.answer_reserve=64",
+    "run.uniform_num_frames=32",
+    "run.offline_keep_ratio=0.1",
+    "run.batch_size=8",
+    "paths.save_dir=/home/chieu.nguyen/HERMES/results/qwen3_vl_8b/qvhighlights/f32-random10-pcd-ar64"
+   ]
+  },
+  {
+   "name": "p36q-f32-semvid10-pcd-ar64",
+   "code": "/home/chieu.nguyen/HERMES/.claude/worktrees/p31-gate-pcdfix",
+   "chunks": 8,
+   "est_min": 25,
+   "priority": 26,
+   "env": {
+    "HERMES_QWEN3_ATTENTION_BACKEND": "flash_attention_2",
+    "HERMES_RETRIEVAL_INDEX": "/nfs-stor/chieu.nguyen/qvhighlights/siglip2_1fps"
+   },
+   "overrides": [
+    "model=qwen3_vl_8b",
+    "experiment=sember_grounding_uniform",
+    "dataset.annotation=/nfs-stor/chieu.nguyen/qvhighlights/qvh_val_single_500.jsonl",
+    "dataset.video_root=/nfs-stor/chieu.nguyen/qvhighlights/videos_flat",
+    "dataset.max_videos=1000",
+    "dataset.question_categories=[moment_retrieval]",
+    "run.keep_time_tokens=surviving",
+    "dataset.grounding_prompt=timeline",
+    "run.max_new_tokens=384",
+    "run.prune_score=semvid",
+    "run.prefetch_videos=4",
+    "run.contrastive_mode=blind",
+    "run.contrastive_alpha=1.0",
+    "run.contrastive_adaptive=true",
+    "run.contrastive_scope=time",
+    "run.answer_reserve=64",
+    "run.uniform_num_frames=32",
+    "run.offline_keep_ratio=0.1",
+    "run.batch_size=8",
+    "paths.save_dir=/home/chieu.nguyen/HERMES/results/qwen3_vl_8b/qvhighlights/f32-semvid10-pcd-ar64"
+   ]
+  },
+  {
+   "name": "p36q-f32-rc32-qtopk10-pcd-ar64",
+   "code": "/home/chieu.nguyen/HERMES/.claude/worktrees/p31-gate-pcdfix",
+   "chunks": 8,
+   "est_min": 25,
+   "priority": 26,
+   "env": {
+    "HERMES_QWEN3_ATTENTION_BACKEND": "flash_attention_2",
+    "HERMES_RETRIEVAL_INDEX": "/nfs-stor/chieu.nguyen/qvhighlights/siglip2_1fps"
+   },
+   "overrides": [
+    "model=qwen3_vl_8b",
+    "experiment=sember_grounding_uniform",
+    "dataset.annotation=/nfs-stor/chieu.nguyen/qvhighlights/qvh_val_single_500.jsonl",
+    "dataset.video_root=/nfs-stor/chieu.nguyen/qvhighlights/videos_flat",
+    "dataset.max_videos=1000",
+    "dataset.question_categories=[moment_retrieval]",
+    "run.keep_time_tokens=surviving",
+    "dataset.grounding_prompt=timeline",
+    "run.max_new_tokens=384",
+    "run.prune_score=core_topk",
+    "run.retrieval=frames_cont",
+    "run.contrastive_mode=blind",
+    "run.contrastive_alpha=1.0",
+    "run.contrastive_adaptive=true",
+    "run.contrastive_scope=time",
+    "run.answer_reserve=64",
+    "run.uniform_num_frames=32",
+    "run.offline_keep_ratio=0.1",
+    "run.batch_size=8",
+    "paths.save_dir=/home/chieu.nguyen/HERMES/results/qwen3_vl_8b/qvhighlights/f32-rc32-qtopk10-pcd-ar64"
+   ]
+  },
+  {
+   "name": "p36q-f16-random20-pcd-ar64",
+   "code": "/home/chieu.nguyen/HERMES/.claude/worktrees/p31-gate-pcdfix",
+   "chunks": 8,
+   "est_min": 25,
+   "priority": 26,
+   "env": {
+    "HERMES_QWEN3_ATTENTION_BACKEND": "flash_attention_2",
+    "HERMES_RETRIEVAL_INDEX": "/nfs-stor/chieu.nguyen/qvhighlights/siglip2_1fps"
+   },
+   "overrides": [
+    "model=qwen3_vl_8b",
+    "experiment=sember_grounding_uniform",
+    "dataset.annotation=/nfs-stor/chieu.nguyen/qvhighlights/qvh_val_single_500.jsonl",
+    "dataset.video_root=/nfs-stor/chieu.nguyen/qvhighlights/videos_flat",
+    "dataset.max_videos=1000",
+    "dataset.question_categories=[moment_retrieval]",
+    "run.keep_time_tokens=surviving",
+    "dataset.grounding_prompt=timeline",
+    "run.max_new_tokens=384",
+    "run.prune_score=random",
+    "run.prefetch_videos=4",
+    "run.contrastive_mode=blind",
+    "run.contrastive_alpha=1.0",
+    "run.contrastive_adaptive=true",
+    "run.contrastive_scope=time",
+    "run.answer_reserve=64",
+    "run.uniform_num_frames=16",
+    "run.offline_keep_ratio=0.2",
+    "run.batch_size=8",
+    "paths.save_dir=/home/chieu.nguyen/HERMES/results/qwen3_vl_8b/qvhighlights/f16-random20-pcd-ar64"
+   ]
+  },
+  {
+   "name": "p36q-f16-semvid20-pcd-ar64",
+   "code": "/home/chieu.nguyen/HERMES/.claude/worktrees/p31-gate-pcdfix",
+   "chunks": 8,
+   "est_min": 25,
+   "priority": 26,
+   "env": {
+    "HERMES_QWEN3_ATTENTION_BACKEND": "flash_attention_2",
+    "HERMES_RETRIEVAL_INDEX": "/nfs-stor/chieu.nguyen/qvhighlights/siglip2_1fps"
+   },
+   "overrides": [
+    "model=qwen3_vl_8b",
+    "experiment=sember_grounding_uniform",
+    "dataset.annotation=/nfs-stor/chieu.nguyen/qvhighlights/qvh_val_single_500.jsonl",
+    "dataset.video_root=/nfs-stor/chieu.nguyen/qvhighlights/videos_flat",
+    "dataset.max_videos=1000",
+    "dataset.question_categories=[moment_retrieval]",
+    "run.keep_time_tokens=surviving",
+    "dataset.grounding_prompt=timeline",
+    "run.max_new_tokens=384",
+    "run.prune_score=semvid",
+    "run.prefetch_videos=4",
+    "run.contrastive_mode=blind",
+    "run.contrastive_alpha=1.0",
+    "run.contrastive_adaptive=true",
+    "run.contrastive_scope=time",
+    "run.answer_reserve=64",
+    "run.uniform_num_frames=16",
+    "run.offline_keep_ratio=0.2",
+    "run.batch_size=8",
+    "paths.save_dir=/home/chieu.nguyen/HERMES/results/qwen3_vl_8b/qvhighlights/f16-semvid20-pcd-ar64"
+   ]
+  },
+  {
+   "name": "p36q-f16-rc16-qtopk20-pcd-ar64",
+   "code": "/home/chieu.nguyen/HERMES/.claude/worktrees/p31-gate-pcdfix",
+   "chunks": 8,
+   "est_min": 25,
+   "priority": 26,
+   "env": {
+    "HERMES_QWEN3_ATTENTION_BACKEND": "flash_attention_2",
+    "HERMES_RETRIEVAL_INDEX": "/nfs-stor/chieu.nguyen/qvhighlights/siglip2_1fps"
+   },
+   "overrides": [
+    "model=qwen3_vl_8b",
+    "experiment=sember_grounding_uniform",
+    "dataset.annotation=/nfs-stor/chieu.nguyen/qvhighlights/qvh_val_single_500.jsonl",
+    "dataset.video_root=/nfs-stor/chieu.nguyen/qvhighlights/videos_flat",
+    "dataset.max_videos=1000",
+    "dataset.question_categories=[moment_retrieval]",
+    "run.keep_time_tokens=surviving",
+    "dataset.grounding_prompt=timeline",
+    "run.max_new_tokens=384",
+    "run.prune_score=core_topk",
+    "run.retrieval=frames_cont",
+    "run.contrastive_mode=blind",
+    "run.contrastive_alpha=1.0",
+    "run.contrastive_adaptive=true",
+    "run.contrastive_scope=time",
+    "run.answer_reserve=64",
+    "run.uniform_num_frames=16",
+    "run.offline_keep_ratio=0.2",
+    "run.batch_size=8",
+    "paths.save_dir=/home/chieu.nguyen/HERMES/results/qwen3_vl_8b/qvhighlights/f16-rc16-qtopk20-pcd-ar64"
+   ]
+  },
+  {
+   "name": "p36a-f32-random20-pcd-ar64",
+   "code": "/home/chieu.nguyen/HERMES/.claude/worktrees/p31-gate-pcdfix",
+   "chunks": 8,
+   "est_min": 25,
+   "priority": 26,
+   "env": {
+    "HERMES_QWEN3_ATTENTION_BACKEND": "flash_attention_2",
+    "HERMES_RETRIEVAL_INDEX": "/nfs-stor/chieu.nguyen/activitynet/siglip2_1fps"
+   },
+   "overrides": [
+    "model=qwen3_vl_8b",
+    "experiment=sember_grounding_uniform",
+    "dataset.annotation=/nfs-stor/chieu.nguyen/activitynet/anet_val1_500.jsonl",
+    "dataset.video_root=/nfs-stor/chieu.nguyen/activitynet/videos_flat",
+    "dataset.max_videos=1000",
+    "dataset.question_categories=[moment_retrieval]",
+    "run.keep_time_tokens=surviving",
+    "dataset.grounding_prompt=timeline",
+    "run.max_new_tokens=384",
+    "run.prune_score=random",
+    "run.prefetch_videos=4",
+    "run.contrastive_mode=blind",
+    "run.contrastive_alpha=1.0",
+    "run.contrastive_adaptive=true",
+    "run.contrastive_scope=time",
+    "run.answer_reserve=64",
+    "run.uniform_num_frames=32",
+    "run.offline_keep_ratio=0.2",
+    "run.batch_size=8",
+    "paths.save_dir=/home/chieu.nguyen/HERMES/results/qwen3_vl_8b/activitynet/f32-random20-pcd-ar64"
+   ]
+  },
+  {
+   "name": "p36a-f32-semvid20-pcd-ar64",
+   "code": "/home/chieu.nguyen/HERMES/.claude/worktrees/p31-gate-pcdfix",
+   "chunks": 8,
+   "est_min": 25,
+   "priority": 26,
+   "env": {
+    "HERMES_QWEN3_ATTENTION_BACKEND": "flash_attention_2",
+    "HERMES_RETRIEVAL_INDEX": "/nfs-stor/chieu.nguyen/activitynet/siglip2_1fps"
+   },
+   "overrides": [
+    "model=qwen3_vl_8b",
+    "experiment=sember_grounding_uniform",
+    "dataset.annotation=/nfs-stor/chieu.nguyen/activitynet/anet_val1_500.jsonl",
+    "dataset.video_root=/nfs-stor/chieu.nguyen/activitynet/videos_flat",
+    "dataset.max_videos=1000",
+    "dataset.question_categories=[moment_retrieval]",
+    "run.keep_time_tokens=surviving",
+    "dataset.grounding_prompt=timeline",
+    "run.max_new_tokens=384",
+    "run.prune_score=semvid",
+    "run.prefetch_videos=4",
+    "run.contrastive_mode=blind",
+    "run.contrastive_alpha=1.0",
+    "run.contrastive_adaptive=true",
+    "run.contrastive_scope=time",
+    "run.answer_reserve=64",
+    "run.uniform_num_frames=32",
+    "run.offline_keep_ratio=0.2",
+    "run.batch_size=8",
+    "paths.save_dir=/home/chieu.nguyen/HERMES/results/qwen3_vl_8b/activitynet/f32-semvid20-pcd-ar64"
+   ]
+  },
+  {
+   "name": "p36a-f32-rc32-qtopk20-pcd-ar64",
+   "code": "/home/chieu.nguyen/HERMES/.claude/worktrees/p31-gate-pcdfix",
+   "chunks": 8,
+   "est_min": 25,
+   "priority": 26,
+   "env": {
+    "HERMES_QWEN3_ATTENTION_BACKEND": "flash_attention_2",
+    "HERMES_RETRIEVAL_INDEX": "/nfs-stor/chieu.nguyen/activitynet/siglip2_1fps"
+   },
+   "overrides": [
+    "model=qwen3_vl_8b",
+    "experiment=sember_grounding_uniform",
+    "dataset.annotation=/nfs-stor/chieu.nguyen/activitynet/anet_val1_500.jsonl",
+    "dataset.video_root=/nfs-stor/chieu.nguyen/activitynet/videos_flat",
+    "dataset.max_videos=1000",
+    "dataset.question_categories=[moment_retrieval]",
+    "run.keep_time_tokens=surviving",
+    "dataset.grounding_prompt=timeline",
+    "run.max_new_tokens=384",
+    "run.prune_score=core_topk",
+    "run.retrieval=frames_cont",
+    "run.contrastive_mode=blind",
+    "run.contrastive_alpha=1.0",
+    "run.contrastive_adaptive=true",
+    "run.contrastive_scope=time",
+    "run.answer_reserve=64",
+    "run.uniform_num_frames=32",
+    "run.offline_keep_ratio=0.2",
+    "run.batch_size=8",
+    "paths.save_dir=/home/chieu.nguyen/HERMES/results/qwen3_vl_8b/activitynet/f32-rc32-qtopk20-pcd-ar64"
+   ]
+  },
+  {
+   "name": "p36a-f16-random40-pcd-ar64",
+   "code": "/home/chieu.nguyen/HERMES/.claude/worktrees/p31-gate-pcdfix",
+   "chunks": 8,
+   "est_min": 25,
+   "priority": 26,
+   "env": {
+    "HERMES_QWEN3_ATTENTION_BACKEND": "flash_attention_2",
+    "HERMES_RETRIEVAL_INDEX": "/nfs-stor/chieu.nguyen/activitynet/siglip2_1fps"
+   },
+   "overrides": [
+    "model=qwen3_vl_8b",
+    "experiment=sember_grounding_uniform",
+    "dataset.annotation=/nfs-stor/chieu.nguyen/activitynet/anet_val1_500.jsonl",
+    "dataset.video_root=/nfs-stor/chieu.nguyen/activitynet/videos_flat",
+    "dataset.max_videos=1000",
+    "dataset.question_categories=[moment_retrieval]",
+    "run.keep_time_tokens=surviving",
+    "dataset.grounding_prompt=timeline",
+    "run.max_new_tokens=384",
+    "run.prune_score=random",
+    "run.prefetch_videos=4",
+    "run.contrastive_mode=blind",
+    "run.contrastive_alpha=1.0",
+    "run.contrastive_adaptive=true",
+    "run.contrastive_scope=time",
+    "run.answer_reserve=64",
+    "run.uniform_num_frames=16",
+    "run.offline_keep_ratio=0.4",
+    "run.batch_size=8",
+    "paths.save_dir=/home/chieu.nguyen/HERMES/results/qwen3_vl_8b/activitynet/f16-random40-pcd-ar64"
+   ]
+  },
+  {
+   "name": "p36a-f16-semvid40-pcd-ar64",
+   "code": "/home/chieu.nguyen/HERMES/.claude/worktrees/p31-gate-pcdfix",
+   "chunks": 8,
+   "est_min": 25,
+   "priority": 26,
+   "env": {
+    "HERMES_QWEN3_ATTENTION_BACKEND": "flash_attention_2",
+    "HERMES_RETRIEVAL_INDEX": "/nfs-stor/chieu.nguyen/activitynet/siglip2_1fps"
+   },
+   "overrides": [
+    "model=qwen3_vl_8b",
+    "experiment=sember_grounding_uniform",
+    "dataset.annotation=/nfs-stor/chieu.nguyen/activitynet/anet_val1_500.jsonl",
+    "dataset.video_root=/nfs-stor/chieu.nguyen/activitynet/videos_flat",
+    "dataset.max_videos=1000",
+    "dataset.question_categories=[moment_retrieval]",
+    "run.keep_time_tokens=surviving",
+    "dataset.grounding_prompt=timeline",
+    "run.max_new_tokens=384",
+    "run.prune_score=semvid",
+    "run.prefetch_videos=4",
+    "run.contrastive_mode=blind",
+    "run.contrastive_alpha=1.0",
+    "run.contrastive_adaptive=true",
+    "run.contrastive_scope=time",
+    "run.answer_reserve=64",
+    "run.uniform_num_frames=16",
+    "run.offline_keep_ratio=0.4",
+    "run.batch_size=8",
+    "paths.save_dir=/home/chieu.nguyen/HERMES/results/qwen3_vl_8b/activitynet/f16-semvid40-pcd-ar64"
+   ]
+  },
+  {
+   "name": "p36a-f16-rc16-qtopk40-pcd-ar64",
+   "code": "/home/chieu.nguyen/HERMES/.claude/worktrees/p31-gate-pcdfix",
+   "chunks": 8,
+   "est_min": 25,
+   "priority": 26,
+   "env": {
+    "HERMES_QWEN3_ATTENTION_BACKEND": "flash_attention_2",
+    "HERMES_RETRIEVAL_INDEX": "/nfs-stor/chieu.nguyen/activitynet/siglip2_1fps"
+   },
+   "overrides": [
+    "model=qwen3_vl_8b",
+    "experiment=sember_grounding_uniform",
+    "dataset.annotation=/nfs-stor/chieu.nguyen/activitynet/anet_val1_500.jsonl",
+    "dataset.video_root=/nfs-stor/chieu.nguyen/activitynet/videos_flat",
+    "dataset.max_videos=1000",
+    "dataset.question_categories=[moment_retrieval]",
+    "run.keep_time_tokens=surviving",
+    "dataset.grounding_prompt=timeline",
+    "run.max_new_tokens=384",
+    "run.prune_score=core_topk",
+    "run.retrieval=frames_cont",
+    "run.contrastive_mode=blind",
+    "run.contrastive_alpha=1.0",
+    "run.contrastive_adaptive=true",
+    "run.contrastive_scope=time",
+    "run.answer_reserve=64",
+    "run.uniform_num_frames=16",
+    "run.offline_keep_ratio=0.4",
+    "run.batch_size=8",
+    "paths.save_dir=/home/chieu.nguyen/HERMES/results/qwen3_vl_8b/activitynet/f16-rc16-qtopk40-pcd-ar64"
+   ]
+  }
+ ]
+}

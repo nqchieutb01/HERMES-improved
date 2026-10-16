@@ -1,0 +1,136 @@
+{
+ "slots": [
+  {
+   "partition": "long",
+   "qos": "gpu-debug-qos",
+   "max_jobs": 8
+  },
+  {
+   "partition": "cscc-gpu-p",
+   "qos": "cscc-gpu-qos",
+   "max_jobs": 2
+  }
+ ],
+ "runs": [
+  {
+   "name": "g-zoom-self-keep0.1-k32-a0.6",
+   "code": "/home/chieu.nguyen/HERMES",
+   "chunks": 4,
+   "env": {
+    "HERMES_QWEN3_ATTENTION_BACKEND": "flash_attention_2"
+   },
+   "overrides": [
+    "model=qwen3_vl_8b",
+    "dataset.max_videos=300",
+    "experiment=sember_grounding_uniform",
+    "run.uniform_num_frames=64",
+    "run.keep_time_tokens=surviving",
+    "run.prune_score=zoom",
+    "dataset.grounding_prompt=timeline",
+    "run.max_new_tokens=384",
+    "run.offline_keep_ratio=0.1",
+    "run.zoom_windows=/home/chieu.nguyen/HERMES/logs/phase17/win_self_random10.json",
+    "run.zoom_frames=32",
+    "run.zoom_share=0.6",
+    "run.retention_snapshot=true",
+    "paths.save_dir=/home/chieu.nguyen/HERMES/results/qwen3_vl_8b/sember_grounding/uniform-n64-time-count-location-zoom-self-keep0.1-k32-a0.6-timeline-v300-native-time"
+   ]
+  },
+  {
+   "name": "g-zoom-gold-keep0.1-k32-a0.6",
+   "code": "/home/chieu.nguyen/HERMES",
+   "chunks": 4,
+   "env": {
+    "HERMES_QWEN3_ATTENTION_BACKEND": "flash_attention_2"
+   },
+   "overrides": [
+    "model=qwen3_vl_8b",
+    "dataset.max_videos=300",
+    "experiment=sember_grounding_uniform",
+    "run.uniform_num_frames=64",
+    "run.keep_time_tokens=surviving",
+    "run.prune_score=zoom",
+    "dataset.grounding_prompt=timeline",
+    "run.max_new_tokens=384",
+    "run.offline_keep_ratio=0.1",
+    "run.zoom_windows=/home/chieu.nguyen/HERMES/logs/phase17/win_gold.json",
+    "run.zoom_frames=32",
+    "run.zoom_share=0.6",
+    "run.retention_snapshot=true",
+    "paths.save_dir=/home/chieu.nguyen/HERMES/results/qwen3_vl_8b/sember_grounding/uniform-n64-time-count-location-zoom-gold-keep0.1-k32-a0.6-timeline-v300-native-time"
+   ]
+  },
+  {
+   "name": "g-zoom-full-keep0.1-k32-a0.6",
+   "code": "/home/chieu.nguyen/HERMES",
+   "chunks": 4,
+   "env": {
+    "HERMES_QWEN3_ATTENTION_BACKEND": "flash_attention_2"
+   },
+   "overrides": [
+    "model=qwen3_vl_8b",
+    "dataset.max_videos=300",
+    "experiment=sember_grounding_uniform",
+    "run.uniform_num_frames=64",
+    "run.keep_time_tokens=surviving",
+    "run.prune_score=zoom",
+    "dataset.grounding_prompt=timeline",
+    "run.max_new_tokens=384",
+    "run.offline_keep_ratio=0.1",
+    "run.zoom_windows=/home/chieu.nguyen/HERMES/logs/phase17/win_full.json",
+    "run.zoom_frames=32",
+    "run.zoom_share=0.6",
+    "run.retention_snapshot=true",
+    "paths.save_dir=/home/chieu.nguyen/HERMES/results/qwen3_vl_8b/sember_grounding/uniform-n64-time-count-location-zoom-full-keep0.1-k32-a0.6-timeline-v300-native-time"
+   ]
+  },
+  {
+   "name": "g-zoom-self-keep0.05-k32-a0.6",
+   "code": "/home/chieu.nguyen/HERMES",
+   "chunks": 4,
+   "env": {
+    "HERMES_QWEN3_ATTENTION_BACKEND": "flash_attention_2"
+   },
+   "overrides": [
+    "model=qwen3_vl_8b",
+    "dataset.max_videos=300",
+    "experiment=sember_grounding_uniform",
+    "run.uniform_num_frames=64",
+    "run.keep_time_tokens=surviving",
+    "run.prune_score=zoom",
+    "dataset.grounding_prompt=timeline",
+    "run.max_new_tokens=384",
+    "run.offline_keep_ratio=0.05",
+    "run.zoom_windows=/home/chieu.nguyen/HERMES/logs/phase17/win_self_random5.json",
+    "run.zoom_frames=32",
+    "run.zoom_share=0.6",
+    "run.retention_snapshot=true",
+    "paths.save_dir=/home/chieu.nguyen/HERMES/results/qwen3_vl_8b/sember_grounding/uniform-n64-time-count-location-zoom-self-keep0.05-k32-a0.6-timeline-v300-native-time"
+   ]
+  },
+  {
+   "name": "g-zoom-gold-keep0.05-k32-a0.6",
+   "code": "/home/chieu.nguyen/HERMES",
+   "chunks": 4,
+   "env": {
+    "HERMES_QWEN3_ATTENTION_BACKEND": "flash_attention_2"
+   },
+   "overrides": [
+    "model=qwen3_vl_8b",
+    "dataset.max_videos=300",
+    "experiment=sember_grounding_uniform",
+    "run.uniform_num_frames=64",
+    "run.keep_time_tokens=surviving",
+    "run.prune_score=zoom",
+    "dataset.grounding_prompt=timeline",
+    "run.max_new_tokens=384",
+    "run.offline_keep_ratio=0.05",
+    "run.zoom_windows=/home/chieu.nguyen/HERMES/logs/phase17/win_gold.json",
+    "run.zoom_frames=32",
+    "run.zoom_share=0.6",
+    "run.retention_snapshot=true",
+    "paths.save_dir=/home/chieu.nguyen/HERMES/results/qwen3_vl_8b/sember_grounding/uniform-n64-time-count-location-zoom-gold-keep0.05-k32-a0.6-timeline-v300-native-time"
+   ]
+  }
+ ]
+}

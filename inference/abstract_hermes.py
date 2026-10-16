@@ -80,7 +80,34 @@ class Abstract_Hermes:
             self.token_trace_enabled
             or self.min_tokens_per_frame > 0
             or getattr(self, "keep_time_tokens", "none") != "none"
+            # GridPlan thinning evicts tokens by source frame.
+            or getattr(self, "force_token_provenance", False)
         )
+
+    # Stream frame ids whose tokens must be evicted at the next compression (GridPlan thinning).
+    evict_frame_ids = None
+
+    def _time_mask(self, layer_idx, num_visual, layer_configs, device):
+        if not self.token_provenance_enabled or self._token_frame_ids_per_layer is None:
+            return torch.zeros(num_visual, dtype=torch.bool, device=device)
+        start = layer_configs[layer_idx]['visual_start_idx']
+        ids = self._token_frame_ids_per_layer[layer_idx][start:start + num_visual].to(device)
+        return is_time_token(ids)
+
+    def _evict_masks(self, layer_configs, num_visual_per_layer, device):
+        """Per-layer masks over visual-region tokens (visual and timestamp) of evicted frames."""
+        if not self.evict_frame_ids:
+            return None
+        if not self.token_provenance_enabled or self._token_frame_ids_per_layer is None:
+            raise RuntimeError("frame eviction needs token provenance (keep_time_tokens or k>0)")
+        evict = torch.as_tensor(sorted(self.evict_frame_ids), dtype=torch.long, device=device)
+        masks = []
+        for layer_idx, n in enumerate(num_visual_per_layer):
+            start = layer_configs[layer_idx]['visual_start_idx']
+            ids = self._token_frame_ids_per_layer[layer_idx][start:start + n].to(device)
+            frames = torch.where(is_time_token(ids), time_token_group_frame(ids), ids)
+            masks.append(((ids >= 0) | is_time_token(ids)) & torch.isin(frames, evict))
+        return masks
 
     def set_min_tokens_per_frame(self, value):
         value = int(value)
@@ -118,6 +145,28 @@ class Abstract_Hermes:
         self._token_frame_ids_per_layer = None
         self._token_frame_summary_scores_per_layer = None
         self._frame_summary_specs_per_layer = None
+        self._encoded_tokens_per_frame = {}
+
+    def retention_snapshot(self):
+        """Per-frame token retention in the current cache, averaged over layers.
+
+        Returns ``{"encoded": {frame: tokens}, "kept": {frame: mean kept visual tokens},
+        "time_kept": {group_first_frame: mean kept timestamp tokens}}``; None when provenance is off.
+        """
+        if not self.token_provenance_enabled or self._token_frame_ids_per_layer is None:
+            return None
+        num_layers = len(self._token_frame_ids_per_layer)
+        kept, time_kept = Counter(), Counter()
+        for ids in self._token_frame_ids_per_layer:
+            visual = ids[ids >= 0]
+            kept.update(Counter(visual.tolist()))
+            time_ids = ids[is_time_token(ids)]
+            time_kept.update(Counter(time_token_group_frame(time_ids).tolist()))
+        return {
+            "encoded": dict(getattr(self, "_encoded_tokens_per_frame", {})),
+            "kept": {f: round(n / num_layers, 2) for f, n in sorted(kept.items())},
+            "time_kept": {f: round(n / num_layers, 2) for f, n in sorted(time_kept.items())},
+        }
 
     def _initialize_token_frame_ids(self, cache_lengths):
         """Initialize provenance for the text-only cache (-1 means text)."""
@@ -139,6 +188,11 @@ class Abstract_Hermes:
         frame_ids = torch.as_tensor(frame_ids, dtype=torch.long, device="cpu")
         if self._token_frame_ids_per_layer is None:
             raise RuntimeError("Token-frame provenance was not initialized")
+        encoded = getattr(self, "_encoded_tokens_per_frame", None)
+        if encoded is None:
+            encoded = self._encoded_tokens_per_frame = {}
+        for frame, n in Counter(frame_ids[frame_ids >= 0].tolist()).items():
+            encoded[frame] = encoded.get(frame, 0) + n
         self._token_frame_ids_per_layer = [
             torch.cat((ids, frame_ids), dim=0)
             for ids in self._token_frame_ids_per_layer

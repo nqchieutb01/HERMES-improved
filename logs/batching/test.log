@@ -1,0 +1,112 @@
+srun: Interactive job detected (srun/salloc). Routed to QoS='gpu-debug-qos'.
+srun: job 295870 queued and waiting for resources
+srun: job 295870 has been allocated resources
+host=gpu-34
+NVIDIA A100-SXM4-40GB, 40960 MiB
+NVIDIA A100-SXM4-40GB, 40960 MiB
+NVIDIA A100-SXM4-40GB, 40960 MiB
+NVIDIA A100-SXM4-40GB, 40960 MiB
+### base bs=1
+=== PROFILE ===
+peak GPU memory 24.0 GB
+TOTAL                        total    372.2s  calls    1  per call 372.16s
+per-video loop (incl. flushes) total    372.1s  calls   12  per call  31.01s
+load_uniform_video           total    188.2s  calls   21  per call   8.96s
+question_answering           total     95.0s  calls   21  per call   4.52s
+encode_video_chunk           total     76.1s  calls   84  per call   0.91s
+predict_and_compress         total     11.4s  calls   21  per call   0.54s
+batched decode               total      0.0s  calls    1  per call   0.00s
+### base bs=8
+=== PROFILE ===
+peak GPU memory 26.8 GB
+TOTAL                        total    295.7s  calls    1  per call 295.66s
+per-video loop (incl. flushes) total    290.1s  calls   12  per call  24.17s
+load_uniform_video           total    189.2s  calls   21  per call   9.01s
+encode_video_chunk           total     75.9s  calls   84  per call   0.90s
+batched decode               total     16.6s  calls    3  per call   5.53s
+predict_and_compress         total     11.3s  calls   21  per call   0.54s
+prefill_job                  total      1.3s  calls   21  per call   0.06s
+### pcd bs=1
+=== PROFILE ===
+peak GPU memory 24.1 GB
+TOTAL                        total    566.0s  calls    1  per call 565.96s
+per-video loop (incl. flushes) total    565.9s  calls   12  per call  47.16s
+contrastive_answering        total    284.5s  calls   21  per call  13.55s
+load_uniform_video           total    189.3s  calls   21  per call   9.02s
+encode_video_chunk           total     78.6s  calls   84  per call   0.94s
+predict_and_compress         total     11.2s  calls   21  per call   0.54s
+_counterfactual_memory       total      1.0s  calls   21  per call   0.05s
+batched decode               total      0.0s  calls    1  per call   0.00s
+### pcd bs=8
+=== PROFILE ===
+peak GPU memory 27.4 GB
+TOTAL                        total    310.3s  calls    1  per call 310.29s
+per-video loop (incl. flushes) total    297.1s  calls   12  per call  24.76s
+load_uniform_video           total    189.0s  calls   21  per call   9.00s
+encode_video_chunk           total     77.8s  calls   84  per call   0.93s
+batched decode               total     25.9s  calls    3  per call   8.63s
+predict_and_compress         total     12.7s  calls   21  per call   0.60s
+prefill_job                  total      2.6s  calls   21  per call   0.12s
+_counterfactual_memory       total      1.0s  calls   21  per call   0.05s
+/home/chieu.nguyen/HERMES/logs/batching/out/base-bs1 vs /home/chieu.nguyen/HERMES/logs/batching/out/base-bs8: 15/21 answers identical
+  differs at char 70/178:
+    'c is removed from around the box\nSeen: 42.0 seconds, the plastic is pl'
+    'c is removed from around the box\nSeen: 41.0 seconds, the plastic is pl'
+  differs at char 171/230:
+    '\nAnswer: The cat stayed sitting next to your right foot for about 117 '
+    '\nAnswer: The cat stayed sitting next to the right foot for about 117 s'
+  differs at char 6/585:
+    'Seen: 2.0 seconds, the person begins'
+    'Seen: 15.0 seconds, the person start'
+  differs at char 6/666:
+    'Seen: 0.0 seconds, the jeans are vis'
+    'Seen: 10.5 seconds, the person is lo'
+  differs at char 9/241:
+    'Seen: 47.0 seconds, the drawer is opene'
+    'Seen: 47.5 seconds, the drawer is opene'
+  differs at char 150/300:
+    'ng jacks\nSeen: 36.5 seconds, the person continues doing jumping jacks\n'
+    'ng jacks\nSeen: 36.5 seconds, the person is still doing jumping jacks\nS'
+/home/chieu.nguyen/HERMES/logs/batching/out/pcd-bs1 vs /home/chieu.nguyen/HERMES/logs/batching/out/pcd-bs8: 7/21 answers identical
+  differs at char 10/207:
+    'Seen: 163.6 seconds, the person starts u'
+    'Seen: 163.3 seconds, the person starts u'
+  differs at char 63/171:
+    ' plastic is removed from the box\nSeen: 44.0 seconds, the plastic is pl'
+    ' plastic is removed from the box\nSeen: 43.6 seconds, the plastic is pl'
+  differs at char 10/230:
+    'Seen: 279.6 seconds, the cat is sitting '
+    'Seen: 279.9 seconds, the cat is sitting '
+  differs at char 48/793:
+    '.3 seconds, a book is picked up\nSeen: 109.3 seconds, a book is picked '
+    '.3 seconds, a book is picked up\nSeen: 103.3 seconds, a book is picked '
+  differs at char 10/168:
+    'Seen: 461.3 seconds, a cover with the ti'
+    'Seen: 461.6 seconds, a cover with the ti'
+  differs at char 10/196:
+    'Seen: 167.5 seconds, the person starts s'
+    'Seen: 167.7 seconds, the person starts s'
+  differs at char 160/341:
+    'thing is removed from the drawer\nSeen: 66.0 seconds, clothing is remov'
+    'thing is removed from the drawer\nSeen: 65.0 seconds, clothing is remov'
+  differs at char 58/183:
+    's, the purple shirt is picked up\nSeen: 314.5 seconds, the purple shirt'
+    's, the purple shirt is picked up\nSeen: 309.9 seconds, the purple shirt'
+  differs at char 8/185:
+    "Seen: 121.6 seconds, the driver's side"
+    "Seen: 124.6 seconds, the driver's side"
+  differs at char 50/241:
+    ' seconds, person starts wiping snow off the front windshield\nSeen: 177'
+    ' seconds, person starts wiping snow off front windshield\nSeen: 177.0 s'
+  differs at char 99/1322:
+    'een: 16.3 seconds, the person continues jumping jacks\nSeen: 19.3 secon'
+    'een: 16.3 seconds, the person continues doing jumping jacks\nSeen: 19.3'
+  differs at char 1168/1268:
+    ', the person is still facing the mirror\nAnswer: You have spent 190 sec'
+    ', the person is still facing the mirror\nSeen: 249.9 seconds, the perso'
+  differs at char 55/178:
+    'onds, the red shirt is picked up\nSeen: 140.0 seconds, the red shirt is'
+    'onds, the red shirt is picked up\nSeen: 124.9 seconds, the red shirt is'
+  differs at char 165/322:
+    ' with shirts on the bottom rack\nSeen: 179.0 seconds, hats are visible '
+    ' with shirts on the bottom rack\nSeen: 177.0 seconds, hats are visible '

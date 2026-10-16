@@ -1,0 +1,4 @@
+oe /home/chieu.nguyen/HERMES/results/qwen3_vl_8b/nextgqa_open/oe-cover10 /home/chieu.nguyen/HERMES/results/qwen3_vl_8b/nextgqa_open/oe-cover10/open_judgments.jsonl
+tl /home/chieu.nguyen/HERMES/results/qwen3_vl_8b/nextgqa_open/tl-semvid10-pcd-ar64 /home/chieu.nguyen/HERMES/results/qwen3_vl_8b/nextgqa_open/tl-semvid10-pcd-ar64/open_judgments.jsonl
+tl /home/chieu.nguyen/HERMES/results/qwen3_vl_8b/nextgqa_open/tl-semvid30 /home/chieu.nguyen/HERMES/results/qwen3_vl_8b/nextgqa_open/tl-semvid30/open_judgments.jsonl
+tl /home/chieu.nguyen/HERMES/results/qwen3_vl_8b/nextgqa_open/tl-unpruned-pcd-ar64 /home/chieu.nguyen/HERMES/results/qwen3_vl_8b/nextgqa_open/tl-unpruned-pcd-ar64/open_judgments.jsonl

@@ -1,0 +1,9 @@
+tl /home/chieu.nguyen/HERMES/results/qwen3_vl_8b/nextgqa_open/tl-cover10-pcd-ar64 /home/chieu.nguyen/HERMES/results/qwen3_vl_8b/nextgqa_open/tl-cover10-pcd-ar64/open_judgments.jsonl
+tl /home/chieu.nguyen/HERMES/results/qwen3_vl_8b/nextgqa_open/tl-cover10 /home/chieu.nguyen/HERMES/results/qwen3_vl_8b/nextgqa_open/tl-cover10/open_judgments.jsonl
+tl /home/chieu.nguyen/HERMES/results/qwen3_vl_8b/nextgqa_open/tl-cover30-pcd-ar64 /home/chieu.nguyen/HERMES/results/qwen3_vl_8b/nextgqa_open/tl-cover30-pcd-ar64/open_judgments.jsonl
+tl /home/chieu.nguyen/HERMES/results/qwen3_vl_8b/nextgqa_open/tl-cover30 /home/chieu.nguyen/HERMES/results/qwen3_vl_8b/nextgqa_open/tl-cover30/open_judgments.jsonl
+tl /home/chieu.nguyen/HERMES/results/qwen3_vl_8b/nextgqa_open/tl-random10-pcd-ar64 /home/chieu.nguyen/HERMES/results/qwen3_vl_8b/nextgqa_open/tl-random10-pcd-ar64/open_judgments.jsonl
+tl /home/chieu.nguyen/HERMES/results/qwen3_vl_8b/nextgqa_open/tl-random10 /home/chieu.nguyen/HERMES/results/qwen3_vl_8b/nextgqa_open/tl-random10/open_judgments.jsonl
+tl /home/chieu.nguyen/HERMES/results/qwen3_vl_8b/nextgqa_open/tl-random30-pcd-ar64 /home/chieu.nguyen/HERMES/results/qwen3_vl_8b/nextgqa_open/tl-random30-pcd-ar64/open_judgments.jsonl
+tl /home/chieu.nguyen/HERMES/results/qwen3_vl_8b/nextgqa_open/tl-random30 /home/chieu.nguyen/HERMES/results/qwen3_vl_8b/nextgqa_open/tl-random30/open_judgments.jsonl
+tl /home/chieu.nguyen/HERMES/results/qwen3_vl_8b/nextgqa_open/tl-semvid10 /home/chieu.nguyen/HERMES/results/qwen3_vl_8b/nextgqa_open/tl-semvid10/open_judgments.jsonl

@@ -1,0 +1,41 @@
+% CVPR two-column: spans both columns. Requires \usepackage{booktabs} and \usepackage{multirow}.
+\begin{table*}[t]
+\centering
+\setlength{\tabcolsep}{8pt}
+\caption{\textbf{Offline token pruning} with Qwen3-VL-8B on S-EMBER (300 videos). After encoding 64 uniformly sampled frames ($\approx$21.4k visual tokens), one pruning pass keeps the given fraction of visual tokens. \emph{HERMES}: highest attention score; \emph{Random}: random tokens; \emph{Stratified}: an equal share of every frame, choosing each frame's highest-scoring tokens; \emph{Recent}: most recent tokens; \emph{Spatial pooling}: lower decode resolution at roughly matched token count (scale $s$ keeps $\approx s^2$ of the tokens, e.g.\ $\times$0.35 keeps $\approx$12\%). \emph{Open-ended}: Acc.\ is answer accuracy judged with the official S-EMBER judge prompt; mIoU and R@0.5 measure temporal grounding; GQ@$\tau$ counts an answer only if it is judged correct and its interval has IoU $\geq \tau$. MCQ: 5-way multiple-choice accuracy. All numbers in \%. Best per keep ratio in bold.}
+\label{tab:offline-pruning}
+\begin{tabular}{llcccccc}
+\toprule
+& & \multicolumn{5}{c}{Open-ended} & \\
+\cmidrule(lr){3-7}
+Keep & Pruning & Acc. & mIoU & R@0.5 & GQ@0.3 & GQ@0.5 & MCQ \\
+\midrule
+100\% & None & 13.5 & 26.9 & 25.3 & 5.7 & 4.4 & 25.3 \\
+\midrule
+\multirow{4}{*}{50\%} & HERMES & 13.9 & 28.4 & 26.7 & 6.1 & 4.4 & \textbf{26.9} \\
+ & Random & 12.6 & \textbf{28.6} & 26.9 & 6.1 & \textbf{5.1} & 26.0 \\
+ & Stratified & 12.6 & 28.2 & \textbf{27.4} & \textbf{6.5} & \textbf{5.1} & 26.7 \\
+ & Spatial pooling ($\times$0.7) & \textbf{14.1} & 25.7 & 24.0 & 5.7 & 4.4 & 26.2 \\
+\midrule
+\multirow{5}{*}{25\%} & HERMES & 11.8 & 25.9 & 24.0 & 4.8 & 3.8 & 26.2 \\
+ & Random & 12.4 & \textbf{27.2} & 25.3 & \textbf{5.9} & \textbf{4.8} & 26.7 \\
+ & Stratified & 11.8 & 27.0 & \textbf{25.9} & 5.3 & 4.2 & 26.0 \\
+ & Recent & 11.6 & 18.5 & 16.4 & 4.4 & 3.2 & 23.1 \\
+ & Spatial pooling ($\times$0.5) & \textbf{13.1} & 20.8 & 18.7 & 4.0 & 3.2 & \textbf{27.3} \\
+\midrule
+\multirow{4}{*}{20\%} & HERMES & 12.6 & 26.2 & 25.9 & 5.3 & \textbf{4.4} & 25.5 \\
+ & Random & 11.2 & \textbf{27.4} & \textbf{26.1} & \textbf{5.5} & \textbf{4.4} & 26.6 \\
+ & Stratified & 10.7 & 26.0 & 24.0 & 4.4 & 3.2 & 26.2 \\
+ & Spatial pooling ($\times$0.45) & \textbf{13.5} & 21.7 & 19.4 & 4.8 & 3.8 & \textbf{27.3} \\
+\midrule
+\multirow{4}{*}{10\%} & HERMES & 9.7 & 23.3 & 23.2 & 4.2 & 3.4 & 21.5 \\
+ & Random & 10.9 & \textbf{26.1} & 23.6 & 5.1 & 3.4 & \textbf{27.4} \\
+ & Stratified & 9.9 & 25.9 & \textbf{24.2} & 4.0 & 2.9 & 26.7 \\
+ & Spatial pooling ($\times$0.35) & \textbf{12.8} & 21.8 & 20.8 & \textbf{5.3} & \textbf{4.2} & 25.0 \\
+\midrule
+\multirow{3}{*}{5\%} & HERMES & 8.8 & 14.8 & 13.3 & 1.9 & 1.5 & 20.1 \\
+ & Random & \textbf{10.7} & 25.3 & 22.9 & \textbf{4.8} & \textbf{3.4} & \textbf{26.7} \\
+ & Stratified & 9.7 & \textbf{25.4} & \textbf{24.6} & 4.2 & 2.9 & 25.9 \\
+\bottomrule
+\end{tabular}
+\end{table*}

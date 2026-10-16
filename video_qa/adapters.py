@@ -37,6 +37,7 @@ SEMBER_CHOICE_LABELS = ("A", "B", "C", "D", "E")
 SEMBER_QUESTION_CATEGORIES = (
     "counting_objects_events",
     "location_trace",
+    "moment_retrieval",  # Charades-STA converted to this format (logs/phase28/prepare_charades.py)
     "object_comparison",
     "sequential_action",
     "spatial_aware_reasoning",
@@ -98,9 +99,95 @@ SEMBER_MCQ_METADATA_FIELDS = (
 )
 
 
-def sember_grounding_prompt(question: str) -> str:
-    """Return the official S-EMBER grounded VideoQA prompt."""
-    return f"{SEMBER_GROUNDING_PROMPT}\n\n{question}"
+GROUNDING_PROMPT_STYLES = ("official", "full_span", "timeline", "timeline_debias", "events", "events_merged", "timelens", "raw")
+# Models predict intervals ~3x shorter than the annotated evidence; ask for the whole event span.
+FULL_SPAN_INSTRUCTION = (
+    "The time interval must cover the whole event, from the moment it begins until it has "
+    "completely ended, not a single moment within it."
+)
+
+
+# Models answer durations and counts with canned values ("10 seconds") instead of using the timestamps
+# they see; ask them to list the relevant moments first and derive the answer and interval from them.
+TIMELINE_PROMPT = (
+    "After reviewing the video, answer the following question.\n"
+    "Step 1: list up to 8 moments when the relevant object, action or event is visible, using the "
+    "timestamps shown in the video, one per line starting with \"Seen:\".\n"
+    "Step 2: work out the answer from those moments: for a duration, use the time between the first and "
+    "last relevant moment; for a count, count the distinct occurrences.\n"
+    "Step 3: give the answer on a line starting with \"Answer:\", then the time interval from the first to "
+    "the last relevant moment on a line starting with \"Time:\".\n\n"
+    "Example of the format (for a different question, \"How long was the door open?\"):\n"
+    "Seen: 40.5 seconds, the door is opened\n"
+    "Seen: 62.5 seconds, the door is still open\n"
+    "Seen: 95.0 seconds, the door is closed\n"
+    "Answer: The door was open for about 55 seconds.\n"
+    "Time: [40.5, 95.0]"
+)
+
+
+# The timeline lists moments; under prior-contrastive decoding it breaks one ongoing activity into a moment per second
+# (run-on lists, over-counting) and reports single moments for long events. Here each distinct occurrence is listed
+# once with its start and end, so counts, durations and the interval follow from the listed events.
+EVENTS_PROMPT = (
+    "After reviewing the video, answer the following question.\n"
+    "Step 1: list each distinct occurrence of the relevant object, action or event, one per line starting with "
+    "\"Event:\", with its start and end time from the timestamps shown in the video (start: when it begins, end: "
+    "when it has ended) and a short description. List an occurrence once, however long it lasts.\n"
+    "Step 2: work out the answer from those events: for a duration, use the start and end times; for a count, "
+    "count the listed events.\n"
+    "Step 3: give the answer on a line starting with \"Answer:\", then the time interval from the start of the "
+    "first relevant event to the end of the last one on a line starting with \"Time:\".\n\n"
+    "Example of the format (for a different question, \"How many times did I open the drawer?\"):\n"
+    "Event: 12.0 - 15.5 seconds, the drawer is opened and closed\n"
+    "Event: 48.0 - 61.0 seconds, the drawer is opened again and stays open\n"
+    "Answer: You opened the drawer 2 times.\n"
+    "Time: [12.0, 61.0]"
+)
+
+
+# Under PCD the events prompt still splits one continuing action into back-to-back, fixed-length events (80% of the
+# lists that hit the token limit); state that an event lasts until the action stops.
+EVENTS_MERGED_PROMPT = EVENTS_PROMPT.replace(
+    "List an occurrence once, however long it lasts.",
+    "List an occurrence once, however long it lasts: consecutive or overlapping moments of the same continuing "
+    "action are one event, which ends only when the action stops.")
+
+
+# TimeLens-Bench protocol (TencentARC/TimeLens, evaluation/utils.py GROUNDER_PROMPT, verbatim); the question field holds
+# the raw query.
+TIMELENS_PROMPT = (
+    "Please find the visual event described by the sentence '{}', determining its starting and ending times. "
+    "The format should be: 'The event happens in <start time> - <end time> seconds'."
+)
+
+
+# Control for prior-contrastive decoding: state the bias in the instruction instead of removing it while decoding.
+DEBIAS_INSTRUCTION = (
+    "The relevant moments may occur at any point in the video; do not assume they are near the start."
+)
+
+
+def sember_grounding_prompt(question: str, style: str = "official") -> str:
+    """Return the S-EMBER grounded VideoQA prompt (``official``, ``full_span``, ``timeline`` or ``events``)."""
+    if style == "official":
+        return f"{SEMBER_GROUNDING_PROMPT}\n\n{question}"
+    if style == "full_span":
+        return f"{SEMBER_GROUNDING_PROMPT}\n{FULL_SPAN_INSTRUCTION}\n\n{question}"
+    if style == "timeline":
+        return f"{TIMELINE_PROMPT}\n\n{question}"
+    if style == "timeline_debias":
+        return f"{TIMELINE_PROMPT}\n{DEBIAS_INSTRUCTION}\n\n{question}"
+    if style == "events":
+        return f"{EVENTS_PROMPT}\n\n{question}"
+    if style == "events_merged":
+        return f"{EVENTS_MERGED_PROMPT}\n\n{question}"
+    if style == "timelens":
+        return TIMELENS_PROMPT.format(question)
+    if style == "raw":
+        # The question field already holds the full prompt (e.g. NExT-GQA's multiple-choice and grounding prompts).
+        return question
+    raise ValueError(f"Unknown S-EMBER grounding prompt style: {style!r}")
 
 
 COUNTING_PROMPT_STYLES = ("official", "count_first")
@@ -189,6 +276,7 @@ def load_sember_grounding(
     video_root: str | Path,
     max_videos: int | None = None,
     question_categories: list[str] | tuple[str, ...] | None = None,
+    grounding_prompt: str = "official",
 ) -> list[dict[str, Any]]:
     """Format S-EMBER JSONL rows as chronological HERMES conversations.
 
@@ -247,7 +335,7 @@ def load_sember_grounding(
 
         conversation = {
             "question": str(row["question"]),
-            "prompt": sember_grounding_prompt(str(row["question"])),
+            "prompt": sember_grounding_prompt(str(row["question"]), grounding_prompt),
             "answer": str(row["answer"]),
             "end_time": question_time,
             "benchmark": "sember_grounding",
@@ -404,6 +492,7 @@ def load_annotations(
     max_videos: int | None = None,
     question_categories: list[str] | tuple[str, ...] | None = None,
     counting_prompt: str = "official",
+    grounding_prompt: str = "official",
 ) -> list[dict[str, Any]]:
     """Load native HERMES JSON or adapt a supported external dataset."""
     if adapter in (None, "", "native"):
@@ -420,6 +509,7 @@ def load_annotations(
             video_root=video_root,
             max_videos=max_videos,
             question_categories=question_categories,
+            grounding_prompt=grounding_prompt,
         )
     if adapter == "sember_mcq":
         if not video_root:

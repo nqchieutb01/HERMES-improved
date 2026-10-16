@@ -1,0 +1,5 @@
+qwen3_vl_8b/sember_grounding/uniform-n64-time-count-location-random10-cd-stamps-a1-timeline-v300-native-time
+qwen3_vl_8b/sember_grounding/uniform-n64-time-count-location-random10-cd-stamps-a0.5-timeline-v300-native-time
+qwen3_vl_8b/sember_grounding/uniform-n64-time-count-location-random10-cd-blind-a0.5-timeline-v300-native-time
+qwen3_vl_8b/sember_grounding/uniform-n64-time-count-location-random10-vag4-timeline-v300-native-time
+qwen3_vl_8b/sember_grounding/uniform-n64-time-count-location-random10-rzoom-t2-m0.3-timeline-v300-native-time

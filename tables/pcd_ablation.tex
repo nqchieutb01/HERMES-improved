@@ -1,0 +1,29 @@
+% CVPR two-column: spans both columns. Requires \usepackage{booktabs} and \usepackage{multirow}.
+\begin{table*}[t]
+\centering
+\small
+\setlength{\tabcolsep}{4pt}
+\caption{\textbf{Ablations} at 10\% of the tokens (random selector). Baseline $\rightarrow$ method (paired difference; bold when significant). \emph{Counterfactual}: the memory contrasted against: the prompt alone (PCD) or the same frames with permuted timestamps. \emph{Other methods}: visual-attention rebalancing during decoding, allocation of frames and tokens by grounding-head relevance, and re-reading a self-predicted window densely.}
+\label{tab:pcd-ablation}
+\begin{tabular}{llccccc}
+\toprule
+& Setting & Acc. & mIoU & R@0.5 & GQ@0.5 & Early start (\%) \\
+\midrule
+\multirow{2}{*}{Counterfactual} & None (no video), PCD & 15.2 $\rightarrow$ 16.2 (+1.1) & 25.8 $\rightarrow$ 32.1 (\textbf{+6.2}) & 24.2 $\rightarrow$ 31.2 (\textbf{+6.9}) & 7.2 $\rightarrow$ 10.1 (\textbf{+2.9}) & 38 $\rightarrow$ 19 \\
+ & Permuted timestamps & 15.2 $\rightarrow$ 16.0 (+0.8) & 25.8 $\rightarrow$ 26.8 (+0.9) & 24.2 $\rightarrow$ 27.6 (+3.4) & 7.2 $\rightarrow$ 8.4 (+1.3) & 38 $\rightarrow$ 29 \\
+\midrule
+\multirow{4}{*}{Strength / cut-off} & $\alpha$=0.25 & 15.2 $\rightarrow$ 14.7 ($-$0.4) & 25.8 $\rightarrow$ 30.8 (\textbf{+5.0}) & 24.2 $\rightarrow$ 29.9 (\textbf{+5.7}) & 7.2 $\rightarrow$ 8.6 (+1.5) & 38 $\rightarrow$ 22 \\
+ & $\alpha$=0.5 & 15.2 $\rightarrow$ 16.2 (+1.1) & 25.8 $\rightarrow$ 32.1 (\textbf{+6.2}) & 24.2 $\rightarrow$ 31.2 (\textbf{+6.9}) & 7.2 $\rightarrow$ 10.1 (\textbf{+2.9}) & 38 $\rightarrow$ 19 \\
+ & $\alpha$=1.0 & 15.2 $\rightarrow$ 15.4 (+0.2) & 25.8 $\rightarrow$ 31.9 (\textbf{+6.1}) & 24.2 $\rightarrow$ 30.9 (\textbf{+6.7}) & 7.2 $\rightarrow$ 9.3 (+2.1) & 38 $\rightarrow$ 19 \\
+ & $\alpha$=0.5, $\beta$=0.2 & 15.2 $\rightarrow$ 15.2 (+0.0) & 25.8 $\rightarrow$ 31.5 (\textbf{+5.7}) & 24.2 $\rightarrow$ 31.6 (\textbf{+7.4}) & 7.2 $\rightarrow$ 9.1 (+1.9) & 38 $\rightarrow$ 22 \\
+\midrule
+\multirow{2}{*}{Prompt} & Timeline & 15.2 $\rightarrow$ 16.2 (+1.1) & 25.8 $\rightarrow$ 32.1 (\textbf{+6.2}) & 24.2 $\rightarrow$ 31.2 (\textbf{+6.9}) & 7.2 $\rightarrow$ 10.1 (\textbf{+2.9}) & 38 $\rightarrow$ 19 \\
+ & Official & 10.9 $\rightarrow$ 12.0 (+1.1) & 26.1 $\rightarrow$ 26.5 (+0.4) & 23.6 $\rightarrow$ 24.2 (+0.6) & 3.4 $\rightarrow$ 3.2 ($-$0.2) & 22 $\rightarrow$ 19 \\
+\midrule
+\multirow{4}{*}{Other methods} & Visual-attention gain ($\gamma$=4) & 15.2 $\rightarrow$ 16.6 (+1.5) & 25.8 $\rightarrow$ 27.1 (+1.3) & 24.2 $\rightarrow$ 26.9 (+2.7) & 7.2 $\rightarrow$ 8.0 (+0.8) & 38 $\rightarrow$ 42 \\
+ & Relevance-guided sampling & 15.2 $\rightarrow$ 13.5 ($-$1.7) & 25.8 $\rightarrow$ 24.4 ($-$1.5) & 24.2 $\rightarrow$ 22.3 ($-$1.9) & 7.2 $\rightarrow$ 5.9 ($-$1.3) & 38 $\rightarrow$ 38 \\
+ & Self-window zoom & 15.2 $\rightarrow$ 19.8 (\textbf{+4.6}) & 25.8 $\rightarrow$ 26.2 (+0.4) & 24.2 $\rightarrow$ 25.7 (+1.5) & 7.2 $\rightarrow$ 10.1 (+2.9) & 38 $\rightarrow$ 34 \\
+ & Self-window zoom + PCD & 15.2 $\rightarrow$ 16.0 (+0.8) & 25.8 $\rightarrow$ 28.3 (+2.5) & 24.2 $\rightarrow$ 29.1 (\textbf{+4.8}) & 7.2 $\rightarrow$ 9.5 (+2.3) & 38 $\rightarrow$ 19 \\
+\bottomrule
+\end{tabular}
+\end{table*}

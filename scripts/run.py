@@ -271,6 +271,84 @@ def inference_command(
         command.extend(
             ["--model_path", str(_repo_path(model_path, _repo_root(cfg)))]
         )
+    if float(cfg.run.get("offline_keep_ratio", 1.0)) != 1.0:
+        command.extend(["--offline_keep_ratio", str(cfg.run.offline_keep_ratio)])
+    if cfg.run.get("prune_score", "hermes") != "hermes":
+        command.extend(["--prune_score", str(cfg.run.prune_score)])
+    if cfg.run.get("retention_snapshot"):
+        command.extend(["--retention_snapshot", "true"])
+    if cfg.run.get("question_attention"):
+        command.extend(["--question_attention", "true"])
+    if cfg.run.get("answer_attention"):
+        command.extend(["--answer_attention", "true"])
+    if cfg.run.get("blind"):
+        command.extend(["--blind", "true"])
+    if cfg.run.get("oracle_window"):
+        command.extend(["--oracle_window", "true"])
+    if cfg.run.get("contrastive_mode", "none") != "none":
+        command.extend(["--contrastive_mode", str(cfg.run.contrastive_mode),
+                        "--contrastive_alpha", str(cfg.run.get("contrastive_alpha", 1.0)),
+                        "--contrastive_beta", str(cfg.run.get("contrastive_beta", 0.1)),
+                        "--contrastive_scope", str(cfg.run.get("contrastive_scope", "all")),
+                        "--contrastive_adaptive", "true" if cfg.run.get("contrastive_adaptive") else "false",
+                        "--contrastive_rule", str(cfg.run.get("contrastive_rule", "pmi")),
+                        "--contrastive_trace", "true" if cfg.run.get("contrastive_trace") else "false"])
+    if int(cfg.run.get("batch_size", 1)) != 1:
+        command.extend(["--batch_size", str(cfg.run.batch_size)])
+    if cfg.run.get("evidence_ablation", "none") != "none":
+        command.extend(["--evidence_ablation", str(cfg.run.evidence_ablation)])
+    if cfg.run.get("core_relevance", "attn") != "attn":
+        command.extend(["--core_relevance", str(cfg.run.core_relevance)])
+    if float(cfg.run.get("core_alloc_mix", 0.5)) != 0.5:
+        command.extend(["--core_alloc_mix", str(cfg.run.core_alloc_mix)])
+    if cfg.run.get("core_alloc", "equal") != "equal":
+        command.extend(["--core_alloc", str(cfg.run.core_alloc)])
+    if float(cfg.run.get("core_mix", 0.5)) != 0.5:
+        command.extend(["--core_mix", str(cfg.run.core_mix)])
+    if cfg.run.get("retrieval", "none") != "none":
+        command.extend(["--retrieval", str(cfg.run.retrieval)])
+    if float(cfg.run.get("retrieval_min_gap", 0.0)) != 0.0:
+        command.extend(["--retrieval_min_gap", str(cfg.run.retrieval_min_gap)])
+    if int(cfg.run.get("prune_seed", 0)) != 0:
+        command.extend(["--prune_seed", str(cfg.run.prune_seed)])
+    if cfg.run.get("shared_selection"):
+        command.extend(["--shared_selection", "true"])
+    if int(cfg.run.get("answer_reserve", 0)) != 0:
+        command.extend(["--answer_reserve", str(cfg.run.answer_reserve)])
+    if int(cfg.run.get("prefetch_videos", 0)) > 0:
+        command.extend(["--prefetch_videos", str(cfg.run.prefetch_videos)])
+    if float(cfg.run.get("visual_attention_gain", 1.0)) != 1.0:
+        command.extend(["--visual_attention_gain", str(cfg.run.visual_attention_gain),
+                        "--visual_attention_layers", str(cfg.run.get("visual_attention_layers", "all"))])
+    if cfg.run.get("relevance_heads"):
+        command.extend(["--relevance_heads", str(cfg.run.relevance_heads)])
+    if cfg.run.get("relevance_zoom"):
+        command.extend(["--relevance_zoom", "true", "--zoom_mix", str(cfg.run.get("zoom_mix", 0.5)),
+                        "--zoom_temp", str(cfg.run.get("zoom_temp", 1.0)),
+                        "--zoom_frames", str(cfg.run.get("zoom_frames", 32))])
+    if cfg.run.get("zoom_windows"):
+        command.extend(["--zoom_windows", str(cfg.run.zoom_windows),
+                        "--zoom_frames", str(cfg.run.get("zoom_frames", 32)),
+                        "--zoom_share", str(cfg.run.get("zoom_share", 0.6))])
+    if cfg.run.get("shuffle_mode", "none") != "none":
+        command.extend(["--shuffle_mode", str(cfg.run.shuffle_mode)])
+    if float(cfg.run.get("time_offset", 0.0)) != 0.0:
+        command.extend(["--time_offset", str(cfg.run.time_offset)])
+    if cfg.run.get("drop_timestamps"):
+        command.extend(["--drop_timestamps", "true"])
+    if float(cfg.run.get("uniform_start_frac", 0.0)) != 0.0:
+        command.extend(["--uniform_start_frac", str(cfg.run.uniform_start_frac)])
+    if float(cfg.run.get("frame_scale", 1.0)) != 1.0:
+        command.extend(["--frame_scale", str(cfg.run.frame_scale)])
+    if float(cfg.run.get("protocol_fps", 0.0)) > 0:
+        command.extend(["--protocol_fps", str(cfg.run.protocol_fps),
+                        "--protocol_total_tokens", str(cfg.run.get("protocol_total_tokens", 14336)),
+                        "--protocol_min_tokens", str(cfg.run.get("protocol_min_tokens", 64))])
+    if int(cfg.run.get("frame_max_pixels", 0)) > 0:
+        command.extend(["--frame_max_pixels", str(cfg.run.frame_max_pixels),
+                        "--frame_min_pixels", str(cfg.run.get("frame_min_pixels", 0))])
+    if cfg.run.get("sample_schedule"):
+        command.extend(["--sample_schedule", str(cfg.run.sample_schedule)])
     if cfg.run.uniform_num_frames is not None:
         command.extend(["--uniform_num_frames", str(cfg.run.uniform_num_frames)])
     adapter = cfg.dataset.get("adapter")
@@ -282,6 +360,9 @@ def inference_command(
     max_videos = cfg.dataset.get("max_videos")
     if max_videos is not None:
         command.extend(["--max_videos", str(max_videos)])
+    grounding_prompt = cfg.dataset.get("grounding_prompt")
+    if grounding_prompt and grounding_prompt != "official":
+        command.extend(["--grounding_prompt", str(grounding_prompt)])
     counting_prompt = cfg.dataset.get("counting_prompt")
     if counting_prompt:
         command.extend(["--counting_prompt", str(counting_prompt)])

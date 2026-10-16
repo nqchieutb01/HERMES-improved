@@ -1,6 +1,7 @@
 import csv
 import warnings
 import random
+import json
 import os
 import math
 import argparse
@@ -19,7 +20,14 @@ from logzero import logger
 
 from inference.llavaov_hermes import load_model as llavaov_hermes_load_model
 from video_qa.adapters import load_annotations
-from video_qa.sampling import frame_end_exclusive, uniform_frame_indices
+from video_qa.sampling import (
+    DupSchedule,
+    GridPlan,
+    frame_end_exclusive,
+    parse_sample_schedule,
+    schedule_frame_times,
+    uniform_frame_indices,
+)
 
 
 def qwenvl_hermes_load_model(*args, **kwargs):
@@ -122,7 +130,7 @@ class BaseVQA:
             video = video[frame_idx]
             return video
         else:
-            vr = VideoReader(video_path, num_threads=1)
+            vr = self._open_reader(video_path)
             fps = round(vr.get_avg_fps())
             total_frames = len(vr)
             
@@ -142,6 +150,46 @@ class BaseVQA:
             video = vr.get_batch(frame_idx).asnumpy()
             return video
     
+    def _open_reader(self, video_path):
+        """VideoReader that decodes at ``frame_scale`` x the source resolution (1.0 = native), or, with
+        ``frame_max_pixels``, at the size qwen_vl_utils gives a video frame: dimensions multiples of 32, at most
+        ``frame_max_pixels`` and at least ``frame_min_pixels`` (the TimeLens-Bench protocol sets
+        max = total_pixels / num_frames * 2)."""
+        max_pixels = int(getattr(self, "frame_max_pixels", 0))
+        if max_pixels > 0:
+            from qwen_vl_utils.vision_process import smart_resize
+            h, w = VideoReader(video_path, num_threads=1)[0].shape[:2]
+            h, w = smart_resize(h, w, factor=32, min_pixels=int(getattr(self, "frame_min_pixels", 0)),
+                                max_pixels=max_pixels)
+            return VideoReader(video_path, num_threads=1, width=w, height=h)
+        scale = float(getattr(self, "frame_scale", 1.0))
+        if scale == 1.0:
+            return VideoReader(video_path, num_threads=1)
+        h, w = VideoReader(video_path, num_threads=1)[0].shape[:2]
+        return VideoReader(video_path, num_threads=1,
+                           width=max(32, int(w * scale) // 2 * 2), height=max(32, int(h * scale) // 2 * 2))
+
+    def load_scheduled_video(self, video_path, schedule):
+        """Decode streamed frames for a sample schedule; returns (frames, times, anchors).
+
+        ``schedule`` is a list of (rate, until) stages or a GridPlan. ``anchors`` gives each
+        frame's temporal-group start time for GridPlan thinning (None for rate stages).
+        """
+        reader = self._open_reader(video_path)
+        source_fps = float(reader.get_avg_fps())
+        total = len(reader)
+        if isinstance(schedule, DupSchedule):
+            # Each frame twice in a row: Qwen's temporal patch then pairs a frame with itself
+            # instead of blending two moments seconds apart.
+            times = [t for t in schedule_frame_times(schedule.stages, total / source_fps) for _ in (0, 1)]
+            anchors = None
+        elif isinstance(schedule, GridPlan):
+            times, anchors = schedule.frame_times(total / source_fps)
+        else:
+            times, anchors = schedule_frame_times(schedule, total / source_fps), None
+        frame_idx = [min(total - 1, int(round(t * source_fps))) for t in times]
+        return reader.get_batch(frame_idx).asnumpy(), times, anchors
+
     def load_video_frames(self, video_path, video_fps, clip=None):
         """
         Load video from a directory of image frames (for OVBench image-based videos).
@@ -194,8 +242,17 @@ class BaseVQA:
         end_time=None,
         video_fps=None,
         duration=None,
+        start_time=None,
     ):
-        """Decode uniform source frames from time zero through a question time."""
+        """Decode uniform source frames from time zero (or ``start_time``) through a question time."""
+        frames, frame_idx, times = self.uniform_frames(video_path, num_frames=num_frames, end_time=end_time,
+                                                       video_fps=video_fps, duration=duration, start_time=start_time)
+        self.last_uniform_frame_times = times
+        return frames, frame_idx
+
+    def uniform_frames(self, video_path, *, num_frames, end_time=None, video_fps=None, duration=None,
+                       start_time=None):
+        """``load_uniform_video`` without side effects (safe in worker threads); also returns the frame times."""
         if video_path.endswith('.npy'):
             source = np.load(video_path, mmap_mode='r')
             total_frames = len(source)
@@ -217,8 +274,7 @@ class BaseVQA:
                 num_frames=num_frames,
                 end_frame_exclusive=end_frame,
             )
-            self.last_uniform_frame_times = [i / float(source_fps) for i in frame_idx]
-            return np.asarray(source[frame_idx]), frame_idx
+            return np.asarray(source[frame_idx]), frame_idx, [i / float(source_fps) for i in frame_idx]
 
         if os.path.isdir(video_path):
             if video_fps is None:
@@ -245,28 +301,62 @@ class BaseVQA:
                 img_path = os.path.join(video_path, img_files[index])
                 with Image.open(img_path) as image:
                     frames.append(np.array(image.convert('RGB')))
-            self.last_uniform_frame_times = [i / float(video_fps) for i in frame_idx]
-            return np.stack(frames, axis=0), frame_idx
+            return np.stack(frames, axis=0), frame_idx, [i / float(video_fps) for i in frame_idx]
 
-        reader = VideoReader(video_path, num_threads=1)
+        protocol_fps = float(getattr(self, "protocol_fps", 0.0))
+        if protocol_fps > 0 and start_time is None:
+            return self._protocol_frames(video_path, protocol_fps)
+        reader = self._open_reader(video_path)
         source_fps = float(reader.get_avg_fps())
         end_frame = frame_end_exclusive(
             total_frames=len(reader),
             fps=source_fps,
             end_time=end_time,
         )
-        frame_idx = uniform_frame_indices(
-            total_frames=len(reader),
+        # Diagnostic: skip the first uniform_start_frac of the window (0 = start at frame zero).
+        first = int(float(getattr(self, "uniform_start_frac", 0.0)) * end_frame)
+        if start_time is not None:
+            # Diagnostic (evidence-window oracle): sample only from start_time on.
+            first = min(max(0, int(float(start_time) * source_fps)), max(0, end_frame - 1))
+        frame_idx = [first + i for i in uniform_frame_indices(
+            total_frames=len(reader) - first,
             num_frames=num_frames,
-            end_frame_exclusive=end_frame,
-        )
+            end_frame_exclusive=end_frame - first,
+        )]
         if not frame_idx:
             raise ValueError(
                 f"No frames are available through time {end_time!r} in {video_path}"
             )
+        return reader.get_batch(frame_idx).asnumpy(), frame_idx, [i / source_fps for i in frame_idx]
+    
+    def _protocol_frames(self, video_path, fps):
+        """Frames of a whole video as qwen_vl_utils 0.0.14 samples them for Qwen3-VL (TimeLens-Bench protocol):
+        nframes = duration * fps floored to even within [4, min(768, frames)], indices linspace(0, frames - 1, nframes)
+        rounded; frames resized (multiples of 32) to at most max(min(768 * 32^2, total_pixels / nframes * 2),
+        1.05 * min_pixels) pixels, with total_pixels = protocol_total_tokens * 32^2, min_pixels = protocol_min_tokens * 32^2."""
+        from qwen_vl_utils.vision_process import smart_resize
+        probe = VideoReader(video_path, num_threads=1)
+        total, video_fps = len(probe), float(probe.get_avg_fps())
+        h, w = probe[0].shape[:2]
+        max_frames = min(768, total) // 2 * 2
+        nframes = min(min(max(total / video_fps * fps, 4), max_frames), total)
+        nframes = int(nframes // 2 * 2)  # floor_by_factor(nframes, 2), as smart_nframes
+        min_pixels = int(getattr(self, "protocol_min_tokens", 64)) * 1024
+        total_pixels = int(getattr(self, "protocol_total_tokens", 14336)) * 1024
+        max_pixels = max(min(768 * 1024, total_pixels / nframes * 2), int(min_pixels * 1.05))
+        h, w = smart_resize(h, w, factor=32, min_pixels=min_pixels, max_pixels=max_pixels)
+        reader = VideoReader(video_path, num_threads=1, width=w, height=h)
+        frame_idx = torch.linspace(0, total - 1, nframes).round().long().tolist()
+        return reader.get_batch(frame_idx).asnumpy(), frame_idx, [i / video_fps for i in frame_idx]
+
+    def load_frames_at_times(self, video_path, times):
+        """Decode the source frames nearest to the given times (seconds, sorted); sets ``last_uniform_frame_times``."""
+        reader = self._open_reader(video_path)
+        source_fps = float(reader.get_avg_fps())
+        frame_idx = sorted({min(len(reader) - 1, max(0, int(round(float(t) * source_fps)))) for t in times})
         self.last_uniform_frame_times = [i / source_fps for i in frame_idx]
         return reader.get_batch(frame_idx).asnumpy(), frame_idx
-    
+
     def format_mcqa_prompt(self, question, candidates):
         assert len(question) > 0, f"Q: {question}"
 
@@ -355,6 +445,8 @@ class BaseVQA:
         for video_sample in tqdm(video_annos):
             logger.debug(f'video_id: {video_sample["video_id"]}')
             self.analyze_a_video(video_sample)
+        if hasattr(self, '_flush_answers'):
+            self._flush_answers()  # answers still waiting for batched decoding
 
         final_df = pd.DataFrame(self.record)
         final_df.to_csv(f'{self.save_dir}/{self.num_chunks}_{self.chunk_idx}.csv', index=False, quoting=csv.QUOTE_NONNUMERIC)
@@ -380,6 +472,150 @@ def work(QA_CLASS):
         choices=("incremental", "uniform"),
         default="incremental",
         help="Incremental FPS stream or fixed-count uniform context per question",
+    )
+    parser.add_argument(
+        "--offline_keep_ratio",
+        type=float,
+        default=1.0,
+        help="Uniform sampling only: prune once after encoding, keeping this fraction of visual tokens",
+    )
+    parser.add_argument(
+        "--prune_score",
+        choices=("hermes", "random", "recent", "stratified", "oracle", "hermes_exact", "zoom", "fastvid", "flashvid",
+                 "vidcom2", "semvid", "core", "core_topk"),
+        default="hermes",
+        help="Token score used by compression: HERMES attention+recency, random, or most recent; "
+             "oracle keeps gold-interval frames first (diagnostic); hermes_exact propagates the "
+             "probe questions through every layer when scoring; fastvid / flashvid / vidcom2 prune before the LLM "
+             "(FastVID, NeurIPS 2025; FlashVID, ICLR 2026, vision side only; VidCom2, EMNLP 2025; "
+             "uniform sampling only)",
+    )
+    parser.add_argument(
+        "--retention_snapshot",
+        type=str2bool,
+        default=False,
+        help="Write per-question token retention per frame to retention-<chunk>.jsonl",
+    )
+    parser.add_argument(
+        "--question_attention",
+        type=str2bool,
+        default=False,
+        help="Uniform sampling: write the real question's attention per frame (before pruning) "
+             "to qattn-<chunk>.jsonl (diagnostic)",
+    )
+    parser.add_argument("--answer_attention", type=str2bool, default=False,
+                        help="Uniform sampling: write per-head gold-frame attention while reading the prompt and "
+                             "writing the answer to aattn-<chunk>.jsonl (diagnostic)")
+    parser.add_argument("--relevance_heads", type=str, default=None,
+                        help="Diagnostic: JSON [[layer, head], ...]; write their per-frame prompt attention after pruning "
+                             "to hrel-<chunk>.jsonl")
+    parser.add_argument("--contrastive_mode", choices=("none", "stamps", "blind", "noise"), default="none",
+                        help="Grounding answers by contrastive decoding against a counterfactual memory: the same frames "
+                             "with permuted timestamps ('stamps') or no frames ('blind')")
+    parser.add_argument("--contrastive_alpha", type=float, default=1.0, help="Contrastive decoding strength")
+    parser.add_argument("--contrastive_adaptive", type=str2bool, default=False,
+                        help="Confidence-adaptive contrast: strength alpha * (1 - max p(. | real memory)) at each step")
+    parser.add_argument("--contrastive_rule", choices=("pmi", "against"), default="pmi",
+                        help="pmi: (1+a) log p_M - a log p_C; against: log p_M - a max(0, log p_C - log p_M)")
+    parser.add_argument("--contrastive_trace", type=str2bool, default=False,
+                        help="Write top tokens with both log-probabilities at time-value steps to cdtrace-<chunk>.jsonl")
+    parser.add_argument("--contrastive_scope", choices=("all", "time", "time+answer", "time_start", "time_end"),
+                        default="all",
+                        help="Tokens the contrast applies to: all, time values only, or time values and the answer line; "
+                             "time_start / time_end: on Event lines, only the start / only the end time")
+    parser.add_argument("--prune_seed", type=int, default=0,
+                        help="prune_score=random: seed offset (0 = the seed of all earlier runs)")
+    parser.add_argument("--shared_selection", type=str2bool, default=False,
+                        help="Ablation (prune_score random / core_topk): keep the same tokens in every layer (one random "
+                             "draw; attention averaged over layers) instead of a selection per layer")
+    parser.add_argument("--answer_reserve", type=int, default=0,
+                        help="Batched decoding: when this many new tokens remain and no 'Answer:' line has started, "
+                             "write '\\nAnswer:' so the answer and its Time line fit (0 = off)")
+    parser.add_argument("--retrieval_min_gap", type=float, default=0.0,
+                        help="retrieval=frames*: use retrieval frames only when uniform frames would be at least this "
+                             "many seconds apart (question time / frames); denser videos keep uniform frames (0 = always)")
+    parser.add_argument("--batch_size", type=int, default=1,
+                        help="Decode the answers of this many questions together (memories are built one at a time)")
+    parser.add_argument("--prefetch_videos", type=int, default=0,
+                        help="Uniform sampling: decode the frames of this many upcoming questions in background threads")
+    parser.add_argument("--evidence_ablation", choices=("none", "gold", "control"), default="none",
+                        help="Diagnostic (uniform sampling): drop the frames inside the gold evidence interval, or as "
+                             "many frames outside it")
+    parser.add_argument("--core_mix", type=float, default=0.5,
+                        help="CoRe token sampling: weight of the relevance in the density (0 = random, 1 = no coverage floor)")
+    parser.add_argument("--core_alloc", choices=("equal", "attn", "siglip", "hybrid"), default="equal",
+                        help="CoRe per-frame quota: equal; or unequal with a floor from the question's attention mass "
+                             "per frame (attn), the SigLIP 2 question-frame similarity at the frame (siglip), or both "
+                             "z-scores averaged (hybrid)")
+    parser.add_argument("--core_alloc_mix", type=float, default=0.5,
+                        help="Unequal quotas: share = (1 - mix) / F + mix * softmax(z); the floor is (1 - mix) of an "
+                             "equal share")
+    parser.add_argument("--core_relevance", choices=("attn", "contrast"), default="attn",
+                        help="CoRe relevance: the question's attention, or contrast = log ratio to the attention of a "
+                             "question-free query (prior-contrastive retrieval; cancels attention sinks)")
+    parser.add_argument("--retrieval", choices=("none", "budget", "frames", "frames_cont"), default="none",
+                        help="Uniform sampling, query-aware (video_qa/retrieval.py): budget = per-frame token budget "
+                             "weighted by SigLIP 2 question-frame relevance (with offline_keep_ratio < 1); frames = "
+                             "frames drawn by inverse transform sampling of the relevance (half uniform), snapped to whole seconds; "
+                             "frames_cont = the same, continuous in time (always uniform_num_frames frames)")
+    parser.add_argument("--force_batched_decoder", type=str2bool, default=False,
+                        help="Diagnostic: use the batched decoder even with batch_size 1")
+    parser.add_argument("--decode_log", type=str2bool, default=False,
+                        help="Diagnostic (batched decoder): write answer token ids and top-1/top-2 score margins per step "
+                             "to decode-<chunk>.jsonl")
+    parser.add_argument("--contrastive_beta", type=float, default=0.1, help="Adaptive plausibility cut-off")
+    parser.add_argument("--visual_attention_gain", type=float, default=1.0,
+                        help="Answer generation: multiply the attention mass on visual-memory tokens by this factor "
+                             "(additive log-gain on their logits; 1 = off)")
+    parser.add_argument("--visual_attention_layers", type=str, default="all",
+                        help="Layers for visual_attention_gain: 'all' or 'start-end' (inclusive)")
+    parser.add_argument("--relevance_zoom", type=str2bool, default=False,
+                        help="Relevance-guided importance sampling: after the coarse pruned pass, allocate extra frames and "
+                             "the token budget by q = mix/N + (1-mix) p^temp from the relevance heads")
+    parser.add_argument("--zoom_mix", type=float, default=0.5, help="Relevance zoom: weight of uniform coverage in q")
+    parser.add_argument("--zoom_temp", type=float, default=1.0, help="Relevance zoom: temperature on the head relevance")
+    parser.add_argument("--zoom_windows", type=str, default=None,
+                        help="Coverage-then-zoom: JSON {question_id: [[start, end], ...]} of zoom windows (seconds)")
+    parser.add_argument("--zoom_frames", type=int, default=32,
+                        help="Coverage-then-zoom: extra frames sampled inside the zoom window(s)")
+    parser.add_argument("--zoom_share", type=float, default=0.6,
+                        help="Coverage-then-zoom: share of the token budget given to frames inside the window(s)")
+    parser.add_argument("--oracle_window", type=str2bool, default=False,
+                        help="Diagnostic upper bound: sample the uniform frames only inside the gold evidence "
+                             "interval; outside it, show timestamp text alone every 5 s (0.2 fps)")
+    parser.add_argument("--blind", type=str2bool, default=False,
+                        help="Diagnostic: answer without encoding any video frame")
+    parser.add_argument("--shuffle_mode", choices=("none", "frames", "stamps"), default="none",
+                        help="Diagnostic: permute frame pairs with their timestamps, or only the timestamps")
+    parser.add_argument("--time_offset", type=float, default=0.0,
+                        help="Diagnostic: add this many seconds to every Qwen3 timestamp")
+    parser.add_argument("--drop_timestamps", type=str2bool, default=False,
+                        help="Diagnostic: omit Qwen3's per-group timestamp text")
+    parser.add_argument("--uniform_start_frac", type=float, default=0.0,
+                        help="Diagnostic: uniform frames start at this fraction of the question time")
+    parser.add_argument("--protocol_fps", type=float, default=0.0,
+                        help="Uniform sampling: per-video frames and frame size as qwen_vl_utils (TimeLens-Bench "
+                             "protocol: 2 fps, protocol_total_tokens over the frames); overrides uniform_num_frames; 0 = off")
+    parser.add_argument("--protocol_total_tokens", type=int, default=14336)
+    parser.add_argument("--protocol_min_tokens", type=int, default=64)
+    parser.add_argument("--frame_max_pixels", type=int, default=0,
+                        help="Resize decoded frames as qwen_vl_utils does (multiples of 32) to at most this many pixels "
+                             "(TimeLens-Bench: total_pixels / num_frames * 2); 0 = off")
+    parser.add_argument("--frame_min_pixels", type=int, default=0,
+                        help="With --frame_max_pixels: lower bound on pixels per frame (TimeLens: 64 * 32 * 32)")
+    parser.add_argument(
+        "--frame_scale",
+        type=float,
+        default=1.0,
+        help="Decode video frames at this fraction of the source resolution (fewer visual tokens per frame)",
+    )
+    parser.add_argument(
+        "--sample_schedule",
+        type=str,
+        default=None,
+        help="Variable-rate incremental sampling, e.g. '1.0:60,0.5:160,0.2' "
+        "(fps until seconds, last stage open-ended), or 'grid:N:smax' for dense-early sampling "
+        "with progressive thinning of old frames (see GridPlan); overrides --sample_fps",
     )
     parser.add_argument(
         "--uniform_num_frames",
@@ -467,6 +703,13 @@ def work(QA_CLASS):
         help="S-EMBER MCQ prompt for counting questions: letter only or count then letter",
     )
     parser.add_argument(
+        "--grounding_prompt",
+        choices=("official", "full_span", "timeline", "timeline_debias", "events", "events_merged", "timelens", "raw"),
+        default="official",
+        help="S-EMBER grounding prompt: official; full_span (ask for the whole event span); or timeline "
+        "(list the relevant timestamped moments first, then derive the answer and interval)",
+    )
+    parser.add_argument(
         "--keep_time_tokens",
         type=lambda v: {"false": "none", "true": "all"}.get(str(v).lower(), str(v).lower()),
         choices=("none", "all", "surviving"),
@@ -544,6 +787,7 @@ def work(QA_CLASS):
         max_videos=args.max_videos,
         question_categories=args.question_categories,
         counting_prompt=args.counting_prompt,
+        grounding_prompt=args.grounding_prompt,
     )
 
     analyzer = QA_CLASS(
@@ -561,5 +805,89 @@ def work(QA_CLASS):
     analyzer.repetition_penalty = args.repetition_penalty
     analyzer.frame_sampling = args.frame_sampling
     analyzer.uniform_num_frames = args.uniform_num_frames
+    if args.frame_scale <= 0:
+        parser.error("frame_scale must be positive")
+    analyzer.frame_scale = args.frame_scale
+    analyzer.frame_max_pixels, analyzer.frame_min_pixels = args.frame_max_pixels, args.frame_min_pixels
+    analyzer.protocol_fps, analyzer.protocol_total_tokens, analyzer.protocol_min_tokens = (
+        args.protocol_fps, args.protocol_total_tokens, args.protocol_min_tokens)
+    analyzer.retention_snapshot = args.retention_snapshot
+    if not 0 < args.offline_keep_ratio <= 1:
+        parser.error("offline_keep_ratio must be in (0, 1]")
+    analyzer.offline_keep_ratio = args.offline_keep_ratio
+    videoqa_model.prune_score = args.prune_score
+    videoqa_model.exact_attention = args.prune_score == "hermes_exact"
+    analyzer.zoom_windows = json.load(open(args.zoom_windows)) if args.zoom_windows else None
+    analyzer.zoom_frames = args.zoom_frames
+    analyzer.relevance_heads = json.load(open(args.relevance_heads)) if args.relevance_heads else None
+    analyzer.relevance_zoom, analyzer.zoom_mix, analyzer.zoom_temp = args.relevance_zoom, args.zoom_mix, args.zoom_temp
+    analyzer.contrastive_mode, analyzer.contrastive_alpha, analyzer.contrastive_beta = (
+        args.contrastive_mode, args.contrastive_alpha, args.contrastive_beta)
+    analyzer.contrastive_scope = args.contrastive_scope
+    analyzer.contrastive_adaptive = args.contrastive_adaptive
+    analyzer.contrastive_rule, analyzer.contrastive_trace = args.contrastive_rule, args.contrastive_trace
+    if args.batch_size < 1:
+        parser.error("batch_size must be positive")
+    if args.batch_size > 1 and args.frame_sampling != "uniform" and args.use_history:
+        parser.error("batched answering in streaming needs use_history false (later questions would see the answers)")
+    analyzer.batch_size = args.batch_size
+    analyzer.force_batched_decoder, analyzer.decode_log = args.force_batched_decoder, args.decode_log
+    if args.prefetch_videos < 0:
+        parser.error("prefetch_videos must be nonnegative")
+    analyzer.prefetch_videos = args.prefetch_videos
+    analyzer.evidence_ablation = args.evidence_ablation
+    analyzer.retrieval = args.retrieval
+    analyzer.retrieval_min_gap = args.retrieval_min_gap
+    if args.answer_reserve < 0:
+        parser.error("answer_reserve must be nonnegative")
+    analyzer.answer_reserve = args.answer_reserve
+    videoqa_model.core_mix = args.core_mix
+    videoqa_model.core_alloc = args.core_alloc
+    videoqa_model.core_alloc_mix = args.core_alloc_mix
+    videoqa_model.core_relevance = args.core_relevance
+    videoqa_model.shared_selection = args.shared_selection
+    videoqa_model.prune_seed = args.prune_seed
+    if args.retrieval == "budget":
+        if args.offline_keep_ratio >= 1:
+            parser.error("retrieval=budget needs offline_keep_ratio < 1")
+        videoqa_model.force_token_provenance = True
+    if args.retrieval in ("frames", "frames_cont") and args.prefetch_videos:
+        parser.error("retrieval=frames picks frames per question; use prefetch_videos=0")
+    videoqa_model.visual_attention_gain = args.visual_attention_gain
+    if args.visual_attention_layers != "all":
+        lo, hi = (int(x) for x in args.visual_attention_layers.split("-"))
+        videoqa_model.visual_attention_layers = list(range(lo, hi + 1))
+    if args.visual_attention_gain != 1.0:
+        videoqa_model.force_token_provenance = True
+    if args.relevance_zoom and not (args.relevance_heads and args.offline_keep_ratio < 1):
+        parser.error("relevance_zoom needs relevance_heads and offline_keep_ratio < 1")
+    if args.relevance_heads:
+        videoqa_model.force_token_provenance = True
+    videoqa_model.zoom_share = args.zoom_share
+    if args.prune_score in ("stratified", "oracle", "zoom", "core", "core_topk"):
+        videoqa_model.force_token_provenance = True
+    if args.retention_snapshot or args.question_attention:
+        videoqa_model.force_token_provenance = True
+    analyzer.question_attention = args.question_attention
+    analyzer.answer_attention = args.answer_attention
+    analyzer.blind = args.blind
+    analyzer.oracle_window = args.oracle_window
+    analyzer.shuffle_mode = args.shuffle_mode
+    if args.answer_attention:
+        videoqa_model.force_token_provenance = True
+    videoqa_model.time_offset = args.time_offset
+    videoqa_model.drop_timestamps = args.drop_timestamps
+    if not 0 <= args.uniform_start_frac < 1:
+        parser.error("uniform_start_frac must be in [0, 1)")
+    analyzer.uniform_start_frac = args.uniform_start_frac
+    if not args.sample_schedule:
+        analyzer.sample_schedule = None
+    elif args.sample_schedule.startswith("dup:"):
+        analyzer.sample_schedule = DupSchedule(parse_sample_schedule(args.sample_schedule[len("dup:"):]))
+    elif args.sample_schedule.startswith("grid:"):
+        analyzer.sample_schedule = GridPlan.parse(args.sample_schedule)
+        videoqa_model.force_token_provenance = True
+    else:
+        analyzer.sample_schedule = parse_sample_schedule(args.sample_schedule)
     analyzer.analyze(debug=args.debug)
     videoqa_model.write_token_trace()

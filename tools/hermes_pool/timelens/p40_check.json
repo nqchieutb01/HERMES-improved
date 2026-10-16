@@ -1,0 +1,110 @@
+{
+ "slots": [
+  {
+   "partition": "long",
+   "qos": "gpu-debug-qos",
+   "batch": true,
+   "gpus_per_job": 2,
+   "mem_per_gpu": "16G",
+   "time": "03:00:00",
+   "max_jobs": 2
+  },
+  {
+   "partition": "cscc-gpu-p",
+   "qos": "cscc-gpu-qos",
+   "batch": true,
+   "gpus_per_job": 2,
+   "mem_per_gpu": "16G",
+   "time": "03:00:00",
+   "max_jobs": 2
+  }
+ ],
+ "runs": [
+  {
+   "name": "p40-bridge-charades",
+   "code": "/home/chieu.nguyen/HERMES/.claude/worktrees/p31-gate-pcdfix",
+   "chunks": 4,
+   "est_min": 30,
+   "priority": 7,
+   "env": {
+    "HERMES_QWEN3_ATTENTION_BACKEND": "flash_attention_2"
+   },
+   "overrides": [
+    "model=qwen3_vl_8b",
+    "experiment=sember_grounding_uniform",
+    "dataset.max_videos=100000",
+    "dataset.question_categories=[moment_retrieval]",
+    "dataset.grounding_prompt=timelens",
+    "run.keep_time_tokens=surviving",
+    "run.max_new_tokens=512",
+    "run.repetition_penalty=1.0",
+    "run.uniform_num_frames=64",
+    "run.protocol_fps=2",
+    "run.protocol_total_tokens=14336",
+    "run.protocol_min_tokens=64",
+    "run.prefetch_videos=4",
+    "dataset.annotation=/nfs-stor/chieu.nguyen/timelens-bench/charades_bridge400.jsonl",
+    "dataset.video_root=/nfs-stor/chieu.nguyen/timelens-bench/videos/charades/charades",
+    "run.prune_score=random",
+    "run.offline_keep_ratio=1.0",
+    "run.batch_size=1",
+    "paths.save_dir=/home/chieu.nguyen/HERMES/results/qwen3_vl_8b/timelens_charades/bridge-charades"
+   ]
+  },
+  {
+   "name": "p40-bridge-activitynet",
+   "code": "/home/chieu.nguyen/HERMES/.claude/worktrees/p31-gate-pcdfix",
+   "chunks": 8,
+   "est_min": 40,
+   "priority": 7,
+   "env": {
+    "HERMES_QWEN3_ATTENTION_BACKEND": "flash_attention_2"
+   },
+   "overrides": [
+    "model=qwen3_vl_8b",
+    "experiment=sember_grounding_uniform",
+    "dataset.max_videos=100000",
+    "dataset.question_categories=[moment_retrieval]",
+    "dataset.grounding_prompt=timelens",
+    "run.keep_time_tokens=surviving",
+    "run.max_new_tokens=512",
+    "run.repetition_penalty=1.0",
+    "run.uniform_num_frames=64",
+    "run.protocol_fps=2",
+    "run.protocol_total_tokens=14336",
+    "run.protocol_min_tokens=64",
+    "run.prefetch_videos=1",
+    "dataset.annotation=/nfs-stor/chieu.nguyen/timelens-bench/activitynet_bridge400.jsonl",
+    "dataset.video_root=/nfs-stor/chieu.nguyen/timelens-bench/videos/activitynet/activitynet",
+    "run.prune_score=random",
+    "run.offline_keep_ratio=1.0",
+    "run.batch_size=1",
+    "paths.save_dir=/home/chieu.nguyen/HERMES/results/qwen3_vl_8b/timelens_activitynet/bridge-activitynet"
+   ]
+  },
+  {
+   "name": "p40-sember-t8-unpruned",
+   "code": "/home/chieu.nguyen/HERMES/.claude/worktrees/p31-gate-pcdfix",
+   "chunks": 4,
+   "est_min": 60,
+   "priority": 8,
+   "env": {
+    "HERMES_QWEN3_ATTENTION_BACKEND": "flash_attention_2"
+   },
+   "overrides": [
+    "model=qwen3_vl_8b",
+    "model.model_path=/nfs-stor/chieu.nguyen/models/TimeLens-8B",
+    "dataset.max_videos=300",
+    "experiment=sember_grounding_uniform",
+    "run.uniform_num_frames=64",
+    "run.keep_time_tokens=surviving",
+    "dataset.grounding_prompt=timeline",
+    "run.max_new_tokens=384",
+    "run.offline_keep_ratio=1.0",
+    "paths.save_dir=/home/chieu.nguyen/HERMES/results/timelens_8b/sember_grounding/unpruned-timeline-v300",
+    "run.frame_max_pixels=1572864",
+    "run.frame_min_pixels=0"
+   ]
+  }
+ ]
+}

@@ -1,0 +1,310 @@
+{
+ "slots": [
+  {
+   "partition": "long",
+   "qos": "gpu-debug-qos",
+   "batch": true,
+   "gpus_per_job": 2,
+   "mem_per_gpu": "16G",
+   "time": "03:00:00",
+   "max_jobs": 2
+  },
+  {
+   "partition": "cscc-gpu-p",
+   "qos": "cscc-gpu-qos",
+   "batch": true,
+   "gpus_per_job": 2,
+   "mem_per_gpu": "16G",
+   "time": "03:00:00",
+   "max_jobs": 2
+  }
+ ],
+ "priority": 39,
+ "runs": [
+  {
+   "name": "p34-unpruned",
+   "code": "/home/chieu.nguyen/HERMES/.claude/worktrees/p31-gate-pcdfix",
+   "chunks": 8,
+   "est_min": 70,
+   "env": {
+    "HERMES_QWEN3_ATTENTION_BACKEND": "flash_attention_2",
+    "HERMES_RETRIEVAL_INDEX": "/nfs-stor/chieu.nguyen/activitynet/siglip2_1fps"
+   },
+   "overrides": [
+    "model=qwen3_vl_8b",
+    "experiment=sember_grounding_uniform",
+    "dataset.annotation=/nfs-stor/chieu.nguyen/activitynet/anet_val1_500.jsonl",
+    "dataset.video_root=/nfs-stor/chieu.nguyen/activitynet/videos_flat",
+    "dataset.max_videos=1000",
+    "dataset.question_categories=[moment_retrieval]",
+    "run.uniform_num_frames=64",
+    "run.keep_time_tokens=surviving",
+    "dataset.grounding_prompt=timeline",
+    "run.max_new_tokens=384",
+    "run.offline_keep_ratio=1.0",
+    "run.prune_score=random",
+    "run.prefetch_videos=4",
+    "run.batch_size=1",
+    "paths.save_dir=/home/chieu.nguyen/HERMES/results/qwen3_vl_8b/activitynet/unpruned"
+   ]
+  },
+  {
+   "name": "p34-random10",
+   "code": "/home/chieu.nguyen/HERMES/.claude/worktrees/p31-gate-pcdfix",
+   "chunks": 8,
+   "est_min": 35,
+   "env": {
+    "HERMES_QWEN3_ATTENTION_BACKEND": "flash_attention_2",
+    "HERMES_RETRIEVAL_INDEX": "/nfs-stor/chieu.nguyen/activitynet/siglip2_1fps"
+   },
+   "overrides": [
+    "model=qwen3_vl_8b",
+    "experiment=sember_grounding_uniform",
+    "dataset.annotation=/nfs-stor/chieu.nguyen/activitynet/anet_val1_500.jsonl",
+    "dataset.video_root=/nfs-stor/chieu.nguyen/activitynet/videos_flat",
+    "dataset.max_videos=1000",
+    "dataset.question_categories=[moment_retrieval]",
+    "run.uniform_num_frames=64",
+    "run.keep_time_tokens=surviving",
+    "dataset.grounding_prompt=timeline",
+    "run.max_new_tokens=384",
+    "run.offline_keep_ratio=0.1",
+    "run.batch_size=8",
+    "run.prune_score=random",
+    "run.prefetch_videos=4",
+    "paths.save_dir=/home/chieu.nguyen/HERMES/results/qwen3_vl_8b/activitynet/random10"
+   ]
+  },
+  {
+   "name": "p34-random10-pcd-ar64",
+   "code": "/home/chieu.nguyen/HERMES/.claude/worktrees/p31-gate-pcdfix",
+   "chunks": 8,
+   "est_min": 40,
+   "env": {
+    "HERMES_QWEN3_ATTENTION_BACKEND": "flash_attention_2",
+    "HERMES_RETRIEVAL_INDEX": "/nfs-stor/chieu.nguyen/activitynet/siglip2_1fps"
+   },
+   "overrides": [
+    "model=qwen3_vl_8b",
+    "experiment=sember_grounding_uniform",
+    "dataset.annotation=/nfs-stor/chieu.nguyen/activitynet/anet_val1_500.jsonl",
+    "dataset.video_root=/nfs-stor/chieu.nguyen/activitynet/videos_flat",
+    "dataset.max_videos=1000",
+    "dataset.question_categories=[moment_retrieval]",
+    "run.uniform_num_frames=64",
+    "run.keep_time_tokens=surviving",
+    "dataset.grounding_prompt=timeline",
+    "run.max_new_tokens=384",
+    "run.offline_keep_ratio=0.1",
+    "run.batch_size=8",
+    "run.prune_score=random",
+    "run.prefetch_videos=4",
+    "run.contrastive_mode=blind",
+    "run.contrastive_alpha=1.0",
+    "run.contrastive_adaptive=true",
+    "run.contrastive_scope=time",
+    "run.answer_reserve=64",
+    "paths.save_dir=/home/chieu.nguyen/HERMES/results/qwen3_vl_8b/activitynet/random10-pcd-ar64"
+   ]
+  },
+  {
+   "name": "p34-flashvid10",
+   "code": "/home/chieu.nguyen/HERMES/.claude/worktrees/p31-gate-pcdfix",
+   "chunks": 8,
+   "est_min": 35,
+   "env": {
+    "HERMES_QWEN3_ATTENTION_BACKEND": "flash_attention_2",
+    "HERMES_RETRIEVAL_INDEX": "/nfs-stor/chieu.nguyen/activitynet/siglip2_1fps"
+   },
+   "overrides": [
+    "model=qwen3_vl_8b",
+    "experiment=sember_grounding_uniform",
+    "dataset.annotation=/nfs-stor/chieu.nguyen/activitynet/anet_val1_500.jsonl",
+    "dataset.video_root=/nfs-stor/chieu.nguyen/activitynet/videos_flat",
+    "dataset.max_videos=1000",
+    "dataset.question_categories=[moment_retrieval]",
+    "run.uniform_num_frames=64",
+    "run.keep_time_tokens=surviving",
+    "dataset.grounding_prompt=timeline",
+    "run.max_new_tokens=384",
+    "run.offline_keep_ratio=0.1",
+    "run.batch_size=8",
+    "run.prune_score=flashvid",
+    "run.prefetch_videos=4",
+    "paths.save_dir=/home/chieu.nguyen/HERMES/results/qwen3_vl_8b/activitynet/flashvid10"
+   ]
+  },
+  {
+   "name": "p34-semvid10",
+   "code": "/home/chieu.nguyen/HERMES/.claude/worktrees/p31-gate-pcdfix",
+   "chunks": 8,
+   "est_min": 35,
+   "env": {
+    "HERMES_QWEN3_ATTENTION_BACKEND": "flash_attention_2",
+    "HERMES_RETRIEVAL_INDEX": "/nfs-stor/chieu.nguyen/activitynet/siglip2_1fps"
+   },
+   "overrides": [
+    "model=qwen3_vl_8b",
+    "experiment=sember_grounding_uniform",
+    "dataset.annotation=/nfs-stor/chieu.nguyen/activitynet/anet_val1_500.jsonl",
+    "dataset.video_root=/nfs-stor/chieu.nguyen/activitynet/videos_flat",
+    "dataset.max_videos=1000",
+    "dataset.question_categories=[moment_retrieval]",
+    "run.uniform_num_frames=64",
+    "run.keep_time_tokens=surviving",
+    "dataset.grounding_prompt=timeline",
+    "run.max_new_tokens=384",
+    "run.offline_keep_ratio=0.1",
+    "run.batch_size=8",
+    "run.prune_score=semvid",
+    "run.prefetch_videos=4",
+    "paths.save_dir=/home/chieu.nguyen/HERMES/results/qwen3_vl_8b/activitynet/semvid10"
+   ]
+  },
+  {
+   "name": "p34-semvid10-pcd-ar64",
+   "code": "/home/chieu.nguyen/HERMES/.claude/worktrees/p31-gate-pcdfix",
+   "chunks": 8,
+   "est_min": 40,
+   "env": {
+    "HERMES_QWEN3_ATTENTION_BACKEND": "flash_attention_2",
+    "HERMES_RETRIEVAL_INDEX": "/nfs-stor/chieu.nguyen/activitynet/siglip2_1fps"
+   },
+   "overrides": [
+    "model=qwen3_vl_8b",
+    "experiment=sember_grounding_uniform",
+    "dataset.annotation=/nfs-stor/chieu.nguyen/activitynet/anet_val1_500.jsonl",
+    "dataset.video_root=/nfs-stor/chieu.nguyen/activitynet/videos_flat",
+    "dataset.max_videos=1000",
+    "dataset.question_categories=[moment_retrieval]",
+    "run.uniform_num_frames=64",
+    "run.keep_time_tokens=surviving",
+    "dataset.grounding_prompt=timeline",
+    "run.max_new_tokens=384",
+    "run.offline_keep_ratio=0.1",
+    "run.batch_size=8",
+    "run.prune_score=semvid",
+    "run.prefetch_videos=4",
+    "run.contrastive_mode=blind",
+    "run.contrastive_alpha=1.0",
+    "run.contrastive_adaptive=true",
+    "run.contrastive_scope=time",
+    "run.answer_reserve=64",
+    "paths.save_dir=/home/chieu.nguyen/HERMES/results/qwen3_vl_8b/activitynet/semvid10-pcd-ar64"
+   ]
+  },
+  {
+   "name": "p34-u64-qtopk10",
+   "code": "/home/chieu.nguyen/HERMES/.claude/worktrees/p31-gate-pcdfix",
+   "chunks": 8,
+   "est_min": 35,
+   "env": {
+    "HERMES_QWEN3_ATTENTION_BACKEND": "flash_attention_2",
+    "HERMES_RETRIEVAL_INDEX": "/nfs-stor/chieu.nguyen/activitynet/siglip2_1fps"
+   },
+   "overrides": [
+    "model=qwen3_vl_8b",
+    "experiment=sember_grounding_uniform",
+    "dataset.annotation=/nfs-stor/chieu.nguyen/activitynet/anet_val1_500.jsonl",
+    "dataset.video_root=/nfs-stor/chieu.nguyen/activitynet/videos_flat",
+    "dataset.max_videos=1000",
+    "dataset.question_categories=[moment_retrieval]",
+    "run.uniform_num_frames=64",
+    "run.keep_time_tokens=surviving",
+    "dataset.grounding_prompt=timeline",
+    "run.max_new_tokens=384",
+    "run.offline_keep_ratio=0.1",
+    "run.batch_size=8",
+    "run.prune_score=core_topk",
+    "run.prefetch_videos=4",
+    "paths.save_dir=/home/chieu.nguyen/HERMES/results/qwen3_vl_8b/activitynet/u64-qtopk10"
+   ]
+  },
+  {
+   "name": "p34-rc64-rand10",
+   "code": "/home/chieu.nguyen/HERMES/.claude/worktrees/p31-gate-pcdfix",
+   "chunks": 8,
+   "est_min": 35,
+   "env": {
+    "HERMES_QWEN3_ATTENTION_BACKEND": "flash_attention_2",
+    "HERMES_RETRIEVAL_INDEX": "/nfs-stor/chieu.nguyen/activitynet/siglip2_1fps"
+   },
+   "overrides": [
+    "model=qwen3_vl_8b",
+    "experiment=sember_grounding_uniform",
+    "dataset.annotation=/nfs-stor/chieu.nguyen/activitynet/anet_val1_500.jsonl",
+    "dataset.video_root=/nfs-stor/chieu.nguyen/activitynet/videos_flat",
+    "dataset.max_videos=1000",
+    "dataset.question_categories=[moment_retrieval]",
+    "run.uniform_num_frames=64",
+    "run.keep_time_tokens=surviving",
+    "dataset.grounding_prompt=timeline",
+    "run.max_new_tokens=384",
+    "run.offline_keep_ratio=0.1",
+    "run.batch_size=8",
+    "run.prune_score=random",
+    "run.retrieval=frames_cont",
+    "paths.save_dir=/home/chieu.nguyen/HERMES/results/qwen3_vl_8b/activitynet/rc64-rand10"
+   ]
+  },
+  {
+   "name": "p34-rc64-qtopk10",
+   "code": "/home/chieu.nguyen/HERMES/.claude/worktrees/p31-gate-pcdfix",
+   "chunks": 8,
+   "est_min": 35,
+   "env": {
+    "HERMES_QWEN3_ATTENTION_BACKEND": "flash_attention_2",
+    "HERMES_RETRIEVAL_INDEX": "/nfs-stor/chieu.nguyen/activitynet/siglip2_1fps"
+   },
+   "overrides": [
+    "model=qwen3_vl_8b",
+    "experiment=sember_grounding_uniform",
+    "dataset.annotation=/nfs-stor/chieu.nguyen/activitynet/anet_val1_500.jsonl",
+    "dataset.video_root=/nfs-stor/chieu.nguyen/activitynet/videos_flat",
+    "dataset.max_videos=1000",
+    "dataset.question_categories=[moment_retrieval]",
+    "run.uniform_num_frames=64",
+    "run.keep_time_tokens=surviving",
+    "dataset.grounding_prompt=timeline",
+    "run.max_new_tokens=384",
+    "run.offline_keep_ratio=0.1",
+    "run.batch_size=8",
+    "run.prune_score=core_topk",
+    "run.retrieval=frames_cont",
+    "paths.save_dir=/home/chieu.nguyen/HERMES/results/qwen3_vl_8b/activitynet/rc64-qtopk10"
+   ]
+  },
+  {
+   "name": "p34-rc64-qtopk10-pcd-ar64",
+   "code": "/home/chieu.nguyen/HERMES/.claude/worktrees/p31-gate-pcdfix",
+   "chunks": 8,
+   "est_min": 40,
+   "env": {
+    "HERMES_QWEN3_ATTENTION_BACKEND": "flash_attention_2",
+    "HERMES_RETRIEVAL_INDEX": "/nfs-stor/chieu.nguyen/activitynet/siglip2_1fps"
+   },
+   "overrides": [
+    "model=qwen3_vl_8b",
+    "experiment=sember_grounding_uniform",
+    "dataset.annotation=/nfs-stor/chieu.nguyen/activitynet/anet_val1_500.jsonl",
+    "dataset.video_root=/nfs-stor/chieu.nguyen/activitynet/videos_flat",
+    "dataset.max_videos=1000",
+    "dataset.question_categories=[moment_retrieval]",
+    "run.uniform_num_frames=64",
+    "run.keep_time_tokens=surviving",
+    "dataset.grounding_prompt=timeline",
+    "run.max_new_tokens=384",
+    "run.offline_keep_ratio=0.1",
+    "run.batch_size=8",
+    "run.prune_score=core_topk",
+    "run.retrieval=frames_cont",
+    "run.contrastive_mode=blind",
+    "run.contrastive_alpha=1.0",
+    "run.contrastive_adaptive=true",
+    "run.contrastive_scope=time",
+    "run.answer_reserve=64",
+    "paths.save_dir=/home/chieu.nguyen/HERMES/results/qwen3_vl_8b/activitynet/rc64-qtopk10-pcd-ar64"
+   ]
+  }
+ ]
+}

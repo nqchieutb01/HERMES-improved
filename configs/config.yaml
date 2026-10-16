@@ -19,6 +19,83 @@ run:
   # incremental uses sample_fps; uniform resets per question and uses source frames.
   frame_sampling: incremental
   uniform_num_frames: null
+  # Variable-rate incremental sampling, e.g. "1.0:60,0.5:160,0.2" (fps:until_seconds, last open-ended).
+  sample_schedule: null
+  # Decode frames at this fraction of source resolution (1.0 = native); fewer visual tokens per frame.
+  frame_scale: 1.0
+  # Resize frames as qwen_vl_utils does to at most this many pixels (TimeLens-Bench: total_pixels / frames * 2); 0 = off.
+  frame_max_pixels: 0
+  # Uniform sampling as qwen_vl_utils / TimeLens-Bench: fps per video, total tokens spread over the frames (0 = off).
+  protocol_fps: 0.0
+  protocol_total_tokens: 14336
+  protocol_min_tokens: 64
+  frame_min_pixels: 0
+  # Log per-question token retention per streamed frame (retention-<chunk>.jsonl).
+  retention_snapshot: false
+  # Offline pruning (uniform sampling): keep this fraction of visual tokens after encoding.
+  offline_keep_ratio: 1.0
+  # Compression token score: hermes (attention + recency), random, or recent.
+  prune_score: hermes
+  # Diagnostics (all off by default): real-question attention per frame (qattn-<chunk>.jsonl),
+  # shift or drop Qwen3 timestamp text, start uniform frames later in the window.
+  question_attention: false
+  answer_attention: false
+  blind: false
+  oracle_window: false
+  # Coverage-then-zoom (prune_score=zoom): windows JSON, extra frames in the windows, budget share.
+  zoom_windows: null
+  # Diagnostic: JSON list of [layer, head]; per-frame prompt attention after pruning (hrel-<chunk>.jsonl).
+  relevance_heads: null
+  # Relevance-guided importance sampling (needs relevance_heads and offline_keep_ratio < 1).
+  relevance_zoom: false
+  # Visual-attention rebalancing during answer generation (1.0 = off); layers 'all' or 'start-end'.
+  # Contrastive decoding against a counterfactual memory: none | stamps | blind.
+  contrastive_mode: none
+  contrastive_alpha: 1.0
+  contrastive_beta: 0.1
+  # Tokens the contrast applies to: all | time | time+answer.
+  contrastive_scope: all
+  # Confidence-adaptive contrast strength: alpha * (1 - max p(. | real memory)).
+  contrastive_adaptive: false
+  # Scoring rule: pmi = (1+a) log p_M - a log p_C; against = log p_M - a max(0, log p_C - log p_M).
+  contrastive_rule: pmi
+  # Diagnostic: top tokens with both log-probabilities at time-value steps (cdtrace-<chunk>.jsonl).
+  contrastive_trace: false
+  # Answers of this many questions are decoded together (memories are still built one question at a time).
+  batch_size: 1
+  # Uniform sampling: decode the frames of this many upcoming questions in background threads (0 = off).
+  prefetch_videos: 0
+  # Diagnostic: drop the frames inside the gold evidence (gold) or as many outside it (control).
+  evidence_ablation: none
+  # Query-aware retrieval from the SigLIP 2 frame index (video_qa/retrieval.py; uniform sampling only):
+  # budget = retrieval-weighted per-frame token budget, frames = retrieval-guided frame sampling.
+  retrieval: none
+  # retrieval=frames*: only when uniform frames would be at least this many seconds apart (0 = always).
+  retrieval_min_gap: 0.0
+  # Batched decoding: with this many tokens left and no 'Answer:' line yet, write '\nAnswer:' (0 = off).
+  answer_reserve: 0
+  # Ablation (prune_score random / core_topk): the same kept tokens in every layer instead of one selection per layer.
+  shared_selection: false
+  # prune_score=random: seed offset (0 = the seed of all earlier runs).
+  prune_seed: 0
+  # CoRe token sampling (prune_score=core): weight of the question relevance in the per-frame density.
+  core_mix: 0.5
+  # CoRe per-frame quota: equal, or attn (self-retrieval quotas from the question's attention mass per frame).
+  core_alloc: equal
+  # Unequal quotas: share = (1 - mix) / F + mix * softmax(z) per frame.
+  core_alloc_mix: 0.5
+  # CoRe relevance: attn (question attention) or contrast (log ratio to a question-free query's attention).
+  core_relevance: attn
+  visual_attention_gain: 1.0
+  visual_attention_layers: all
+  zoom_mix: 0.5
+  zoom_temp: 1.0
+  zoom_frames: 32
+  zoom_share: 0.6
+  shuffle_mode: none
+  time_offset: 0.0
+  drop_timestamps: false
+  uniform_start_frac: 0.0
   kv_size: 6000
   debug: false
   encode_chunk_size: 16
