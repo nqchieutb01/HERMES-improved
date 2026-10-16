@@ -1,0 +1,4 @@
+gt - /home/chieu.nguyen/hermes_pool/nextgqa/calib_gt.jsonl
+mcq /home/chieu.nguyen/HERMES/results/qwen3_vl_8b/nextgqa/unpruned /home/chieu.nguyen/hermes_pool/nextgqa/calib_mcq_qwen3_unpruned.jsonl
+oe /home/chieu.nguyen/HERMES/results/qwen3_vl_8b/nextgqa_open/oe-unpruned /home/chieu.nguyen/HERMES/results/qwen3_vl_8b/nextgqa_open/oe-unpruned/open_judgments.jsonl
+tl /home/chieu.nguyen/HERMES/results/qwen3_vl_8b/nextgqa_open/tl-unpruned /home/chieu.nguyen/HERMES/results/qwen3_vl_8b/nextgqa_open/tl-unpruned/open_judgments.jsonl

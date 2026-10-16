@@ -1,0 +1,3 @@
+oe /home/chieu.nguyen/HERMES/results/qwen3_vl_8b/nextgqa_open/oe-random10 /home/chieu.nguyen/HERMES/results/qwen3_vl_8b/nextgqa_open/oe-random10/open_judgments.jsonl
+oe /home/chieu.nguyen/HERMES/results/qwen3_vl_8b/nextgqa_open/oe-cover30 /home/chieu.nguyen/HERMES/results/qwen3_vl_8b/nextgqa_open/oe-cover30/open_judgments.jsonl
+oe /home/chieu.nguyen/HERMES/results/qwen3_vl_8b/nextgqa_open/oe-random30 /home/chieu.nguyen/HERMES/results/qwen3_vl_8b/nextgqa_open/oe-random30/open_judgments.jsonl

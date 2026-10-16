@@ -1,0 +1,11 @@
+--- a/evaluation/eval_dataloader.py	2026-10-14 12:21:06.312938621 +0400
++++ b/evaluation/eval_dataloader.py	2026-10-14 23:52:13.781885388 +0400
+@@ -90,7 +90,7 @@
+         dataset,
+         batch_size=1,
+         shuffle=False,
+-        num_workers=10,
++        num_workers=int(os.environ.get("TL_NUM_WORKERS", "10")),  # hermes_pool: parallel video loading only
+         prefetch_factor=2,
+         pin_memory=True,
+         collate_fn=lambda x: x[0],

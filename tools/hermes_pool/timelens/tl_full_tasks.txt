@@ -1,0 +1,12 @@
+012 qwen3 /nfs-stor/chieu.nguyen/models/Qwen3-VL-8B-Instruct charades anchor 2 14336 64 8
+012 qwen3 /nfs-stor/chieu.nguyen/models/Qwen3-VL-8B-Instruct qvhighlights anchor 2 14336 64 8
+014 qwen3 /nfs-stor/chieu.nguyen/models/Qwen3-VL-8B-Instruct activitynet anchor 2 14336 64 16
+013 t8 /nfs-stor/chieu.nguyen/models/TimeLens-8B charades anchor 2 14336 64 8
+013 t8 /nfs-stor/chieu.nguyen/models/TimeLens-8B qvhighlights anchor 2 14336 64 8
+015 t8 /nfs-stor/chieu.nguyen/models/TimeLens-8B activitynet anchor 2 14336 64 16
+016 qwen3 /nfs-stor/chieu.nguyen/models/Qwen3-VL-8B-Instruct charades tl-2fps-3500 2 3500 16 8
+016 qwen3 /nfs-stor/chieu.nguyen/models/Qwen3-VL-8B-Instruct qvhighlights tl-2fps-4500 2 4500 16 4
+018 qwen3 /nfs-stor/chieu.nguyen/models/Qwen3-VL-8B-Instruct activitynet tl-2fps-4800 2 4800 16 12
+017 t8 /nfs-stor/chieu.nguyen/models/TimeLens-8B charades tl-2fps-3500 2 3500 16 8
+017 t8 /nfs-stor/chieu.nguyen/models/TimeLens-8B qvhighlights tl-2fps-4500 2 4500 16 4
+019 t8 /nfs-stor/chieu.nguyen/models/TimeLens-8B activitynet tl-2fps-4800 2 4800 16 12
