@@ -8,19 +8,22 @@ timestamps that survive only together with visual tokens of their frame, so prun
 uniqueness or text similarity empty frames, delete their timestamps, and fall \emph{below random token selection} on
 grounding. When the answer lists observed moments before the interval, the gaps are filled by a video-free prior:
 asked with no video at all, the model still starts its intervals at the beginning of the window. We propose
-\method, a training-free method that selects frames by the question (BOLT) and adds two parts. \emph{Coverage} gives every frame an equal token quota, chosen per
-layer by the actual question's attention, so that every time anchor survives. \emph{Prior-contrastive decoding}
+\method, a training-free method that selects frames by the question (BOLT) and adds two parts. \emph{Coverage} keeps,
+in every layer, the tokens that the actual question attends to most, under an equal per-frame quota that guarantees
+every time anchor survives; with the question's attention, a global top-$k$ without the quota does as well in the
+settings we tested, so the question score is what drives the gain. \emph{Prior-contrastive decoding}
 (PCD) writes each time value against the model's own no-video prediction. The two parts behave differently across
-answer formats, which we study directly. Under the standard one-line grounding prompt, Coverage alone matches the
-uncompressed model with a quarter of the visual tokens on a general and a grounding-tuned model of the same family
-(QVHighlights, 61.7 \vs 60.5 and 67.3 \vs 67.1 mIoU) and beats random selection (\key{$+3.5$} and \key{$+2.0$}),
-while PCD has no effect; on the full Charades-STA and QVHighlights sets of TimeLens-Bench, Coverage at 31\% of the
-tokens is lossless on both models and beats both random selection and a lower-resolution input of the same budget. In reasoning-style grounded QA (S-EMBER), PCD is what matters: with 10\% of the tokens
-\method improves on the uncompressed model by \key{$+11.2$} and \key{$+10.7$} mIoU under the same prompt, and
-matches an oracle that sees only the gold evidence on grounded answers. Asking
-for a timeline of observations instead of a single interval costs single-moment grounding about 30 mIoU, so the
-answer format is a first-order variable in evaluating compressed memories. We evaluate every method against
-video-free floors and report where the method helps less: on short, densely sampled videos (Charades-STA,
-NExT-GQA) the gain of Coverage is small at moderate budgets and grows as the budget shrinks (\key{$+6.8$} accuracy
-over random selection at 5\% on NExT-GQA), and PCD helps only where the answer format lets the prior choose the times.
+answer formats, which we study directly. Under the standard one-line grounding prompt, on the full Charades-STA and
+QVHighlights sets of TimeLens-Bench, Coverage at 31\% of the tokens is within 0.3 mIoU of the uncompressed model on a
+general and a grounding-tuned model of the same family, and beats random selection (\key{$+0.5$} to \key{$+1.6$}) and a
+lower-resolution input of the same budget (\key{$+2.1$} to \key{$+2.6$}), while PCD has no effect (on a 513-query subset). In
+reasoning-style grounded QA (S-EMBER), PCD is what matters: with 10\% of the tokens \method improves on the
+uncompressed model by \key{$+11.2$} and \key{$+10.7$} mIoU under the same prompt, although an input restricted to the
+gold evidence stays above it in accuracy, and on every metric for the grounding-tuned model. Asking for a timeline of observations
+instead of a single interval costs single-moment grounding about 30 mIoU, so the answer format is a first-order
+variable in evaluating compressed memories. We evaluate every method against video-free floors and report where the
+method helps less: on short, densely sampled videos the gain of Coverage on grounding is small (Charades-STA
+\key{$+0.5$} mIoU; NExT-GQA), although on NExT-GQA it keeps the accuracy of the uncompressed model at 10\% of the
+tokens where random selection loses about four points; and PCD helps only where the answer format lets the prior
+choose the times, and lowers the scored grounding where it disturbs that format.
 \end{abstract}

@@ -86,7 +86,8 @@ for both the unpruned and the random 10\% memory. Within the HERMES 10\% memory,
 Adding ``The relevant moments may occur at any point in the video; do not assume they are near the start'' to the
 prompt leaves the leak almost unchanged (29.5\%~$\rightarrow$~28.0\%) and grounding unchanged ($-0.1$ mIoU). Within this answer format, the
 prior acts in the output distribution and has to be removed there. Whether the same prior appears when the model
-answers with a single interval is an open question: there PCD has no effect (\cref{sec:transfer}), which suggests
+answers with a single interval is an open question: there PCD has no effect (\cref{sec:transfer}; in runs without
+the answer reserve, which alone changes S-EMBER grounding by only $+0.1$), which suggests
 that the prior decides fewer of the written times. \TODO{no-video answers and leak under the one-line and
 direct-answer prompts.}
 

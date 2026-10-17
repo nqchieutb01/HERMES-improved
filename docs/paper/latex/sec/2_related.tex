@@ -19,7 +19,9 @@ PruneVid~\cite{prunevid} keeps the top 40\% of tokens by question attention at o
 closest in structure (keyframes, then tokens with a relevance-weighted per-frame budget), and LGTTP is the only
 method we know that evaluates grounding, at a milder budget and offline. \method differs in three ways: the
 per-frame quota is equal by design, the score is the actual question's attention propagated exactly through all
-layers, and the quota exists to keep every timestamp, which we show matters for grounding.
+layers, and the quota exists to keep every timestamp. We show that emptying frames hurts grounding, and that with
+the actual question's attention the quota is a safeguard rather than the source of the gain
+(\cref{sec:res-coverage}).
 
 \paragraph{KV-cache compression and video memory.}
 SnapKV~\cite{snapkv}, H\textsubscript{2}O~\cite{h2o}, PyramidKV~\cite{pyramidkv} and Ada-KV~\cite{adakv} evict

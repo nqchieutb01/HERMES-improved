@@ -27,13 +27,17 @@ SPECS = {
     "replay": ("col", [1, 2], {2}, None),
     "budget": ("col", list(range(1, 10)), set(), None),
     "frames": ("row", [2, 3, 4], set(), None),
-    "oracle": ("col", [1, 2, 3, 4, 5], {5}, None),
+    "oracle": ("col", [2, 3, 4, 5, 6], {6}, None),
     "closed": ("col", [1], set(), None),
     "prompt": ("col", [1, 2, 3, 4], set(), None),
     "standard": ("colblock", [2, 3], set(), None),
-    "tl8b": ("col", [1, 2], set(), None),
-    "nextgqa": ("colblock", [2, 3, 4, 5, 6], set(), None),
-    "fullsweep": ("col", [1, 2], set(), None),
+    "tl8b": ("col", [1, 2, 3, 4], set(), None),
+    "nextgqa": ("colblock", [2, 3, 4, 5], set(), None),
+    "nextgqa-open": ("colblock", [2, 3, 4, 5], set(), None),
+    "nextgqa-debug": ("colblock", [1, 2, 3, 4], set(), lambda r: "30\\%" not in r and "24.9" not in r),
+    "oracle-tl8b": ("col", [2, 3, 4, 5], set(), None),
+    "official": ("col", [1, 2, 3], {3}, None),
+    "fullsweep": ("col", [1, 2, 3, 4], set(), None),
 }
 
 
@@ -70,9 +74,12 @@ def mark_table(block, mode, cols, lower, keep):
             blocks.setdefault(max(j for j in mids if j < i), []).append(i)
         for rows in blocks.values():
             for c in cols:
-                n = max(len(numbers(cells[i][c])) for i in rows)
+                rows_c = [i for i in rows if c < len(cells[i])]
+                if not rows_c:
+                    continue
+                n = max(len(numbers(cells[i][c])) for i in rows_c)
                 for k in range(n):
-                    groups.append(([(i, c, k) for i in rows], c in lower))
+                    groups.append(([(i, c, k) for i in rows_c], c in lower))
     elif mode == "col":
         for c in cols:
             n = max(len(numbers(cells[i][c])) for i in body if c < len(cells[i]))

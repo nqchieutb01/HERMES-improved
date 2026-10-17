@@ -36,9 +36,9 @@ decoder writes where the memory has nothing to say.
 \paragraph{Observation 3: the answer format decides which failure dominates.}
 The two observations call for two remedies, and they do not matter equally everywhere. On the same QVHighlights
 queries and the same memory, asking for a timeline of observations instead of a single interval costs about 30 mIoU
-(\cref{sec:transfer}). Under the one-line format, keeping anchors is what helps and contrastive decoding does
-nothing; under the timeline format, the video-free prior writes many of the times, and contrasting it away is what
-helps. We therefore treat the answer format as an experimental variable, not a fixed detail of the protocol.
+(\cref{sec:transfer}). Under the one-line format, selecting tokens by the question is what helps and contrastive
+decoding does nothing; under the timeline format, the video-free prior writes many of the times, and contrasting it
+away is what helps, as long as the contrast does not break the answer format. We therefore treat the answer format as an experimental variable, not a fixed detail of the protocol.
 
 \paragraph{Observation 4: benchmark floors are high.}
 Grounding benchmarks have strong positional regularities~\cite{otani2020uncovering}. On S-EMBER, where questions are
@@ -54,8 +54,10 @@ failure, behind an optional BOLT front end that chooses which frames to encode (
   \item \textbf{Coverage} (\cref{sec:coverage}) keeps the anchors. After the frames are encoded, the KV cache is
   pruned layer by layer. Every frame keeps an equal share of the layer's budget, and within each frame the tokens
   that the \emph{actual question} attends to most are kept. Because a timestamp survives exactly when one of its
-  frame's visual tokens survives, the equal quota keeps every time anchor, and the question decides what each anchor
-  shows.
+  frame's visual tokens survives, the equal quota guarantees every time anchor, and the question decides what each
+  anchor shows. In the settings we tested, a global top-$k$ of the same question attention without the quota does as
+  well, so the question score drives the gain and the quota is a safeguard against scores that collapse onto a few
+  frames.
   \item \textbf{Prior-contrastive decoding (PCD)} (\cref{sec:contrast}) removes the prior where it writes the answer.
   Each time value is chosen by contrasting the model's prediction with its prediction from a video-free memory, the
   content-free contrast of contextual calibration and context-aware decoding~\cite{calibratebeforeuse,cad} applied
@@ -71,16 +73,22 @@ each of them, \emph{when} each one matters, and to make them work together:
   \item \textbf{A diagnosis of grounding under compression} (\cref{sec:diagnosis}). QA-oriented pruners empty frames
   and fall below random selection; in reasoning-style answers the decoder's video-free prior fills the gaps, which an
   evidence-removal test shows causally.
-  \item \textbf{Coverage}, a per-layer equal quota filled by the question (\cref{sec:coverage}). Under the standard
-  one-line prompt it matches the uncompressed model with 24\% of the visual tokens on Qwen3-VL-8B and the
-  grounding-tuned TimeLens-8B, beats random selection, SemVID and a matched low-resolution input, and at 897 tokens
-  exceeds a 1\,fps input of 1{,}125 tokens by $+8.8^*$ mIoU; on the full Charades-STA set it matches the
-  uncompressed model and beats random selection (\cref{sec:transfer}).
-  \item \textbf{PCD and an answer-format study} (\cref{sec:contrast,sec:transfer}). PCD helps reasoning-style answers
-  on all eight memories we test and on both models; with 10\% of the tokens \method improves on the uncompressed
-  model by $+11.2^*$ and $+10.7^*$ mIoU on S-EMBER grounded QA under the same prompt. The same study shows that the
-  answer format alone moves single-moment grounding by about 30 mIoU and decides whether contrastive decoding helps.
+  \item \textbf{Coverage}, per-layer question-driven token selection under an equal quota (\cref{sec:coverage}).
+  Under the standard one-line prompt, on the full Charades-STA and QVHighlights sets and on both Qwen3-VL-8B and the
+  grounding-tuned TimeLens-8B, it matches the uncompressed model with 24\% of the visual tokens and beats random
+  selection ($+0.5^*$ to $+1.6^*$ mIoU) and a matched low-resolution input ($+2.1^*$ to $+2.6^*$)
+  (\cref{sec:transfer}). On NExT-GQA at 10\% of the tokens it keeps the accuracy of the uncompressed model, where random
+  selection loses about four points ($+3.4^*$ and $+3.2^*$ over random). With BOLT frames it exceeds a 1\,fps input
+  of a similar budget by $+9.2^*$ and $+6.5^*$ mIoU, but random tokens on the same frames already gain $+7.0^*$ and $+6.1^*$: that gain belongs
+  mostly to the front end.
+  \item \textbf{PCD and an answer-format study} (\cref{sec:contrast,sec:transfer}). On S-EMBER, PCD helps
+  reasoning-style answers on all eight memories we test and on both models; with 10\% of the tokens \method improves
+  on the uncompressed model by $+11.2^*$ and $+10.7^*$ mIoU under the same prompt. The same study shows that the
+  answer format alone moves single-moment grounding by about 30 mIoU and decides whether contrastive decoding helps:
+  PCD does nothing for one-line answers, and on NExT-GQA it lowers the scored grounding where it disturbs the format
+  (TimeLens-8B timeline answers, minutes:seconds under the official prompt).
   \item \textbf{Floor-adjusted, reproducible evaluation} (\cref{sec:setup}). Video-free floors and a length-rescaling
   baseline for every method, paired bootstrap tests, a reproduction of the published TimeLens-Bench numbers within
-  0.3 mIoU, and a broad set of negative results, including the limits of Coverage on short, densely sampled videos.
+  0.3 mIoU, sanity checks with no video and shuffled frames or timestamps, and a broad set of negative results,
+  including the limits of Coverage on short, densely sampled videos and of PCD outside the timeline format.
 \end{enumerate}

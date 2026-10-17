@@ -42,7 +42,9 @@ mass, attention sinks and recency bias give a single frame up to 227 of about 2{
 quotas with a floor, from SigLIP similarity or attention mass, did not beat equal quotas in a pre-registered test
 ($-0.2$ mIoU). Using the \emph{actual} question, rather than the generic probe questions of
 streaming memories such as HERMES~\cite{hermes}, is what makes attention informative: generic probes with a global
-top-$k$ are the weakest variant we measured (18.3 mIoU).
+top-$k$ are the weakest variant we measured (18.3 mIoU), and the equal quota lifts them by $5.3^*$. With the actual
+question, however, a global top-$k$ without any quota has so far done as well as the equal quota
+(\cref{sec:res-coverage}); the quota is then a guarantee rather than the source of the gain.
 
 \paragraph{Per-layer selection.}
 Each layer keeps its own set $\mathcal{K}_\ell$. Forcing one shared set (attention averaged over layers) costs
@@ -55,7 +57,10 @@ An equal quota needs enough tokens per frame to show anything: with 2--4 tokens 
 tokens carry little content and Coverage collapses (\cref{sec:frames}). When the budget is small, we therefore spend
 it on fewer frames: at a fixed number of kept tokens, 32 frames with twice the share per frame recover what 64 frames
 lose. As a rule we use $F{=}64$ when each frame pair keeps at least ${\sim}8$ tokens and halve $F$ otherwise.
-\TODO{this rule was derived from the results of \cref{sec:frames}; validate it on held-out data.}
+Kept timestamps count inside the budget; at budgets of a few hundred tokens they take a large share of it, and part
+of the collapse may come from this accounting (\cref{sec:budget}).
+\TODO{this rule was derived from the results of \cref{sec:frames}; validate it on held-out data and with the fixed
+timestamp rule.}
 
 \paragraph{Cost.}
 Coverage adds one forward pass of the question over the uncompressed memory per question; the full memory is
@@ -102,9 +107,13 @@ model confident (\eg evidence that truly starts at 0\,s), PCD fades and the earl
 model hesitates between times, the evidence term decides.
 
 The timeline prompt matters: PCD acts on the listed \texttt{Seen:} moments and then on the interval, so the interval
-is written from contrasted observations. When the answer is a single interval, PCD has little to correct: with the
-one-line grounding prompt it changes mIoU by $-0.1$ (n.s., \cref{sec:transfer}), and with the direct-answer prompt by
-$+0.4$.
+is written from contrasted observations. With PCD we also keep an answer reserve of 64 tokens of the generation
+budget for the final \texttt{Answer:} and \texttt{Time:} lines (when 64 tokens remain and no \texttt{Answer:} line has started, the decoder writes one); on its own the reserve changes S-EMBER mIoU by
+$+0.1$ (n.s.) and only repairs three truncated answers. When the answer is a single interval, PCD has little to
+correct: with the one-line grounding prompt it changes mIoU by $-0.1$ (n.s., \cref{sec:transfer}; these runs had no
+reserve). Under the official direct-answer prompt we have no clean PCD-only comparison on S-EMBER yet; on NExT-GQA,
+PCD under that prompt lowers the scored grounding because more times are written as minutes:seconds
+(\cref{sec:res-contrast}).
 
 \subsection{BOLT: question-guided frames}
 \label{sec:retrieval}

@@ -7,25 +7,53 @@ about 30 mIoU against the standard one-line prompt, and with it Qwen3-VL-8B stay
 ActivityNet Captions and Charades-STA. Our gains over the uncompressed model on QVHighlights, ActivityNet and
 Charades-STA (\cref{tab:main}) are therefore relative to this format; under the one-line prompt the comparison is
 \cref{tab:standard} and, on the full Charades-STA and QVHighlights sets, \cref{tab:fullsweep}; the full ActivityNet set
-is not yet run. On S-EMBER, \method beats the uncompressed
-model when both answer in the timeline format; the uncompressed model under the official direct-answer prompt is
-still to be reported. \TODO{S-EMBER without pruning under the direct-answer and one-line prompts.}
+is not yet run. On S-EMBER, \method beats the uncompressed model when both answer in the timeline format. Under the
+official direct-answer prompt, \method reaches 34.6 mIoU (grounding only, not yet judged), $4.7^*$ below \method with
+the timeline prompt and $+4.5^*$ above Coverage alone (\cref{tab:official}); the uncompressed model under this prompt
+is still to be reported, so we cannot yet say whether \method improves on it. \TODO{S-EMBER without pruning under the
+direct-answer and one-line prompts; judged answers under the direct-answer prompt.}
 
 \paragraph{Where the prior is measured.}
 Every measurement of the video-free prior (\cref{sec:prior}) uses the timeline format. PCD has no effect with a
-one-line answer, so the prior may decide few of the times written in that format, or none; we have not yet measured
-the no-video answers in it.
+one-line answer (in runs without the answer reserve), so the prior may decide few of the times written in that
+format, or none; we have not yet measured the no-video answers in it. \TODO{no-video answers under the one-line and
+direct-answer prompts.}
+
+\paragraph{What drives Coverage.}
+The equal quota guarantees that every timestamp survives, and it matters for scores that concentrate on a few frames
+(HERMES: $+5.3^*$). With the actual question's attention, a global top-$k$ without the quota matched it in the two
+settings we tested (S-EMBER with the official prompt; QVHighlights with BOLT frames, partial). Our evidence that
+grounding needs anchors in every frame therefore rests on selectors that empty frames (QA pruners, generic probe
+scores), not on the quota itself. \TODO{global top-$k$ without quota under the timeline prompt; frame coverage of
+question top-$k$.}
 
 \paragraph{Minimum tokens per frame.}
 Equal quotas fail when a frame pair keeps only 2--4 tokens. Spending the budget on fewer frames avoids this
 (\cref{sec:frames}), but the rule we use (at least about eight tokens per frame pair) was derived from the same results
-and still needs held-out validation.
+and still needs held-out validation. These small-budget runs also use the earlier timestamp rule, which on NExT-GQA
+left some questions with no visual tokens, so part of the collapse may be an accounting effect. \TODO{small-budget
+runs with the fixed timestamp rule.}
 
 \paragraph{Short, densely sampled videos.}
 When uniform frames are less than a second apart (Charades-STA) or 64 frames already cover a 40\,s video
-(NExT-GQA), question-driven selection gains little over random selection at 10--30\% of the tokens; its advantage
-appears at tighter budgets (5\% on NExT-GQA). On these videos PCD improves the interval only in the timeline format,
-and there it does not raise grounded accuracy (\cref{tab:nextgqa-open}).
+(NExT-GQA), question-driven selection gains little \emph{grounding} over random selection ($+0.5^*$ and $+0.7^*$ mIoU
+on Charades-STA; $+0.6$ and $+1.1$ mIoU, n.s., on NExT-GQA at 10\%). Its benefit there is in the answers: on NExT-GQA at
+10\% it keeps the accuracy of the uncompressed model while random selection loses about four points. The 5\%
+NExT-GQA results use the earlier timestamp rule and are being rerun. On these videos PCD improves the interval only in
+the timeline format and only for Qwen3-VL-8B, and there it does not raise grounded accuracy (\cref{tab:nextgqa-open}).
+\TODO{5\% NExT-GQA with the fixed timestamp rule.}
+
+\paragraph{Where PCD hurts.}
+PCD contrasts time values, but it can also change how they are written. On NExT-GQA it lowers TimeLens-8B's
+timeline grounding ($-4.4^*$ mIoU) through more replies without a parsable interval, and under the official prompt it
+makes Qwen3-VL-8B write more times as minutes:seconds, which the official parser scores as missing. A deployment
+needs a parser that accepts both forms, or a format check on the contrasted reply.
+
+\paragraph{Upper bounds and the front end.}
+\method stays well below TimeLens-8B's gold-window upper bound with PCD ($-11.0^*$ mIoU, $-9.7^*$ accuracy), and for
+Qwen3-VL-8B below the gold window in accuracy ($-5.3^*$). With BOLT frames, most of the gain over a low-resolution
+input comes from frame selection and resolution, which random tokens on the same frames also obtain; the cost of the
+SigLIP index is not counted.
 
 \paragraph{Not a streaming memory.}
 The memory is rebuilt per question from the frames before the question. It is causal, but the full memory is
@@ -37,20 +65,24 @@ time.}
 \paragraph{Scope of the evaluation.}
 Our two models come from one family: TimeLens-8B is fine-tuned from Qwen3-VL-8B, and both read time from text
 timestamps. Most diagnostic results use 475--500-question subsets, and answers are judged by a local model with the
-official prompt. Every hyperparameter was chosen on the S-EMBER questions; the other datasets were run once with the
-frozen configuration, but a held-out S-EMBER split is still to be evaluated. \TODO{a second model family; held-out
-S-EMBER split.}
+official prompt, in three judging sessions that differ by up to about one accuracy point. Some paired differences
+combine runs from two GPU clusters, whose repeated runs agree within one mIoU point. Every hyperparameter was chosen
+on the S-EMBER questions; the other datasets were run once with the frozen configuration, but a held-out S-EMBER split
+is still to be evaluated. \TODO{a second model family; held-out S-EMBER split.}
 
 \section{Conclusion}
 \label{sec:conclusion}
 
 Pruning for QA keeps what is salient; grounding needs what is everywhere. A video LLM reads time from anchors that
 survive only with their frames, so pruners built for QA, which empty unremarkable frames, fall below random selection
-on grounding. Keeping one anchor in every frame, filled with what the question attends to, is enough to match the
-uncompressed model with a quarter of the visual tokens under the standard grounding prompt, on a general and a
-grounding-tuned model. When the answer lists what was seen before it states the interval, as grounded QA does, a
-second failure appears: where the memory is silent, a video-free prior writes the times. Contrasting each time value
-with the model's own no-video prediction removes it, and with a tenth of the tokens \method then grounds better than
-the uncompressed model answering in the same format. The answer format itself turns out to be a first-order variable,
-worth about 30 mIoU on single-moment grounding, and with video-free floors it belongs in every evaluation of
-compressed video memories.
+on grounding. Selecting, in every layer, the tokens that the actual question attends to keeps the timeline usable: it
+matches the uncompressed model with a quarter of the visual tokens under the standard grounding prompt on the full
+Charades-STA and QVHighlights sets, and keeps NExT-GQA accuracy at a tenth of the tokens, on a general and a
+grounding-tuned model. An equal per-frame quota guarantees every anchor, but with the question's attention it was not
+needed in the settings we tested. When the answer lists what was seen before it states the interval, as grounded QA
+does, a second failure appears: where the memory is silent, a video-free prior writes the times. Contrasting each time
+value with the model's own no-video prediction removes it, and with a tenth of the tokens \method then grounds better
+than the uncompressed model answering in the same format; where the contrast disturbs the answer format, it can
+lower the scored grounding instead. The answer format itself turns out to be a first-order variable, worth about 30
+mIoU on single-moment grounding, and with video-free floors it belongs in every evaluation of compressed video
+memories.
