@@ -3,16 +3,15 @@
 
 On videos longer than a minute, the model sometimes writes times as minutes:seconds, \eg
 \texttt{Time: [1:45, 2:07]}. The official S-EMBER parser scores such times as missing, so we convert \texttt{h:mm:ss}
-and \texttt{m:ss} to seconds, for every method alike. With the official parser the method rankings do not change. The
-timeline-prompt numbers of \method in \cref{tab:ladder} become 44.6\,/\,50.2 on QVHighlights (\vs 48.8\,/\,54.8) and 33.3\,/\,31.0 on ActivityNet
-at 30\% (\vs 34.7\,/\,32.4). \TODO{full table with the official parser.}
+and \texttt{m:ss} to seconds for every method. The official parser does not change the method rankings. It gives
+\method in \cref{tab:ladder} (timeline prompt) 44.6\,/\,50.2 on QVHighlights (\vs 48.8\,/\,54.8) and 33.3\,/\,31.0
+on ActivityNet at 30\% (\vs 34.7\,/\,32.4). \TODO{full table with the official parser.}
 
 \section{Checks against published numbers}
 \label{sec:suppl-anchors}
 
-Before comparing pruning methods under the TimeLens-Bench protocol, we reproduce the published unpruned scores
-with the TimeLens evaluation script. We also check that our own inference pipeline gives the same scores as the
-script on the same queries (\cref{tab:anchors}).
+We reproduce the published unpruned TimeLens-Bench scores with the TimeLens evaluation script and check that our
+own pipeline matches the script on the same queries (\cref{tab:anchors}).
 
 \begin{table}[h]
   \centering

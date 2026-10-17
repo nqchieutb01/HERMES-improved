@@ -1,30 +1,13 @@
 \begin{abstract}
-Video LLMs are increasingly asked not only \emph{what} happened but \emph{when}. A grounded question such as
-``how long did I use the paper cutter?'' needs both an answer and the time interval of its evidence. To keep long
-videos tractable, the visual memory of these models is pruned to a small fraction of its tokens, and published pruners
-lose little multiple-choice accuracy at 10\% of the tokens. We show that temporal grounding needs something different:
-\emph{pruning for QA keeps what is salient, but grounding needs what is everywhere}. A video LLM reads time from
-timestamps, and a timestamp survives only if some visual token of its frame survives. Pruners that select by saliency,
-uniqueness or text similarity empty whole frames, delete their timestamps, and fall below random token selection on
-grounding. When the answer lists observed moments before giving the interval, a video-free prior fills the gaps: asked
-with no video at all, the model still starts its intervals at the beginning of the window. We propose \method, a
-training-free method that selects frames by the question (BOLT) and adds two parts. \emph{Coverage} keeps, in every
-layer, the tokens that the actual question attends to most, with an equal per-frame quota so that every time anchor
-survives. In the settings we tested, a global top-$k$ on the same question attention does as well without the quota,
-so the question score is what drives the gain. Prior-contrastive decoding (PCD) writes each time value against the
-model's own no-video prediction. Because the two parts behave differently across answer formats, we study the format
-directly. With the standard one-line grounding prompt on the full Charades-STA and QVHighlights sets of
-TimeLens-Bench, Coverage at 31\% of the tokens stays within 0.3 mIoU of the uncompressed model, for both a general and
-a grounding-tuned model of the same family. It beats random selection by \key{$+0.5$} to \key{$+1.6$} and a
-lower-resolution input of the same budget by \key{$+2.1$} to \key{$+2.6$}, while PCD has no effect on a 513-query
-subset. In reasoning-style grounded QA (S-EMBER), PCD is the part that matters. With 10\% of the tokens, \method
-improves on the uncompressed model by \key{$+11.2$} and \key{$+10.7$} mIoU under the same timeline prompt,
-and by \key{$+5.5$} under the benchmark's official direct-answer prompt, although an input
-restricted to the gold evidence still scores higher in accuracy, and on every metric for the grounding-tuned model.
-Asking for a timeline of observations instead of a single interval costs single-moment grounding about 30 mIoU, so the
-answer format is a major variable when evaluating compressed memories. We also report where the method helps less.
-On short, densely sampled videos Coverage gains little on grounding
-(\key{$+0.5$} mIoU on Charades-STA; NExT-GQA), although on NExT-GQA it keeps the accuracy of the uncompressed model at
-10\% of the tokens while random selection loses about four points. PCD helps only where the answer format lets the
-prior choose the times, and it lowers the scored grounding where it disturbs that format.
+Video LLMs prune visual tokens, and published pruners lose little
+multiple-choice accuracy at 10\% of the tokens. Temporal grounding fares worse. A timestamp survives only if a visual
+token of its frame survives, and QA pruners empty frames and
+fall below random selection. In answers that list observations before the interval, a video-free prior fills the
+gaps. We propose \method, a training-free method that selects frames by the question (BOLT), keeps the most
+question-attended tokens per layer under an equal per-frame quota (Coverage), and contrasts time values with the
+model's no-video prediction (PCD). With a one-line prompt, Coverage at 31\% of the tokens stays within 0.3 mIoU of the
+uncompressed model on Charades-STA and QVHighlights. On reasoning-style grounded QA (S-EMBER) at 10\% of the tokens,
+\method beats the uncompressed model by \key{$+11.2$} and \key{$+10.7$} mIoU (two models) with a timeline prompt, and
+by \key{$+5.5$} with the official prompt. Gains are small on short, densely sampled videos, and PCD helps only where
+the answer format lets the prior choose the times.
 \end{abstract}

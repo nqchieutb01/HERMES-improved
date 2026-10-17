@@ -1,18 +1,16 @@
 \section{Grounding under a Token Budget: a Diagnosis}
 \label{sec:diagnosis}
 
-We first establish Observations 1 and 2 of the introduction on S-EMBER, before introducing any method.
-Observation 3, which concerns the answer format, is studied in \cref{sec:transfer}.
-Unless stated otherwise, the reference memory in this section is random 10\% pruning.
+This section establishes Observations 1 and 2 on S-EMBER; Observation 3 (answer format) is studied in
+\cref{sec:transfer}. The reference memory is random 10\% pruning unless stated otherwise.
 
 \subsection{Setting}
 \label{sec:setting}
 
-A question $x$ is asked at time $q$ about a video $v_{0:q}$. The model sees $F{=}64$ frames from $[0,q]$, which are
-encoded into a KV cache $\Mem$ of $N$ visual tokens. Timestamp tokens are interleaved with the visual tokens, and
-Qwen3-VL uses one ``\texttt{<t seconds>}'' for each pair of frames. A budget $\rho$ (by default $\rho{=}0.1$) limits
-the number of tokens kept in each layer to $\rho N$, and kept timestamps count toward this budget. The model answers
-with a short \emph{timeline}:
+A question $x$ is asked at time $q$ about a video $v_{0:q}$. The model encodes $F{=}64$ frames from $[0,q]$ into a
+KV cache $\Mem$ of $N$ visual tokens, interleaved with timestamp tokens (Qwen3-VL uses one ``\texttt{<t seconds>}''
+per pair of frames). A budget $\rho$ (default $\rho{=}0.1$) keeps $\rho N$ tokens per layer, kept timestamps
+included. The model answers with a short \emph{timeline}:
 \begin{center}
 \small\ttfamily
 \begin{adjustbox}{max width=\linewidth}\begin{tabular}{l}
@@ -22,26 +20,22 @@ Answer: \dots \\
 Time: [$s$, $e$]
 \end{tabular}\end{adjustbox}
 \end{center}
-and we parse the interval $[s,e]$ from the last line. This reasoning-style format suits grounded QA, where the answer
-describes what was seen before it gives the interval, and we use it throughout the diagnosis. \Cref{sec:transfer}
-compares it with the one-line format of grounding benchmarks (\emph{``The event happens in $s$--$e$ seconds''}).
-Grounding is scored by IoU with the gold interval, reported as mIoU and R@$\{0.3, 0.5, 0.7\}$. Grounded QA also
-requires the answer to be judged correct, so GQ@0.5 counts answers that are correct and have IoU $\geq 0.5$. We call
-an answer an \emph{early start} when its interval starts in the first 5\% of the window, and a \emph{leak} when it
-starts early even though the gold evidence starts later.
+and we parse $[s,e]$ from the last line. This format suits grounded QA, since the answer describes what was seen
+before the interval. \Cref{sec:transfer} compares it with the one-line format of grounding benchmarks (\emph{``The event happens in $s$--$e$ seconds''}). We report mIoU and
+R@$\{0.3, 0.5, 0.7\}$ against the gold interval, and GQ@0.5, the share of answers judged correct with IoU $\geq 0.5$.
+An interval is an \emph{early start} if it starts in the first 5\% of the window, and a \emph{leak} if it starts
+early although the gold evidence starts later.
 
 \subsection{QA pruners lose temporal coverage}
 \label{sec:coverage-loss}
 
-At 10\% of the tokens, FastVID, VidCom\textsuperscript{2}, FlashVID and SemVID all score below random token
-selection (\cref{sec:pruners}). Where the kept tokens lie explains why (\cref{tab:retention}). HERMES scores tokens by
-attention plus recency, so it keeps 27.6\% of the tokens in the last quarter of the window and only 2.5--4.7\%
-elsewhere. FastVID retains one representative per run of similar frames, and as a result it keeps a token from only
-25\% of the sampled frames in a median question. Those runs of similar frames are exactly where a continuing event
-lives. Random selection keeps about 9\% everywhere and never empties a frame. Because a timestamp is useful only when
-some visual content of its frame survives with it, a selector that empties frames leaves holes in the timeline. These
-holes hurt even when the score itself is sensible. If we rank HERMES's scores within each frame instead of globally,
-which gives every frame an equal share (``stratified''), mIoU improves by $5.3$.
+At 10\% of the tokens, FastVID, VidCom\textsuperscript{2}, FlashVID and SemVID all score below random selection
+(\cref{sec:pruners}). Where the kept tokens lie explains why (\cref{tab:retention}). HERMES scores by attention plus
+recency and keeps 27.6\% of the last quarter of the window but 2.5--4.7\% elsewhere. FastVID keeps one representative
+per run of similar frames, where a continuing event lives, and keeps tokens from only 25\% of the frames in a median
+question. Random selection never empties a frame. A timestamp helps only if some content of its frame survives, so
+emptied frames leave holes in the timeline even when the score is sensible. Ranking HERMES's scores within each frame (``stratified'', an equal share per frame) improves mIoU by
+$5.3$.
 
 \begin{table}[t]
   \centering
@@ -66,37 +60,35 @@ which gives every frame an equal share (``stratified''), mIoU improves by $5.3$.
 \label{sec:prior}
 
 \paragraph{The model answers without video.}
-When we ask every question with an empty visual memory, the model still writes a timeline. Of its first
-\texttt{Seen:} moments, 89\% are at 0\,s, and 90\% of its intervals start in the first 5\% of the window, which gives
-an 88\% leak. The median interval is 0.45$\times$ the gold length, and 87\% of the ends fall more than half an
-interval too early. We call this habit of starting early and stopping soon the model's \emph{temporal prior}.
+With an empty visual memory, the model still writes a timeline. 89\% of its first \texttt{Seen:} moments are at
+0\,s and 90\% of its intervals start in the first 5\% of the window (an 88\% leak). The median interval is
+0.45$\times$ the gold length, and 87\% of the ends fall more than half an interval too early. We call this habit the
+\emph{temporal prior}.
 
 \paragraph{The prior leaks into answers with video.}
 The same signature appears, more weakly, in every memory (\cref{fig:leak}). About 30\% of intervals start early at
-every random budget and also with no pruning at all, compared with 16\% of gold intervals. The share rises when
-coverage is lost, to 49\% for HERMES and 37--39\% for HERMES in streaming mode. The leak therefore depends on where the
-memory is silent and not on how many tokens it keeps.
+every random budget and without pruning, against 16\% of gold intervals. The share rises when coverage is lost, to
+49\% for HERMES and 37--39\% for streaming HERMES. The leak follows where the memory is silent, not how many tokens
+it keeps.
 
 \paragraph{Removing the evidence causes the leak.}
-To test causality, we drop the uniform frames that fall inside the gold interval (``evidence''), or the same number
-of frames elsewhere (``control''), and keep every other frame with its true timestamp (\cref{tab:causal}). Without
-the evidence, the answers do not spread out. They move to the start of the video instead, and the leak rises by 14
-points for both the unpruned and the random 10\% memory. In the HERMES 10\% memory, the leak also tracks how much
-of the evidence survives. Questions whose evidence keeps under 5\% of its tokens leak 56\% of the time, compared with 33\% when at least 15\% survives.
+We drop the uniform frames inside the gold interval (``evidence'') or as many frames elsewhere (``control''),
+keeping every other frame with its true timestamp (\cref{tab:causal}). Without the evidence, answers move to the start
+instead of spreading out, and the leak rises by 14 points for both the unpruned and the random 10\%
+memory. In the HERMES 10\% memory, questions whose evidence keeps under 5\% of its tokens leak 56\% of the time,
+against 33\% when at least 15\% survives.
 
 \paragraph{An instruction does not remove it.}
-We added ``The relevant moments may occur at any point in the video; do not assume they are near the start'' to the
-prompt. The leak barely moved (29.5\%~$\rightarrow$~28.0\%), and grounding did not change ($-0.1$ mIoU). In this
-answer format, then, the prior acts in the output distribution and has to be removed there. We do not yet know
-whether the same prior appears when the model answers with a single interval. In that format PCD has no effect
-(\cref{sec:transfer}). Those runs omit the answer reserve, which on its own changes S-EMBER grounding by only
-$+0.1$. The null effect suggests that the prior decides fewer of the written times there. \TODO{no-video answers and leak
-under the one-line and direct-answer prompts.}
+Adding ``The relevant moments may occur at any point in the video; do not assume they are near the start'' to the
+prompt barely moved the leak (29.5\%~$\rightarrow$~28.0\%) or grounding ($-0.1$ mIoU). In this format the prior acts
+in the output distribution and must be removed there. We do not yet know whether it appears with single-interval
+answers. There PCD has no effect (\cref{sec:transfer}; those runs omit the answer reserve, which alone changes S-EMBER
+grounding by only $+0.1$), suggesting the prior decides fewer of the written times. \TODO{no-video answers and leak under the one-line and direct-answer prompts.}
 
 \paragraph{The end is the weak boundary.}
-Without contrastive decoding, the median end error across memories is 0.40--0.69 of the gold length, while the
-median start error is 0.14--0.30. The most frequent failure is an interval that lies entirely \emph{before} the gold
-one, which accounts for 33\% of all answers (\cref{tab:errors}).
+Without contrastive decoding, the median end error across memories is 0.40--0.69 of the gold length and the
+median start error 0.14--0.30. The most frequent failure, 33\% of answers, is an interval entirely \emph{before} the
+gold one (\cref{tab:errors}).
 
 \input{fig/leak}
 

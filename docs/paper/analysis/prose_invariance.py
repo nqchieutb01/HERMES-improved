@@ -29,7 +29,11 @@ def parts(src):
 
 
 def main():
-    rev, files = sys.argv[1], sys.argv[2:]
+    # --subset: prose may drop numbers, cites and refs (concision edits) but may not add any; labels, TODOs and
+    # table/figure/equation blocks must still be unchanged.
+    subset = "--subset" in sys.argv
+    args = [a for a in sys.argv[1:] if a != "--subset"]
+    rev, files = args[0], args[1:]
     ok = True
     for f in files:
         old = subprocess.run(["git", "show", f"{rev}:./{f}"], capture_output=True, text=True).stdout
@@ -39,10 +43,11 @@ def main():
         if ob != nb:
             errs.append(f"blocks changed ({len(ob)} -> {len(nb)}; first differing index "
                         f"{next((i for i, (a, b) in enumerate(zip(ob, nb)) if a != b), min(len(ob), len(nb)))})")
-        if on != nn:
+        if (nn - on) if subset else (on != nn):
             errs.append(f"numbers: removed {dict(on - nn)} added {dict(nn - on)}")
         for name, a, b in (("cites", oc, nc), ("refs", orf, nrf), ("labels", ol, nl)):
-            if a != b:
+            bad = (b - a) if (subset and name != "labels") else (a ^ b)
+            if bad:
                 errs.append(f"{name}: removed {sorted(a - b)} added {sorted(b - a)}")
         if ot != nt:
             errs.append(f"TODOs {ot} -> {nt}")
