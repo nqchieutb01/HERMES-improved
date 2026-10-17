@@ -6,7 +6,8 @@ The main tables use a reasoning-style timeline prompt. On single-moment groundin
 about 30 mIoU against the standard one-line prompt, and with it Qwen3-VL-8B stays below the best constant interval on
 ActivityNet Captions and Charades-STA. Our gains over the uncompressed model on QVHighlights, ActivityNet and
 Charades-STA (\cref{tab:main}) are therefore relative to this format; under the one-line prompt the comparison is
-\cref{tab:standard}, and the full TimeLens-Bench sweep is in progress. On S-EMBER, \method beats the uncompressed
+\cref{tab:standard} and, on the full Charades-STA and QVHighlights sets, \cref{tab:fullsweep}; the full ActivityNet set
+is not yet run. On S-EMBER, \method beats the uncompressed
 model when both answer in the timeline format; the uncompressed model under the official direct-answer prompt is
 still to be reported. \TODO{S-EMBER without pruning under the direct-answer and one-line prompts.}
 
@@ -22,7 +23,9 @@ and still needs held-out validation.
 
 \paragraph{Short, densely sampled videos.}
 When uniform frames are less than a second apart (Charades-STA) or 64 frames already cover a 40\,s video
-(NExT-GQA), question-driven selection keeps the answers but grounds no better than random selection.
+(NExT-GQA), question-driven selection gains little over random selection at 10--30\% of the tokens; its advantage
+appears at tighter budgets (5\% on NExT-GQA). On these videos PCD improves the interval only in the timeline format,
+and there it does not raise grounded accuracy (\cref{tab:nextgqa-open}).
 
 \paragraph{Not a streaming memory.}
 The memory is rebuilt per question from the frames before the question. It is causal, but the full memory is

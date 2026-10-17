@@ -2,7 +2,7 @@
 \label{sec:setup}
 
 \paragraph{Models.}
-Qwen3-VL-8B-Instruct~\cite{qwen3vl}, 64 frames sampled uniformly from $[0,q]$ (or by \cref{sec:retrieval}) at native
+Qwen3-VL-8B-Instruct~\cite{qwen3vl}, 64 frames sampled uniformly from $[0,q]$ (or by BOLT, \cref{sec:retrieval}) at native
 resolution, greedy decoding or PCD, at most 384 new tokens, batch size 8. Unless stated otherwise all methods share
 the timeline prompt. In \cref{sec:transfer} we add TimeLens-8B~\cite{timelens}, a Qwen3-VL-8B model fine-tuned for
 grounding, and the one-line prompt of TimeLens-Bench. Batch size changes about half of the greedy outputs and up to
@@ -51,5 +51,5 @@ over questions (2{,}000 resamples) and mark with $^*$ differences whose 95\% int
 \TODO{video-clustered bootstrap.}
 
 \paragraph{Protocol.}
-All design choices (scores, quotas, $\alpha$, scope, reserve) were made on S-EMBER. The configuration was then frozen
+All design choices (scores, quotas, $\alpha$, scope) were made on S-EMBER. The configuration was then frozen
 and run once on QVHighlights, ActivityNet and Charades-STA. \TODO{held-out S-EMBER videos as a test split.}

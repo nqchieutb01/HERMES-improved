@@ -19,14 +19,13 @@ queries), $+1.4$ (ActivityNet, 400) and $0.0$ (QVHighlights, 513) mIoU, none sig
   \small
   \setlength{\tabcolsep}{3pt}
   \caption{\textbf{Answer format} (QVHighlights, 513 TimeLens-Bench queries, Qwen3-VL-8B, 300 frames, 31\% of the
-  tokens), mIoU. One-line: the TimeLens-Bench prompt. Timeline: the prompt of all other tables. PCD$^\circ$: without
-  the answer reserve (the only one-line PCD run).}
+  tokens), mIoU. One-line: the TimeLens-Bench prompt. Timeline: the prompt of all other tables. }
   \label{tab:prompt}
   \begin{adjustbox}{max width=\linewidth}\begin{tabular}{@{}lcccc@{}}
     \toprule
     & \multicolumn{2}{c}{One-line prompt} & \multicolumn{2}{c}{Timeline prompt} \\
     \cmidrule(lr){2-3} \cmidrule(l){4-5}
-    Selection & greedy & PCD$^\circ$ & greedy & PCD \\
+    Selection & greedy & PCD & greedy & PCD \\
     \midrule
     All tokens      & \second{60.5} & --   & 30.4 & -- \\
     Random tokens   & 58.2 & --   & \best{33.4} & 43.9 \\
@@ -39,20 +38,20 @@ queries), $+1.4$ (ActivityNet, 400) and $0.0$ (QVHighlights, 513) mIoU, none sig
 \Cref{tab:prompt} changes only the prompt. On QVHighlights queries, asking for a timeline of observations before the
 interval costs about 30 mIoU against the one-line prompt ($-30.0^*$ without pruning, $-31.0^*$ for Coverage). PCD
 recovers part of the loss ($+13.2^*$ on Coverage, $+10.4^*$ on random tokens) but stays far below the one-line prompt
-($-17.8^*$), and under the one-line prompt it has no effect ($-0.1$, n.s.; also $-0.3$ and $-0.5$ with retrieval). With
+($-17.8^*$), and under the one-line prompt it has no effect ($-0.1$, n.s.; also $-0.3$ and $-0.5$ with BOLT). With
 the timeline prompt, Coverage is not better than random selection on these queries ($-2.8^*$ greedy, $+0.1$ with PCD).
 Two consequences follow. First, the QVHighlights, ActivityNet and Charades-STA numbers of \cref{tab:main} are
 relative to a format that handicaps the uncompressed model; the gain over ``all tokens'' there (\cref{sec:main})
 does not hold against the one-line prompt. Second, PCD corrects time values in reasoning-style answers, where the
 model writes several times before the interval; when the answer is a single interval, there is little for it to
-correct. \TODO{one-line PCD with the reserve; timeline PCD without it; the same study on TimeLens-8B.}
+correct.
 
 \begin{table}[t]
   \centering
   \small
   \setlength{\tabcolsep}{3pt}
   \caption{\textbf{Standard grounding prompt} (QVHighlights, 513 TimeLens-Bench queries, one-line prompt),
-  mIoU\,/\,R@0.5. Top: 300 frames at protocol size; bottom: 64 frames chosen by retrieval. Kept: visual tokens in
+  mIoU\,/\,R@0.5. Top: 300 frames at protocol size; bottom: 64 frames chosen by BOLT. Kept: visual tokens in
   memory. TimeLens input: the TimeLens-Bench input re-sampled to the same number of tokens. Keep ratios count timestamp
   tokens too: 31\% of all tokens is 24\% of the visual tokens.}
   \label{tab:standard}
@@ -67,8 +66,8 @@ correct. \TODO{one-line PCD with the reserve; timeline PCD without it; the same 
     \oursrow Coverage (31\%)           & 3{,}271  & \best{61.7} / \best{66.7} & \best{67.3} / \best{73.9} \\
     \midrule
     TimeLens input, 1\,fps low-res     & 1{,}125  & 49.5 / 53.0 & 57.5 / 61.8 \\
-    Retrieve $+$ random (23\%)         & 897      & \second{55.5} / \second{60.8} & -- \\
-    \oursrow Retrieve $+$ Coverage (23\%) & 897   & \best{58.3} / \best{63.7} & \best{64.3} / \best{71.2} \\
+    BOLT $+$ random (23\%)         & 897      & \second{55.5} / \second{60.8} & -- \\
+    \oursrow BOLT $+$ Coverage (23\%) & 897   & \best{58.3} / \best{63.7} & \best{64.3} / \best{71.2} \\
     \bottomrule
   \end{tabular}\end{adjustbox}
 \end{table}
@@ -77,103 +76,157 @@ correct. \TODO{one-line PCD with the reserve; timeline PCD without it; the same 
 With the one-line prompt (\cref{tab:standard}), Coverage at 24\% of the visual tokens beats random selection on both
 models ($+3.5^*$ and $+2.0^*$ mIoU), beats SemVID ($+2.9^*$), and beats the TimeLens input re-sampled to a similar
 budget ($+3.7^*$, $+3.0^*$). It matches the uncompressed model ($+1.2$ for Qwen3-VL-8B, with a lower bound just at
-zero; $+0.2$ for TimeLens-8B). At 897 tokens, retrieval with Coverage exceeds a 1\,fps TimeLens input of 1{,}125 tokens
-by $+8.8^*$ and $+6.8^*$, and retrieval with random tokens by $+2.8^*$. At this budget
-the grounding-tuned model does lose accuracy: TimeLens-8B with retrieval and Coverage is $2.8^*$ mIoU below its
-uncompressed memory, whereas at 3{,}271 tokens it is level ($+0.2$). \begin{table}[t]
+zero; $+0.2$ for TimeLens-8B). At 897 tokens, BOLT with Coverage exceeds a 1\,fps TimeLens input of 1{,}125 tokens
+by $+8.8^*$ and $+6.8^*$, and BOLT with random tokens by $+2.8^*$. At this budget
+the grounding-tuned model does lose accuracy: TimeLens-8B with BOLT and Coverage is $2.8^*$ mIoU below its
+uncompressed memory, whereas at 3{,}271 tokens it is level ($+0.2$).
+
+\begin{table}[t]
   \centering
   \small
-  \setlength{\tabcolsep}{3pt}
-  \caption{\textbf{Full TimeLens-Bench sets} (Qwen3-VL-8B, one-line prompt, TimeLens input at 2\,fps, 31\% of the
-  tokens), R@0.5\,/\,mIoU. Unpruned: the TimeLens evaluation script. QVHighlights: the 1{,}030 queries finished so far
-  for both methods (random selection still running). Paired $\Delta$mIoU below.}
+  \setlength{\tabcolsep}{2.5pt}
+  \caption{\textbf{Full TimeLens-Bench sets} (one-line prompt, 31\% of the tokens), mIoU\,/\,R@0.5. All tokens and low-res:
+  the TimeLens evaluation script, the latter with a lower resolution at a matched budget (about 3.2k / 4.2k visual
+  tokens on Charades-STA / QVHighlights). Paired $\Delta$mIoU below.}
   \label{tab:fullsweep}
-  \begin{adjustbox}{max width=\linewidth}\begin{tabular}{@{}lcc@{}}
+  \begin{adjustbox}{max width=\linewidth}\begin{tabular}{@{}lcccc@{}}
     \toprule
-    Method & Charades-STA (3{,}363) & QVHighlights (1{,}030) \\
+    & \multicolumn{2}{c}{Qwen3-VL-8B} & \multicolumn{2}{c}{TimeLens-8B} \\
+    \cmidrule(lr){2-3} \cmidrule(l){4-5}
+    Method & Charades & QVHighlights & Charades & QVHighlights \\
     \midrule
-    All tokens (no pruning)  & \best{54.0} / \second{48.5} & \best{65.4} / \best{60.6} \\
-    Random tokens (31\%)     & 52.3 / 48.2 & 63.2 / 58.9 \\
-    \oursrow Coverage (31\%) & \best{54.0} / \best{48.6} & \second{65.2} / \second{60.5} \\
+    All tokens (no pruning)   & \second{48.5} / \best{54.0} & \second{59.6} / \best{64.5} & \best{55.4} / \best{63.1} & \best{65.7} / \best{71.8} \\
+    TimeLens input, low-res   & 46.0 / 49.6 & 57.3 / 61.6 & 52.8 / 59.6 & 63.3 / 68.4 \\
+    Random tokens (31\%)      & 48.2 / \second{52.3} & 58.1 / \second{62.6} & 54.5 / \second{61.7} & 64.2 / 69.6 \\
+    \oursrow Coverage (31\%)  & \best{48.6} / \best{54.0} & \best{59.7} / \best{64.5} & \second{55.2} / \best{63.1} & \second{65.4} / \second{71.0} \\
     \midrule
-    Coverage \vs random      & $+0.5^*$ & $+1.6^*$ \\
-    Coverage \vs all tokens  & $+0.1$   & $-0.1$ \\
+    Coverage \vs random       & $+0.5^*$ & $+1.6^*$ & $+0.7^*$ & $+1.2^*$ \\
+    Coverage \vs low-res      & $+2.6^*$ & $+2.4^*$ & $+2.4^*$ & $+2.1^*$ \\
+    Coverage \vs all tokens   & $+0.1$   & $+0.0$   & $-0.2$   & $-0.3$ \\
     \bottomrule
   \end{tabular}\end{adjustbox}
 \end{table}
 
 \paragraph{The same holds on the full sets.}
-On the complete Charades-STA set of TimeLens-Bench (\cref{tab:fullsweep}), Coverage at 31\% of the tokens matches the
-uncompressed model ($+0.1$ mIoU, n.s.; R@0.5 54.0 \vs 54.0) and beats random selection ($+0.5^*$ mIoU, $+1.6^*$
-R@0.5, $+1.4^*$ R@0.3), whose R@0.5 and R@0.3 fall significantly below the uncompressed model ($-1.7^*$, $-1.0^*$).
-On the 1{,}030 QVHighlights queries finished for both methods, Coverage beats random selection on every metric
-($+1.6^*$ mIoU, $+2.0^*$ R@0.5, $+1.7^*$ R@0.7) and is level with the uncompressed model ($-0.1$), while random
-selection is below it ($-1.7^*$). Charades-STA videos are short, so 31\% leaves about 3{,}350 of 10{,}800 visual tokens and
-the gap to random is small, as on NExT-GQA below. \TODO{rest of the sweep: QVHighlights random (2 chunks),
-ActivityNet, all TimeLens-8B cells, and the matched-budget TimeLens inputs.}
+On the complete Charades-STA (3{,}363 queries) and QVHighlights (1{,}541) sets of TimeLens-Bench
+(\cref{tab:fullsweep}), Coverage at 31\% of the tokens is lossless on both models ($-0.3$ to $+0.1$ mIoU, n.s.). It
+beats random selection in all four cells ($+0.5^*$ to $+1.6^*$) and the TimeLens input reduced to the same budget by
+lowering the resolution in all four ($+2.1^*$ to $+2.6^*$). The gap to random is largest on QVHighlights, where
+videos are longer; on Charades-STA, 31\% leaves about 3{,}350 of 10{,}800 tokens and random selection is already
+close, as on NExT-GQA below. Keeping full resolution and choosing tokens beats spending the same budget on a lower
+resolution: random selection also beats the low-res input on Charades-STA ($+2.2^*$ and $+1.7^*$), though not
+significantly on QVHighlights.
 
 \begin{table}[t]
   \centering
   \small
-  \setlength{\tabcolsep}{3pt}
-  \caption{\textbf{A grounding-tuned model on S-EMBER} (10\%, timeline prompt), mIoU\,/\,R@0.5. Answers of TimeLens-8B
-  not yet judged.}
+  \setlength{\tabcolsep}{2.5pt}
+  \caption{\textbf{A grounding-tuned model on S-EMBER} (10\%, timeline prompt), mIoU\,/\,R@0.5 and Acc.\,/\,GQ@0.5
+  (one judging session for all rows).}
   \label{tab:tl8b}
-  \begin{adjustbox}{max width=\linewidth}\begin{tabular}{@{}lcc@{}}
+  \begin{adjustbox}{max width=\linewidth}\begin{tabular}{@{}lcccc@{}}
     \toprule
-    Method & Qwen3-VL-8B & TimeLens-8B \\
+    & \multicolumn{2}{c}{Qwen3-VL-8B} & \multicolumn{2}{c}{TimeLens-8B} \\
+    \cmidrule(lr){2-3} \cmidrule(l){4-5}
+    Method & mIoU / R@0.5 & Acc. / GQ & mIoU / R@0.5 & Acc. / GQ \\
     \midrule
-    All tokens (no pruning)        & 28.0 / 26.7 & 33.1 / 34.1 \\
-    Random tokens                  & 25.6 / 24.6 & 28.2 / 26.7 \\
-    Random $+$ PCD                 & \second{35.0} / 33.9 & \second{38.4} / \second{39.4} \\
-    Retrieve $+$ Coverage          & 32.5 / \second{34.1} & 37.2 / 37.9 \\
-    \oursrow \method               & \best{39.3} / \best{40.8} & \best{43.9} / \best{46.9} \\
+    All tokens (no pruning)   & 28.0 / 26.7 & 19.6 / \phantom{0}8.8 & 33.1 / 34.1 & 20.6 / 12.2 \\
+    Random tokens             & 25.6 / 24.6 & 17.1 / \phantom{0}7.2 & 28.2 / 26.7 & 19.6 / \phantom{0}9.5 \\
+    Random $+$ PCD            & \second{35.0} / 33.9 & 20.0 / \second{11.8} & \second{38.4} / \second{39.4} & 20.4 / 12.4 \\
+    BOLT $+$ Coverage         & 32.5 / \second{34.1} & \best{22.3} / 11.2 & 37.2 / 37.9 & \second{22.9} / \second{13.1} \\
+    \oursrow \method          & \best{39.3} / \best{40.8} & \second{21.9} / \best{13.5} & \best{43.9} / \best{46.9} & \best{27.4} / \best{17.5} \\
     \midrule
-    \method \vs all tokens         & $+11.2^*$ & $+10.7^*$ \\
-    \method \vs Random $+$ PCD     & $+4.2^*$  & $+5.5^*$ \\
+    \method \vs all tokens    & $+11.2^*$ & $+2.3$ / $+4.6^*$ & $+10.7^*$ & $+6.7^*$ / $+5.3^*$ \\
     \bottomrule
   \end{tabular}\end{adjustbox}
 \end{table}
 
 \paragraph{On grounded QA, the full method transfers to a grounding-tuned model.}
 S-EMBER answers explain before they ground, so the timeline format is natural there. TimeLens-8B, trained for
-grounding, is 2.6--5.1 mIoU above Qwen3-VL-8B in every row of \cref{tab:tl8b}, and the ordering of the methods is
-the same for both models. \method improves on the uncompressed TimeLens-8B by $+10.7^*$ mIoU (46.9 \vs 34.1 R@0.5), on
-random selection by $+15.7^*$, and on Random $+$ PCD by $+5.5^*$. Each component helps on its own: PCD adds $+10.2^*$
-to random tokens and $+6.7^*$ to Retrieve $+$ Coverage; Retrieve $+$ Coverage adds $+9.0^*$ to random tokens.
-\TODO{judge TimeLens-8B answers (Acc, GQ@0.5).}
+grounding, is above Qwen3-VL-8B in every row of \cref{tab:tl8b}, and the ordering of the methods is the same for both
+models. With 10\% of the tokens, \method improves on the uncompressed TimeLens-8B on every metric: $+10.7^*$ mIoU,
+$+6.7^*$ accuracy and $+5.3^*$ GQ@0.5, and on random selection by $+15.7^*$ mIoU, $+7.8^*$ accuracy and $+8.0^*$
+GQ@0.5. Each component helps on its own: PCD adds $+10.2^*$ mIoU to random tokens and $+6.7^*$ to BOLT $+$ Coverage,
+and BOLT $+$ Coverage adds $+9.0^*$ to random tokens. With TimeLens-8B, \method answers and grounds better than
+Qwen3-VL-8B with the gold window of \cref{tab:oracle} (GQ@0.5 17.5 \vs 15.8).
 
 \begin{table}[t]
   \centering
   \small
-  \setlength{\tabcolsep}{2.5pt}
-  \caption{\textbf{NExT-GQA} (test, 1{,}005 questions, 64 frames, two-query protocol: one query for the answer, one
-  for the interval; no PCD).}
+  \setlength{\tabcolsep}{3pt}
+  \caption{\textbf{NExT-GQA, multiple choice} (test, 1{,}005 questions, 64 frames, two-query protocol: one query for
+  the answer, one for the interval; no PCD). 5\% keeps 406 of 8{,}122 tokens.}
   \label{tab:nextgqa}
-  \begin{adjustbox}{max width=\linewidth}\begin{tabular}{@{}llccccc@{}}
+  \begin{adjustbox}{max width=\linewidth}\begin{tabular}{@{}llcccc@{}}
     \toprule
-    Model & Method & Acc@QA & Acc@GQA & mIoP & mIoU & IoU@0.5 \\
+    Model & Method & Acc@QA & Acc@GQA & mIoP & mIoU \\
     \midrule
-    \multirow{6}{*}{Qwen3-VL-8B} & All tokens     & \second{79.7} & \second{38.9} & \best{48.0} & \best{37.7} & \best{38.5} \\
-                                 & Random 30\%    & 78.6 & 38.6 & 47.5 & 37.3 & 37.2 \\
-                                 & SemVID 30\%    & 78.9 & 38.5 & 46.2 & 35.8 & 35.3 \\
-                                 & Coverage 30\%  & \best{79.8} & \best{39.4} & \second{47.9} & \second{37.6} & \second{37.8} \\
-                                 & Random 10\%    & 75.3 & 34.9 & 45.2 & 35.3 & 35.1 \\
-                                 & Coverage 10\%  & 78.4 & 36.1 & 44.6 & 34.8 & 34.6 \\
+    \multirow{9}{*}{Qwen3-VL-8B} & All tokens     & \second{79.7} & \second{38.9} & \best{48.0} & \best{37.7} \\
+                                 & Random 30\%    & 78.6 & 38.6 & 47.5 & 37.3 \\
+                                 & SemVID 30\%    & 78.9 & 38.5 & 46.2 & 35.8 \\
+                                 & Coverage 30\%  & \best{79.8} & \best{39.4} & \second{47.9} & \second{37.6} \\
+                                 & Random 10\%    & 75.3 & 34.9 & 45.2 & 35.3 \\
+                                 & Coverage 10\%  & 78.4 & 36.1 & 44.6 & 34.8 \\
+                                 & Random 5\%     & 68.3 & 27.3 & 40.5 & 30.5 \\
+                                 & SemVID 5\%     & 74.0 & 30.0 & 41.0 & 30.0 \\
+                                 & Coverage 5\%   & 75.0 & 32.4 & 41.6 & 31.4 \\
     \midrule
-    \multirow{3}{*}{TimeLens-8B} & All tokens     & \best{76.7} & \best{41.5} & \best{52.1} & \best{39.8} & \best{39.5} \\
-                                 & Random 10\%    & 72.3 & 36.9 & 48.9 & 37.7 & \second{37.9} \\
-                                 & Coverage 10\%  & \second{75.4} & \second{38.5} & \second{49.3} & \second{37.8} & 37.6 \\
+    \multirow{5}{*}{TimeLens-8B} & All tokens     & \best{76.7} & \best{41.5} & \best{52.1} & \best{39.8} \\
+                                 & Random 10\%    & 72.3 & 36.9 & 48.9 & 37.7 \\
+                                 & Coverage 10\%  & \second{75.4} & \second{38.5} & \second{49.3} & \second{37.8} \\
+                                 & Random 5\%     & 66.0 & 28.7 & 43.6 & 34.0 \\
+                                 & Coverage 5\%   & 71.5 & 33.3 & 46.0 & 35.6 \\
     \bottomrule
   \end{tabular}\end{adjustbox}
 \end{table}
 
-\paragraph{On short videos, Coverage keeps the answers but not more of the interval.}
-NExT-GQA videos last about 40\,s, so 64 frames already sample them densely (\cref{tab:nextgqa}). At 10\% of the tokens,
-Coverage answers better than random selection on both models ($+3.1^*$ Acc@QA each), but grounds no better (mIoU
-$-0.5$ and $+0.1$, n.s.), and both lose about three points of Acc@GQA against the uncompressed model ($-2.8^*$,
-$-3.0^*$). At 30\%, Coverage is lossless ($+0.5$ Acc@GQA, $-0.2$ mIoU, n.s.) and grounds better than SemVID
-($+1.8^*$ mIoU). This matches Charades-STA (\cref{sec:frames}): when frames are dense, where tokens are kept matters
-less than how many. We use the two-query protocol; asking for answer and interval in one reply, as in prior zero-shot
-reports, lowers Acc@GQA by $16.5^*$ (Qwen3-VL-8B) and $9.2^*$ (TimeLens-8B), so absolute numbers are comparable only
-within a protocol. \TODO{PCD on NExT-GQA; 5\% budget.}
+\paragraph{On short videos, the gain of Coverage grows as the budget shrinks.}
+NExT-GQA videos last about 40\,s, so 64 frames already sample them densely (\cref{tab:nextgqa}). The advantage of
+Coverage over random selection grows as the budget shrinks: on Qwen3-VL-8B it adds $+1.2$ (n.s.), $+3.1^*$ and
+$+6.8^*$ Acc@QA at 30\%, 10\% and 5\%, and at 5\% also $+5.2^*$ Acc@GQA. On TimeLens-8B the gains are $+3.1^*$ Acc@QA at
+10\%, and at 5\% Coverage beats random selection on every metric ($+5.6^*$ Acc@QA, $+4.7^*$ Acc@GQA, $+2.4^*$ mIoP,
+$+1.6^*$ mIoU). At 30\% Coverage is lossless ($+0.5$ Acc@GQA, $-0.2$ mIoU, n.s.) and grounds better than SemVID
+($+1.8^*$ mIoU). At 5\%, SemVID also answers well (74.0, $+5.8^*$ over random), and Coverage leads it by $+2.5$
+Acc@GQA (interval just including 0). When frames are dense, where tokens are kept matters most for the answer and
+less for the interval, as on Charades-STA (\cref{sec:frames}). We use the two-query protocol; asking for answer and
+interval in one reply, as in prior zero-shot reports~\cite{lover}, lowers Acc@GQA by $16.5^*$ (Qwen3-VL-8B) and $9.2^*$
+(TimeLens-8B), mostly because the time values are then written as minutes:seconds or copied from the prompt's example,
+so absolute numbers are comparable only within a protocol.
+
+\begin{table}[t]
+  \centering
+  \small
+  \setlength{\tabcolsep}{3pt}
+  \caption{\textbf{NExT-GQA, open-ended} (Qwen3-VL-8B, 1{,}005 questions, options removed). Answers are judged
+  correct when they match the ground truth in meaning (LLM judge, Video-ChatGPT prompt~\cite{videochatgpt}); Acc@GQA
+  also requires IoP\,$\geq$\,0.5. Two-query: the answer prompt plus the TimeLens grounding query. Joint: one
+  timeline answer with the interval.}
+  \label{tab:nextgqa-open}
+  \begin{adjustbox}{max width=\linewidth}\begin{tabular}{@{}llcccc@{}}
+    \toprule
+    Protocol & Method & Acc@QA & Acc@GQA & mIoP & mIoU \\
+    \midrule
+    \multirow{2}{*}{Two-query} & All tokens       & \second{33.5} & \best{17.4} & \best{48.0} & \best{37.7} \\
+                               & Coverage 10\%    & 33.0 & \second{16.4} & \second{44.6} & \second{34.8} \\
+    \midrule
+    \multirow{5}{*}{Joint}     & All tokens       & \best{34.1} & 11.0 & 30.4 & 20.8 \\
+                               & Random 10\%      & 31.1 & \phantom{0}9.7 & 30.5 & 19.9 \\
+                               & SemVID 10\%      & 28.1 & \phantom{0}7.9 & 28.6 & 17.2 \\
+                               & Coverage 10\%    & 33.2 & 10.6 & 30.6 & 20.4 \\
+                               & Coverage 10\% $+$ PCD & 32.2 & 10.7 & 33.4 & 24.7 \\
+    \bottomrule
+  \end{tabular}\end{adjustbox}
+\end{table}
+
+\paragraph{Open-ended answers.}
+Without the options (\cref{tab:nextgqa-open}), answering is far harder (33.5 \vs 79.7 Acc@QA) while grounding is
+unchanged, since the grounding query is the same. Our judge accepts the ground-truth answer for all 1{,}005 questions
+and agrees with letter correctness on 99.2\% of the multiple-choice answers. Without pruning, Qwen3-VL-8B reaches 17.4
+Acc@GQA zero-shot, against 21.4 for TOGA~\cite{toga}, which is trained for open-ended grounded QA and judged with
+GPT-3.5. Coverage at 10\% keeps the answers in both protocols ($-0.5$ and $-0.9$ Acc@QA, n.s.), whereas random selection
+and SemVID lose them ($-3.0^*$, $-6.1^*$ in the joint protocol; Coverage leads SemVID by $+5.2^*$ Acc@QA and $+2.8^*$
+Acc@GQA). The joint timeline answer grounds far worse than the separate query (20.8 \vs 37.7 mIoU): its listed moments
+start where the subject is first visible, so 81\% of its intervals start at 0\,s (ground truth: 19\%). PCD raises its
+mIoU ($+3.9^*$) but not Acc@GQA, and on the two-query protocol PCD changes neither ($-0.4$ Acc@GQA, n.s.), as with the
+one-line prompt on QVHighlights. On NExT-GQA, the contribution is therefore Coverage; PCD helps only where the answer
+format lets the prior choose the times. \TODO{two-query Random and SemVID 10\% (being judged); TimeLens-8B open-ended.}

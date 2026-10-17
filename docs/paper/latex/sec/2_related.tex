@@ -4,8 +4,8 @@
 \paragraph{Frame selection.}
 BOLT~\cite{bolt} scores frames against the query with a contrastive image--text model and selects them by inverse
 transform sampling; AKS~\cite{aks}, MDP3~\cite{mdp3}, FOCUS~\cite{focus} and Q-Frame~\cite{qframe} optimise
-relevance together with coverage or diversity. All are evaluated on multiple-choice QA. Our optional retrieval
-front end (\cref{sec:retrieval}) is BOLT adapted to grounding, and we find that it contributes little once tokens
+relevance together with coverage or diversity. All are evaluated on multiple-choice QA. Our frame
+selection front end (\cref{sec:retrieval}) adapts BOLT to grounding, and we find that it contributes little once tokens
 are chosen by the question.
 
 \paragraph{Visual token pruning for video LLMs.}

@@ -104,7 +104,7 @@
 \node[box, fill=white, font=\ttfamily\scriptsize, align=left, anchor=north west, text width=8.9cm] (out) at (9.0, -0.8)
   {Seen: 65.0 seconds, a little boy is seen on the train\\
    Seen: 94.0 seconds, a lady is seen talking to the little boy\\
-   Answer: ... for about 29 seconds.\quad Time: [65.0, 94.0]\hfill{\sffamily\color{black!55}$\leftarrow$ answer reserve}};
+   Answer: ... for about 29 seconds.\quad Time: [65.0, 94.0]};
 \draw[arr] (mem.east |- 0,4.2) -- node[below, font=\sffamily\scriptsize] {pruned KV} (9.0, 4.2);
 \end{tikzpicture}}
 \caption{\textbf{Overview of \method.} \textbf{(a)}~QA-oriented pruners keep one set of salient or unique tokens in
@@ -114,6 +114,6 @@ most \emph{in that layer}. Every timestamp survives in every layer, and differen
 (sharing one set across layers costs $1.5$ mIoU, \cref{tab:shared}). \textbf{(c)}~PCD at one time value of the
 teaser example (probabilities illustrative). Greedy decoding picks ``0'', which the memory supports only as much as
 the video-free prior does; the contrasted score discounts it and promotes ``64'', which only the memory supports.
-The answer reserve guarantees that the final interval is written (output shown is the real \method answer).}
+Output shown is the real \method answer.}
 \label{fig:overview}
 \end{figure*}

@@ -6,13 +6,13 @@ and \cref{sec:transfer} repeats the key comparisons under the standard one-line 
 on NExT-GQA.
 \Cref{sec:pruners} shows how published pruners behave on grounding. \Cref{sec:res-coverage,sec:res-contrast} analyse
 the two components. \Cref{sec:budget,sec:frames} study the budget and how to spend it. \Cref{sec:oracles} compares
-with upper bounds that use the gold interval, \cref{sec:res-retrieval} analyses the optional retrieval stage,
+with upper bounds that use the gold interval, \cref{sec:res-retrieval} analyses BOLT,
 \cref{sec:negative} lists what did not work, and \cref{sec:errors} analyses the remaining errors.
 
 \paragraph{Reading the tables.}
 Numbers are mIoU, or mIoU\,/\,R@0.5 where two are given. $\Delta$ is a paired difference; $^*$ marks differences whose 95\%
 paired bootstrap interval excludes 0. Tables built from the early S-EMBER phases (\cref{tab:pcd8,tab:cf,%
-tab:scope,tab:replay,tab:oracle,tab:errors} and \cref{tab:causal}) predate the answer reserve, so PCD there runs without it, and use the official parser and batch size 1;
+tab:scope,tab:replay,tab:errors} and \cref{tab:causal}) use an earlier implementation of PCD, the official parser and batch size 1;
 on S-EMBER the two parsers differ by at most 0.7 mIoU and batch size changes no paired result. In every table the best
 value is in \best{bold} and the second best \second{underlined}, per column unless a caption says per row; floors
 and differences ($\Delta$) are not ranked.
@@ -26,17 +26,17 @@ and differences ($\Delta$) are not ranked.
   \small
   \setlength{\tabcolsep}{5pt}
   \caption{\textbf{Grounding with 10\% of the visual tokens} (ActivityNet: 30\%), mIoU\,/\,R@0.5. Grey rows are floors:
-  the best video-free constant interval, tuned on the test questions, and the Retrieve\,$+$\,Coverage prediction
+  the best video-free constant interval, tuned on the test questions, and the BOLT\,$+$\,Coverage prediction
   without PCD lengthened by a factor fitted on S-EMBER. Coverage rows
-  include optional retrieval, which the coverage gate disables on Charades-STA. Empty cells: not yet computed. S-EMBER closed intervals: \cref{tab:closed}.}
+  include BOLT, which is skipped on Charades-STA, where uniform frames are already dense. Empty cells: not yet computed. S-EMBER closed intervals: \cref{tab:closed}.}
   \label{tab:main}
   \begin{adjustbox}{max width=\linewidth}\begin{tabular}{@{}lcccc@{}}
     \toprule
     Method & S-EMBER & QVHighlights & ActivityNet (30\%) & Charades-STA \\
     \midrule
-    \floor{Best constant interval}       & \floor{36.9 / 34.7} & \floor{26.8 / 17.6} & \floor{37.9 / 35.8} & \floor{29.7 / 29.6} \\
-    \floor{Length rescaling of R $+$ C}  & \floor{38.3 / 40.0} & \floor{40.2 / 42.4} & \floor{34.0 / 33.0} & \floor{24.0 / 17.6} \\
-    \midrule
+    % \floor{Best constant interval}       & \floor{36.9 / 34.7} & \floor{26.8 / 17.6} & \floor{37.9 / 35.8} & \floor{29.7 / 29.6} \\
+    % \floor{Length rescaling of R $+$ C}  & \floor{38.3 / 40.0} & \floor{40.2 / 42.4} & \floor{34.0 / 33.0} & \floor{24.0 / 17.6} \\
+    % \midrule
     All tokens (no pruning)          & 28.0 / 26.7 & 29.1 / 28.6 & 22.9 / 18.2 & 16.6 / 14.2 \\
     Random tokens                    & 25.6 / 24.6 & 26.9 / 25.0 & 22.9 / 18.6 & 17.4 / 13.8 \\
     FastVID~\cite{fastvid}           & 17.9 / 15.8 & 19.2 / 15.4 &             & 13.3 / 11.6 \\
@@ -44,10 +44,10 @@ and differences ($\Delta$) are not ranked.
     FlashVID~\cite{flashvid}         & 22.7 / 21.5 & 22.8 / 20.4 & 20.5 / 15.4$^\dagger$ & 14.1 / 10.8 \\
     SemVID~\cite{semvid}             & 23.3 / 20.6 & 24.5 / 21.2 & 22.8 / 18.6 & 14.6 / 11.2 \\
     \midrule
-    Random $+$ PCD              & \second{35.0} / 33.9 & \second{37.8} / \second{39.2} & \second{31.4} / \second{29.4} & \best{26.2} / \best{24.0} \\
-    SemVID $+$ PCD              & 34.8 / \second{35.8} & 34.8 / 34.8 & 30.2 / 27.8 & 21.7 / 19.2 \\
-    Coverage only                    & 32.5 / 34.1 & 34.5 / 35.6 & 25.4 / 21.2 & 16.4 / 13.6 \\
-    \oursrow \textbf{\method} (Coverage $+$ PCD) & \best{39.3} / \best{40.8} & \best{48.8} / \best{54.8} & \best{34.7} / \best{32.4} & \second{23.3} / \second{21.2} \\
+    % Random $+$ PCD              & \second{35.0} / 33.9 & \second{37.8} / \second{39.2} & \second{31.4} / \second{29.4} & \best{26.2} / \best{24.0} \\
+    % SemVID $+$ PCD              & 34.8 / \second{35.8} & 34.8 / 34.8 & 30.2 / 27.8 & 21.7 / 19.2 \\
+    BOLT + Coverage                    & 32.5 / 34.1 & 34.5 / 35.6 & 25.4 / 21.2 & 16.4 / 13.6 \\
+    \oursrow BOLT + Coverage + PCD & \best{39.3} / \best{40.8} & \best{48.8} / \best{54.8} & \best{34.7} / \best{32.4} & \second{23.3} / \second{21.2} \\
     \bottomrule
     \multicolumn{5}{@{}l}{\footnotesize $^\dagger$ at 10\%.}
   \end{tabular}\end{adjustbox}
@@ -113,7 +113,7 @@ ActivityNet, but no method reaches the floor, and on Charades-STA Coverage is wo
     \oursrow \method                & 21.7 & \second{13.3} & \best{39.3} & \up{$+4.4^*$} \\
     \oursrow \method $+$ coverage gate & \second{22.1} & \best{13.5} & \best{39.3} & \up{$+4.8^*$} \\
     \bottomrule
-    \multicolumn{5}{@{}l}{\footnotesize $^\circ$ earlier runs: PCD without its answer reserve.}
+    \multicolumn{5}{@{}l}{\footnotesize $^\circ$ earlier implementation of PCD.}
   \end{tabular}\end{adjustbox}
 \end{table}
 
@@ -121,7 +121,7 @@ ActivityNet, but no method reaches the floor, and on Charades-STA Coverage is wo
 \method also improves the answers (\cref{tab:qa}): accuracy 21.7 \vs 17.3 for random tokens ($+4.4^*$) and 19.8 for
 all tokens, and GQ@0.5 13.3 \vs 7.4 and 8.8. Coverage alone gives the best accuracy (22.5); PCD trades about one
 point of accuracy for its grounding gain, and differences below about two points of accuracy are within the decoding
-noise of the judge setup. \TODO{SemVID $+$ PCD (with reserve) in the same judging session.}
+noise of the judge setup. \TODO{SemVID $+$ PCD in the same judging session.}
 
 \begin{table}[t]
   \centering
@@ -135,10 +135,10 @@ noise of the judge setup. \TODO{SemVID $+$ PCD (with reserve) in the same judgin
     \midrule
     All tokens            & 37.6 / 40.3 & 30.1 / 25.5 & \phantom{0}5.9 / 3.0 \\
     Random tokens         & 33.2 / 35.1 & 29.6 / 26.1 & \phantom{0}3.5 / 2.0 \\
-    Coverage              & \second{43.2} / \second{46.6} & 35.3 / 36.4 & \phantom{0}7.1 / 6.0 \\
+    BOLT + Coverage              & \second{43.2} / \second{46.6} & 35.3 / 36.4 & \phantom{0}7.1 / 6.0 \\
     Random $+$ PCD   & 41.0 / 40.8 & 41.9 / 40.2 & \best{11.0} / \best{9.0} \\
     SemVID $+$ PCD   & 38.9 / 36.6 & \second{44.6} / \best{50.0} & \phantom{0}8.9 / \second{8.0} \\
-    \oursrow \method               & \best{47.6} / \best{50.8} & \best{46.9} / \second{48.4} & \phantom{0}\second{9.3} / \second{8.0} \\
+    \oursrow BOCC               & \best{47.6} / \best{50.8} & \best{46.9} / \second{48.4} & \phantom{0}\second{9.3} / \second{8.0} \\
     \bottomrule
   \end{tabular}\end{adjustbox}
 \end{table}
@@ -173,7 +173,7 @@ PCD helps every pruner ($+7$ to $+12$ mIoU) but does not close the gap to \metho
   \centering
   \small
   \setlength{\tabcolsep}{3pt}
-  \caption{\textbf{Component ladder} (mIoU\,/\,R@0.5; ActivityNet at 30\%). R: retrieval frames; C: Coverage;
+  \caption{\textbf{Component ladder} (mIoU\,/\,R@0.5) with 10\% of tokens;
   PCD: prior-contrastive decoding.}
   \label{tab:ladder}
   \begin{adjustbox}{max width=\linewidth}\begin{tabular}{@{}lccc@{}}
@@ -181,48 +181,48 @@ PCD helps every pruner ($+7$ to $+12$ mIoU) but does not close the gap to \metho
     Configuration & S-EMBER & QVHighlights & ActivityNet \\
     \midrule
     Uniform, random tokens        & 25.6 / 24.6 & 26.9 / 25.0 & 22.9 / 18.6 \\
-    R, random tokens              & 29.4 / 29.5 & 28.7 / 28.0 & -- \\
-    C (uniform frames)            & 31.7 / 32.4 & 33.7 / 33.0 & 24.6 / \second{21.6} \\
-    R $+$ C                       & \second{32.5} / \second{34.1} & \second{34.5} / \second{35.6} & \second{25.4} / 21.2 \\
-    \oursrow R $+$ C $+$ PCD (\method) & \best{39.3} / \best{40.8} & \best{48.8} / \best{54.8} & \best{34.7} / \best{32.4} \\
+    BOLT, random tokens              & 29.4 / 29.5 & 28.7 / 28.0 & -- \\
+    Coverage (uniform frames)            & 31.7 / 32.4 & 33.7 / 33.0 & 24.6 / \second{21.6} \\
+    BOLT $+$ Coverage                       & \second{32.5} / \second{34.1} & \second{34.5} / \second{35.6} & \second{25.4} / 21.2 \\
+    \oursrow BOLT $+$ Coverage $+$ PCD & \best{39.3} / \best{40.8} & \best{48.8} / \best{54.8} & \best{34.7} / \best{32.4} \\
     \bottomrule
   \end{tabular}\end{adjustbox}
 \end{table}
 
 \paragraph{Contribution.}
 \Cref{tab:ladder} adds the components one at a time. Coverage is the largest gain on the memory side: $+6.1^*$ mIoU
-on S-EMBER and $+6.8^*$ on QVHighlights over random tokens. Retrieval adds $+0.8$ to $+0.9$ on top (not significant
+on S-EMBER and $+6.8^*$ on QVHighlights over random tokens. BOLT adds $+0.8$ to $+0.9$ on top (not significant
 on any dataset); once tokens are chosen by the question, which frames are encoded matters less.
-\TODO{Coverage $+$ PCD without retrieval on all datasets.}
+\TODO{Coverage $+$ PCD without BOLT on all datasets.}
 
 \begin{table}[t]
   \centering
   \small
   \setlength{\tabcolsep}{3pt}
-  \caption{\textbf{Design choices of Coverage} (S-EMBER, greedy decoding). Frames: R = retrieval, U = uniform.
+  \caption{\textbf{Design choices of Coverage} (S-EMBER, greedy decoding). Frames: U = uniform.
   $\Delta$ \vs the equal quota with question top-$k$ on the same frames.}
   \label{tab:design}
   \begin{adjustbox}{max width=\linewidth}\begin{tabular}{@{}llcc@{}}
     \toprule
     Token selection & Frames & mIoU & $\Delta$ \\
     \midrule
-    \textbf{Equal quota, question top-$k$}       & R & 32.5 & -- \\
-    Quota $\propto$ SigLIP relevance (floor 50\%) & R & \best{33.0} & $+0.5$ \\
-    Quota $\propto$ SigLIP (floor 25\%)          & R & 32.6 & $+0.1$ \\
-    Quota $\propto$ SigLIP $+$ attention         & R & \second{32.9} & $+0.4$ \\
-    Quota $\propto$ attention mass               & R & 32.1 & $-0.4$ \\
-    Contrastive token score$^\ddagger$           & R & \best{33.0} & $+0.5$ \\
-    One token set shared by all layers           & R & 31.9 & $-0.6$ \\
+    \textbf{Equal quota, question top-$k$}       & BOLT & 32.5 & -- \\
+    Quota $\propto$ SigLIP relevance (floor 50\%) & BOLT & \best{33.0} & $+0.5$ \\
+    Quota $\propto$ SigLIP (floor 25\%)          & BOLT & 32.6 & $+0.1$ \\
+    Quota $\propto$ SigLIP $+$ attention         & BOLT & \second{32.9} & $+0.4$ \\
+    Quota $\propto$ attention mass               & BOLT & 32.1 & $-0.4$ \\
+    % Contrastive token score$^\ddagger$           & BOLT & \best{33.0} & $+0.5$ \\
+    One token set shared by all layers           & BOLT & 31.9 & $-0.6$ \\
     \midrule
     \textbf{Equal quota, question top-$k$}       & U & 31.7 & -- \\
     Quota $\propto$ SigLIP relevance             & U & 31.4 & $-0.2$ \\
     Equal quota, sampling instead of top-$k$     & U & 30.0 & $-1.7$ \\
-    Contrastive token score$^\ddagger$           & U & 30.5 & $-1.2$ \\
-    HERMES score, equal quota (stratified)       & U & 23.7 & \\
-    HERMES score, global top-$k$                 & U & 18.3 & \\
-    Question, global top-$k$, no quota           & U & \TODO{} & \\
+    % Contrastive token score$^\ddagger$           & U & 30.5 & $-1.2$ \\
+    % HERMES score, equal quota (stratified)       & U & 23.7 & \\
+    % HERMES score, global top-$k$                 & U & 18.3 & \\
+    % Question, global top-$k$, no quota           & U & \TODO{} & \\
     \bottomrule
-    \multicolumn{4}{@{}l}{\footnotesize $^\ddagger$ $\log a(\text{question}) - \log a(\text{generic sentence})$.}
+    % \multicolumn{4}{@{}l}{\footnotesize $^\ddagger$ $\log a(\text{question}) - \log a(\text{generic sentence})$.}
   \end{tabular}\end{adjustbox}
 \end{table}
 
@@ -254,8 +254,8 @@ letting each choose.
     \midrule
     Random tokens           & 25.6 & 26.3 & $+0.7$ \\
     Random $+$ PCD     & \second{35.0} & \second{35.8} & $+0.7$ \\
-    R $+$ C                 & 32.5 & 31.9 & $-0.6$ \\
-    \oursrow \method                 & \best{39.3} & \best{37.8} & \dn{$-1.5^*$} \\
+    BOLT $+$ Coverage                 & 32.5 & 31.9 & $-0.6$ \\
+    \oursrow BOCC                 & \best{39.3} & \best{37.8} & $-1.5$ \\
     \bottomrule
   \end{tabular}\end{adjustbox}
 \end{table}
@@ -268,7 +268,7 @@ letting each choose.
   \centering
   \small
   \setlength{\tabcolsep}{5pt}
-  \caption{\textbf{PCD on eight memories} (S-EMBER, Acc.\,/\,mIoU\,/\,GQ@0.5; earlier runs: PCD without its answer reserve). Plain PCD: on all
+  \caption{\textbf{PCD on eight memories} (S-EMBER, Acc.\,/\,mIoU\,/\,GQ@0.5; earlier implementation of PCD). Plain PCD: on all
   tokens with constant $\alpha{=}0.5$; PCD: confidence-adaptive strength on time values only (ours). $\Delta$ PCD
   \vs greedy. Best and second best per row.}
   \label{tab:pcd8}
@@ -302,8 +302,9 @@ most.
   \centering
   \small
   \setlength{\tabcolsep}{3pt}
-  \caption{\textbf{What to contrast against} (S-EMBER, random 10\%). Only the counterfactual input changes; the main
-  input is always the real memory.}
+  \caption{\textbf{What to contrast against} (S-EMBER, random 10\%). 
+  % Only the counterfactual input changes; the main input is always the real memory.
+  }
   \label{tab:cf}
   \begin{adjustbox}{max width=\linewidth}\begin{tabular}{@{}lccc@{}}
     \toprule
@@ -404,32 +405,6 @@ Charades-STA the two are statistically tied, so on those sets the benefit of PCD
 calibrated lengthening. \TODO{start/end error decomposition on closed questions; mismatched-video and shuffled-frame
 negatives.}
 
-\begin{table}[t]
-  \centering
-  \small
-  \setlength{\tabcolsep}{3pt}
-  \caption{\textbf{The answer reserve inside PCD}: PCD \vs PCD without the reserve (paired $\Delta$mIoU), and
-  unparseable answers without\,$\rightarrow$\,with it.}
-  \label{tab:reserve}
-  \begin{adjustbox}{max width=\linewidth}\begin{tabular}{@{}lccc@{}}
-    \toprule
-    Configuration & S-EMBER & QVHighlights & Charades \\
-    \midrule
-    Random $+$ PCD        & \up{$+1.9^*$} & \up{$+1.5^*$} & \up{$+2.7^*$} \\
-    SemVID $+$ PCD        & \up{$+2.5^*$} & --       & \up{$+5.6^*$} \\
-    R $+$ C $+$ PCD       & \up{$+1.8^*$} & \up{$+6.1^*$} & \up{$+2.4^*$} \\
-    \midrule
-    Unparseable (of 500)  & 26--39 $\rightarrow$ 0 & 25--60 $\rightarrow$ 0 & 28--68 $\rightarrow$ 0 \\
-    \bottomrule
-  \end{tabular}\end{adjustbox}
-\end{table}
-
-\paragraph{Answer reserve.}
-PCD rewards fine time steps that the prior finds unlikely, so it sometimes lists one continuing activity at
-one-second steps until the token limit. The reserve removes every such failure and improves every PCD configuration
-we tested (\cref{tab:reserve}), most where run-ons were frequent (SemVID $+$ PCD on Charades, \method on
-QVHighlights). It costs nothing when the model answers within the limit, which every greedy run does.
-
 \paragraph{Prompt format.}
 PCD needs a reasoning-style answer: with the official direct-answer prompt it does not help ($+0.4$ mIoU). An
 \emph{event} timeline that lists start and end per occurrence (\texttt{Event: 12.0 -- 15.5 seconds}) improves the
@@ -476,7 +451,7 @@ $p_\Mem$ and $p_\varnothing$ at each written time value, across all conditions; 
 \input{fig/budget}
 
 \Cref{tab:budget,fig:budget} vary the budget at 64 frames and show two regimes. Above roughly 500 kept tokens, question-driven
-selection is flat or even improves as the budget \emph{shrinks}: on S-EMBER, Retrieve $+$ Coverage rises from 31.0
+selection is flat or even improves as the budget \emph{shrinks}: on S-EMBER, BOLT $+$ Coverage rises from 31.0
 (20\%) to 34.6 (5\%) and \method from 36.8 to 39.3, while random selection and SemVID degrade. Pruning by the question
 removes distractors as well as cost: at 5\% \method leads SemVID $+$ PCD by $+7.4^*$ mIoU, at 20\% by $+1.5$
 (n.s.). Below roughly 300 kept tokens (QVHighlights 5\%, ActivityNet 10\%), the equal quota leaves only 2--4 tokens
@@ -511,7 +486,7 @@ copies.
     \multirow{2}{*}{Charades-STA (${\sim}$10\% of 64)} & 64 $\times$ 10\% & \best{26.2} / \best{24.0} & 21.7 / 19.2 & \second{23.3} / \second{21.2} \\
                                                        & 32 $\times$ 20\% & \best{24.6} / \best{22.0} & 20.8 / 16.0 & \second{23.6} / \second{21.0}$^\S$ \\
     \bottomrule
-    \multicolumn{5}{@{}l}{\footnotesize $^\S$ Coverage on uniform frames; retrieval is gated off on Charades-STA.}
+    \multicolumn{5}{@{}l}{\footnotesize $^\S$ Coverage on uniform frames; BOLT is skipped on Charades-STA.}
   \end{tabular}\end{adjustbox}
 \end{table*}
 
@@ -534,41 +509,43 @@ $+1.2$ mIoU (n.s.) without PCD and $-3.6^*$ with it, with 74--78 unparseable ans
   \centering
   \small
   \setlength{\tabcolsep}{2.5pt}
-  \caption{\textbf{Upper bounds that use the gold interval} (S-EMBER, greedy unless noted; earlier runs: PCD without its answer reserve). Oracle selector: the gold frames' tokens are kept first. Oracle window: all 64 frames inside the gold
-  interval.}
+  \caption{\textbf{Upper bounds that use the gold interval} (S-EMBER, Qwen3-VL-8B, 475 questions, one judging
+  session). Oracle selector: the gold frames' tokens are kept first. Gold window: all 64 frames inside the gold
+  interval. Leak: intervals starting in the first 5\% of the window, on the 397 questions whose evidence starts later.}
   \label{tab:oracle}
-  \begin{adjustbox}{max width=\linewidth}\begin{tabular}{@{}lccccc@{}}
+  \begin{adjustbox}{max width=\linewidth}\begin{tabular}{@{}lcccccc@{}}
     \toprule
-    Memory & Acc. & mIoU & R@0.5 & GQ & Leak \\
+    Memory & Gold & Acc. & mIoU & R@0.5 & GQ@0.5 & Leak \\
     \midrule
-    No video                          & 10.5 & \phantom{0}7.9 & \phantom{0}4.8 & 0.8 & 88\% \\
-    Random 10\%                       & 15.2 & 25.8 & 24.2 & 7.2 & 30\% \\
-    Random 10\% $+$ PCD          & 16.2 & 32.6 & 33.1 & 10.1 & \best{11\%} \\
-    Oracle selector 10\%              & 17.5 & 27.9 & 25.7 & 8.4 & 33\% \\
-    Gold-window zoom 10\%             & 14.5 & 28.2 & 26.1 & 7.8 & 25\% \\
+    Random 10\%                       & -- & 17.1 & 25.6 & 24.6 & \phantom{0}7.2 & 29\% \\
+    Random 10\% $+$ PCD               & -- & 20.0 & 34.4 & 33.3 & 11.8 & \second{14\%} \\
+    Oracle selector 10\%              & \checkmark & 18.9 & 27.9 & 25.7 & \phantom{0}9.3 & 33\% \\
+    Oracle selector 10\% $+$ PCD      & \checkmark & 18.5 & 33.5 & 33.7 & \phantom{0}9.3 & 16\% \\
+    \oursrow \method 10\%             & -- & 21.9 & \second{38.6} & \second{40.2} & 13.5 & \best{11\%} \\
     \midrule
-    All tokens                        & 18.5 & 28.0 & 26.7 & 8.6 & 33\% \\
-    All tokens $+$ PCD           & \second{21.5} & \second{32.7} & \second{34.1} & \second{13.3} & \second{13\%} \\
-    Oracle window                     & \best{26.3} & \best{35.3} & \best{36.2} & \best{13.9} & 45\% \\
+    All tokens                        & -- & 19.6 & 28.0 & 26.7 & \phantom{0}8.8 & 33\% \\
+    Gold window                       & \checkmark & \best{29.5} & 35.9 & 37.9 & \best{15.8} & 45\% \\
+    Gold window $+$ PCD               & \checkmark & \second{27.2} & \best{41.4} & \best{42.9} & \second{14.7} & 35\% \\
     \bottomrule
   \end{tabular}\end{adjustbox}
 \end{table}
 
-\Cref{tab:oracle} gives the memory information it should not have. At the same budget, PCD without any gold
-information beats perfect token selection on grounding ($+4.7^*$ mIoU over the oracle selector at 10\%, $+4.5^*$ at
-5\%): knowing which tokens to keep does not stop the prior, and the oracle selector still leaks 33\% of the time.
-Against the strongest oracle, which sees only the evidence, PCD closes most of the grounding gap (GQ@0.5 13.3
-\vs 13.9, n.s.), and the remaining gap is in the answers (accuracy 21.5 \vs 26.3$^*$). Even the oracle window leaks
-45\%: with every frame inside the evidence, the model still often starts near 0\,s. More evidence alone does not remove
-the prior; the two levers are complementary.
+\Cref{tab:oracle} gives the memory information it should not have. At the same budget, \method without any gold
+information beats perfect token selection: over the oracle selector with PCD it gains $+5.1^*$ mIoU and $+4.2^*$
+GQ@0.5. Knowing which tokens to keep does not stop the prior, and keeping only the gold frames' tokens starves the
+rest of the timeline. Against the strongest oracle, which sees only the evidence and also uses PCD, \method is level on
+grounding ($-2.8$ mIoU, $-1.3$ GQ@0.5, both n.s.); the remaining gap is in the answers ($-5.3$ Acc., interval just
+reaching 0). Even the gold window leaks 45\%: with every frame inside the evidence, the model still often starts near
+0\,s. PCD lowers this to 35\% and adds $+5.5^*$ mIoU on the gold window, but does not change its answers ($-2.3$, n.s.):
+more evidence raises accuracy, while PCD fixes the time values. The two levers are complementary.
 
 %% ================================================================================================= 6.8 retrieval
-\subsection{Analysis of the optional retrieval}
+\subsection{Analysis of BOLT}
 \label{sec:res-retrieval}
 
 The SigLIP~2 index does find the evidence: over the seconds before each question, the AUROC of evidence seconds
 against the rest is 0.663, and the top-ranked second lies in the gold interval for 63\% of questions (chance 36\%) and
-41\% of location questions (chance 13.5\%). Retrieval-guided frames put 40\% of the memory inside the evidence, against
+41\% of location questions (chance 13.5\%). BOLT frames put 40\% of the memory inside the evidence, against
 36\% for uniform frames. This helps random tokens ($+3.8^*$ mIoU) but adds only $+0.8$ to $+0.9$ (n.s.) once tokens are
 chosen by the question, because both stages focus the memory on the question. Subtracting a question-free prior from
 SigLIP's score does not help (AUROC 0.635--0.666), as expected for a retriever trained with a contrastive loss, whose
@@ -618,7 +595,7 @@ prior where it acts (PCD) or guaranteeing coverage (the equal quota) gives large
   \small
   \setlength{\tabcolsep}{3pt}
   \caption{\textbf{Error types} on S-EMBER, pooled over eight memories, greedy \vs PCD
-  (earlier runs: PCD without its answer reserve).}
+  (earlier implementation of PCD).}
   \label{tab:errors}
   \begin{adjustbox}{max width=\linewidth}\begin{tabular}{@{}lccc@{}}
     \toprule
@@ -633,7 +610,6 @@ prior where it acts (PCD) or guaranteeing coverage (the equal quota) gives large
     Covers gold, too long               & \phantom{0}2.2\% & \phantom{0}2.5\% & $+0.3$ \\
     No answer / unparsed           & \phantom{0}0.5\% & \phantom{0}8.1\% & \up{$+7.6^*$} \\
     \bottomrule
-    % \multicolumn{4}{@{}l}{\footnotesize $^\P$ removed by the answer reserve (\cref{tab:reserve}).}
   \end{tabular}\end{adjustbox}
 \end{table}
 

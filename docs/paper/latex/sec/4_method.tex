@@ -4,7 +4,7 @@
 \label{sec:method}
 
 \method acts at the two places where \cref{sec:diagnosis} locates the failures: the memory (Coverage) and the
-decoder (PCD). Neither needs training. \Cref{fig:overview} gives an overview.
+decoder (contrastive decoding, PCD), behind a frame-selection front end (BOLT). None of them needs training. \Cref{fig:overview} gives an overview.
 
 \subsection{Coverage: equal quotas filled by the question}
 \label{sec:coverage}
@@ -106,25 +106,16 @@ is written from contrasted observations. When the answer is a single interval, P
 one-line grounding prompt it changes mIoU by $-0.1$ (n.s., \cref{sec:transfer}), and with the direct-answer prompt by
 $+0.4$.
 
-\paragraph{Answer reserve.}
-\label{sec:reserve}
-The last part of PCD is a guard on the output format. Contrastive decoding lengthens the list of observed moments: under PCD the model sometimes keeps writing
-\texttt{Seen:} lines until the generation limit $T$, and never writes the interval. We reserve room for the answer:
-if $R$ tokens remain ($R{=}64$) and no \texttt{Answer:} line has started, the decoder writes
-``\texttt{\textbackslash nAnswer:}'' and continues normally. Throughout the paper, PCD includes this reserve. This is a format constraint, not a heuristic on the
-content: the interval is still chosen by PCD from the memory. It removes every unparseable output (from 25--68 of
-500 to 0) and improves every configuration on every dataset (\cref{tab:reserve}).
-
-\subsection{Optional: retrieval-guided frames}
+\subsection{BOLT: question-guided frames}
 \label{sec:retrieval}
 
 When the window is much longer than $F$ frames, which frames are encoded can matter as much as which tokens are
-kept. As an optional front end we sample frames as in BOLT~\cite{bolt}. Each second of video is embedded once with
+kept. As a front end we sample frames as in BOLT~\cite{bolt}. Each second of video is embedded once with
 SigLIP~2~\cite{siglip2}, which gives a causal 1\,fps index. The relevance $z_j$ of second $j \leq q$ is its z-scored
 cosine similarity with the question, and the $F$ frames are taken at evenly spaced quantiles of
 \begin{equation}
   p(j) \;=\; \tfrac{1}{2}\cdot\tfrac{1}{q} \;+\; \tfrac{1}{2}\operatorname{softmax}(z)_j ,
 \end{equation}
-so that half of the frames stay uniform. Retrieval is skipped when uniform frames would be less than 1\,s apart.
-Once tokens are chosen by the question, retrieval adds only $+0.8$ to $+0.9$ mIoU (not significant on S-EMBER,
-QVHighlights or ActivityNet), so we treat it as optional; the main-table runs include it.
+so that half of the frames stay uniform. BOLT is skipped when uniform frames would be less than 1\,s apart.
+Once tokens are chosen by the question, BOLT adds only $+0.8$ to $+0.9$ mIoU (not significant on S-EMBER,
+QVHighlights or ActivityNet); the main-table runs include it.
