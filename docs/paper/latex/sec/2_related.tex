@@ -45,8 +45,7 @@ instruction and M3ID~\cite{m3id} against the absence of the image, while PAI~\ci
 subtracts text-only logits. SEASON~\cite{season} carries the idea over to video with temporally corrupted negatives.
 These methods target hallucination, faithfulness or classification. PCD uses the same contrast for another purpose.
 We apply it only to \emph{time values}, with a strength that adapts to the model's confidence, and we study when it
-helps and when it does not (\cref{sec:res-contrast,sec:transfer}). This includes checking whether its benefit goes
-beyond a uniform lengthening of the interval (\cref{sec:lengthening}).
+helps and when it does not (\cref{sec:res-contrast,sec:transfer}).
 
 \paragraph{Grounding-tuned video LLMs.}
 TimeChat~\cite{timechat}, VTimeLLM~\cite{vtimellm} and LITA~\cite{lita} train video LLMs to localise moments using
@@ -64,6 +63,4 @@ could run on top of it \TODO{run FV-Action and the attention readout on the same
 
 \paragraph{Benchmark biases.}
 \citet{otani2020uncovering} showed that blind baselines are competitive on Charades-STA and ActivityNet Captions
-because the annotations carry positional priors. We find the same on the datasets we use. We therefore adopt their
-blind baselines as video-free floors in every comparison, and we add a length-rescaling floor for methods that
-lengthen intervals.
+because the annotations carry positional priors.

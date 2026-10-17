@@ -14,7 +14,7 @@ BOLD = re.compile(r"\\(?:textbf|best|second|underline)\{((?:[\d.\s/%]|\\phantom\
 SPECS = {
     "retention": ("col", [6, 7], {7}, None),
     "causal": ("col", [2, 3, 4, 5], {3, 5}, None),
-    "main": ("col", [1, 2, 3, 4], set(), None),
+    "main": ("col", [1, 2, 3], set(), lambda r: "frames +" not in r),
     "qa": ("col", [1, 2, 3], set(), None),
     "types": ("col", [1, 2, 3], set(), None),
     "ladder": ("col", [1, 2, 3], set(), None),
@@ -28,13 +28,13 @@ SPECS = {
     "budget": ("col", list(range(1, 10)), set(), None),
     "frames": ("row", [2, 3, 4], set(), None),
     "oracle": ("col", [2, 3, 4, 5, 6], {6}, None),
-    "closed": ("col", [1], set(), None),
     "prompt": ("col", [1, 2, 3, 4], set(), None),
     "standard": ("colblock", [2, 3], set(), None),
     "tl8b": ("col", [1, 2, 3, 4], set(), None),
     "nextgqa": ("colblock", [2, 3, 4, 5], set(), None),
     "nextgqa-open": ("colblock", [2, 3, 4, 5], set(), None),
-    "nextgqa-debug": ("colblock", [1, 2, 3, 4], set(), lambda r: "30\\%" not in r and "24.9" not in r),
+    "nextgqa-debug": ("colblock", [1, 2, 3, 4], set(),
+                      lambda r: "30\\%" not in r and "24.9" not in r and "shuffled" not in r and "No video" not in r),
     "oracle-tl8b": ("col", [2, 3, 4, 5], set(), None),
     "official": ("col", [1, 2, 3, 4], {4}, None),
     "fullsweep": ("col", [1, 2, 3, 4], set(), None),
@@ -120,7 +120,6 @@ def process(path):
         if not p.startswith("\\begin{table") or not m:
             continue
         p = BOLD.sub(lambda b: b[1], p)
-        p = p.replace("$\\mathbf{-14.2^*}$", "$-14.2^*$")
         p = re.sub(r"\\textbf\{(\d+(?:\.\d+)?\\%)\}", r"\1", p)
         spec = SPECS.get(m[1])
         for s in (spec if isinstance(spec, list) else [spec] if spec else []):

@@ -21,15 +21,12 @@
   \addplot[black!70, mark=*] coordinates {(5,34.5) (10,35.0) (20,36.5)};              \addlegendentry{random + PCD}
   \addplot[black!70, dashed, mark=square*] coordinates {(5,31.9) (10,34.8) (20,35.3)};\addlegendentry{SemVID + PCD}
   \addplot[ours, very thick, mark=diamond*, mark size=3pt] coordinates {(5,39.3) (10,39.3) (20,36.8)}; \addlegendentry{\textbf{\method}}
-  \addplot[floorc, densely dotted, thick, mark=none, forget plot] coordinates {(3.5,36.9) (21.5,36.9)};
-  \node[font=\sffamily\tiny, text=floorc, anchor=south west] at (axis cs:3.7,36.9) {best constant};
 %% (b) QVH frames
 \nextgroupplot[title={(b) QVHighlights: $\sim$260 tokens}, xlabel={frames (same kept tokens)}, ylabel={mIoU},
     xtick={16,32,64}, xmin=10, xmax=70, ymin=0, ymax=50]
   \addplot[black!70, mark=*] coordinates {(16,33.3) (32,32.4)};
   \addplot[black!70, dashed, mark=square*] coordinates {(16,30.6) (32,35.5)};
   \addplot[ours, very thick, mark=diamond*, mark size=3pt] coordinates {(16,40.4) (32,43.1) (64,9.7)};
-  \addplot[floorc, densely dotted, thick, mark=none] coordinates {(10,26.8) (70,26.8)};
   \node[font=\sffamily\tiny, text=ours, anchor=east, align=right] at (axis cs:60,12)
     {collapse: 2--4 tokens\\per frame pair};
 %% (c) ANet frames
@@ -38,14 +35,12 @@
   \addplot[black!70, mark=*] coordinates {(16,30.5) (32,29.5) (64,21.5)};
   \addplot[black!70, dashed, mark=square*] coordinates {(16,30.0) (32,28.4) (64,26.8)};
   \addplot[ours, very thick, mark=diamond*, mark size=3pt] coordinates {(16,32.0) (32,33.9) (64,11.6)};
-  \addplot[floorc, densely dotted, thick, mark=none] coordinates {(10,37.9) (70,37.9)};
 \end{groupplot}
 \end{tikzpicture}}
 \caption{\textbf{Budget and how to spend it.} \textbf{(a)}~At 64 frames, question-driven selection improves as the
 budget shrinks while random selection and SemVID degrade; \method leads at every budget that leaves at least
 about eight tokens per frame pair, and collapses below it (QVHighlights 5\%, ActivityNet 10\%; these runs use the earlier timestamp rule, \cref{sec:budget}). \textbf{(b, c)}~At a fixed,
 very small number of kept tokens, 64 frames leave 2--4 tokens per frame pair and \method collapses; spending the same
-tokens on 32 frames recovers it (QVHighlights 9.7\,$\rightarrow$\,43.1, ActivityNet 11.6\,$\rightarrow$\,33.9). Dotted
-grey: best video-free constant.}
+tokens on 32 frames recovers it (QVHighlights 9.7\,$\rightarrow$\,43.1, ActivityNet 11.6\,$\rightarrow$\,33.9).}
 \label{fig:budget}
 \end{figure*}

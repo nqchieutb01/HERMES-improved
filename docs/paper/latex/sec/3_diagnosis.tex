@@ -1,7 +1,7 @@
 \section{Grounding under a Token Budget: a Diagnosis}
 \label{sec:diagnosis}
 
-We first establish Observations 1, 2 and 4 of the introduction on S-EMBER, before introducing any method.
+We first establish Observations 1 and 2 of the introduction on S-EMBER, before introducing any method.
 Observation 3, which concerns the answer format, is studied in \cref{sec:transfer}.
 Unless stated otherwise, the reference memory in this section is random 10\% pruning.
 
@@ -41,7 +41,7 @@ elsewhere. FastVID retains one representative per run of similar frames, and as 
 lives. Random selection keeps about 9\% everywhere and never empties a frame. Because a timestamp is useful only when
 some visual content of its frame survives with it, a selector that empties frames leaves holes in the timeline. These
 holes hurt even when the score itself is sensible. If we rank HERMES's scores within each frame instead of globally,
-which gives every frame an equal share (``stratified''), mIoU improves by $5.3^*$.
+which gives every frame an equal share (``stratified''), mIoU improves by $5.3$.
 
 \begin{table}[t]
   \centering
@@ -118,41 +118,6 @@ one, which accounts for 33\% of all answers (\cref{tab:errors}).
                 & evidence & \phantom{0}7.8/\phantom{0}8.6/1.7 & 46\% & \phantom{0}9.3/10.3/1.1 & 23\% \\
     All tokens  & control  & \best{19.6}/\best{29.4}/\best{10.1} & \second{37\%} & \best{18.1}/\best{35.9}/\best{12.6} & \second{15\%} \\
                 & evidence & \phantom{0}9.1/\phantom{0}9.4/1.9 & 51\% & \phantom{0}9.1/10.5/1.5 & 22\% \\
-    \bottomrule
-  \end{tabular}\end{adjustbox}
-\end{table}
-
-\subsection{Benchmark floors}
-\label{sec:floors}
-
-Positional regularities make some intervals predictable without the video (\cref{tab:floors}). On S-EMBER, questions
-are asked while the stream is running, and 67\% of gold intervals end within the last 20\% of the window. As a
-result, the constant $[0.15q, q]$ scores 36.9 mIoU. Moments in ActivityNet Captions cover 38\% of the video on
-average, and there $[0, 0.95q]$ scores 37.9. On Charades-STA, $[0, 0.45q]$ scores 29.7. QVHighlights is the least
-biased, with 26.8 mIoU and 17.6 R@0.5. Because these constants are tuned on the test questions, they are an upper
-bound for any video-free rule of this form. On three of the four datasets, the best constant beats the uncompressed
-model when it answers with a timeline. With a one-line answer, Qwen3-VL-8B is well above the constant on ActivityNet
-and Charades-STA (\cref{sec:transfer}). We therefore report these floors as a reference in every comparison that
-follows.
-
-\begin{table}[t]
-  \centering
-  \small
-  \setlength{\tabcolsep}{3.5pt}
-  \caption{\textbf{Video-free floors.} Best constant interval $[aq, bq]$ on a $20{\times}20$ grid, tuned on the test
-  questions (each metric uses its own best constant; $[a,b]$ is the mIoU optimum), against the uncompressed model.
-  Closed: share of questions with gold end $<0.8q$.}
-  \label{tab:floors}
-  \begin{adjustbox}{max width=\linewidth}\begin{tabular}{@{}lccccccc@{}}
-    \toprule
-    & \multicolumn{4}{c}{Best constant} & & \multicolumn{2}{c}{All tokens} \\
-    \cmidrule(lr){2-5} \cmidrule(l){7-8}
-    Dataset & $[a,b]$ & mIoU & R@0.5 & R@0.7 & Closed & mIoU & R@0.5 \\
-    \midrule
-    S-EMBER      & $[.15, 1]$  & 36.9 & 34.7 & 24.2 & 33\% & 28.0 & 26.7 \\
-    QVHighlights & $[0, 1]$    & 26.8 & 17.6 & \phantom{0}8.8 & 62\% & 29.1 & 28.6 \\
-    ActivityNet  & $[0, .95]$  & 37.9 & 35.8 & 20.8 & 56\% & 22.9 & 18.2 \\
-    Charades-STA & $[0, .45]$  & 29.7 & 29.6 & 15.4 & 70\% & 16.6 & 14.2 \\
     \bottomrule
   \end{tabular}\end{adjustbox}
 \end{table}

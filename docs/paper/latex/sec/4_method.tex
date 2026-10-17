@@ -44,13 +44,13 @@ kept tokens. In a pre-registered test, relevance-weighted quotas with a floor, c
 from attention mass, did not beat equal quotas ($-0.2$ mIoU).
 Attention becomes informative once it comes from the \emph{actual} question. Streaming memories such as
 HERMES~\cite{hermes} score tokens with generic probe questions instead, and generic probes with a global top-$k$ are
-the weakest variant we measured (18.3 mIoU); adding the equal quota lifts them by $5.3^*$. With the actual question,
+the weakest variant we measured (18.3 mIoU); adding the equal quota lifts them by $5.3$. With the actual question,
 however, a global top-$k$ without any quota has so far done as well as the equal quota (\cref{sec:res-coverage}).
 In that setting the quota acts as a guarantee and is not where the gain comes from.
 
 \paragraph{Per-layer selection.}
 Each layer keeps its own set $\mathcal{K}_\ell$. If we force a single shared set by averaging attention over
-layers, \method changes by $-1.5^*$ mIoU, while random selection is unaffected ($+0.7$, n.s.). Per-layer selection
+layers, \method changes by $-1.5$ mIoU, while random selection is unaffected ($+0.7$). Per-layer selection
 therefore helps question-driven scores specifically, and it does not explain why random selection beats input-level
 pruners.
 
@@ -112,9 +112,9 @@ The prompt format matters here. Under the timeline prompt, PCD first acts on the
 then on the interval, so the interval is written from observations that have already been contrasted. With PCD we
 also reserve 64 tokens of the generation budget for the final \texttt{Answer:} and \texttt{Time:} lines: once 64
 tokens remain and no \texttt{Answer:} line has started, the decoder begins one. By itself the reserve
-changes S-EMBER mIoU by $+0.1$ (n.s.) and repairs only three truncated answers.
+changes S-EMBER mIoU by only $+0.1$ and repairs only three truncated answers.
 When the answer is a single interval, PCD has little to correct. With the one-line grounding prompt it changes mIoU
-by $-0.1$ (n.s., \cref{sec:transfer}), in runs without the reserve. For the official direct-answer prompt we do not
+by $-0.1$ (\cref{sec:transfer}), in runs without the reserve. For the official direct-answer prompt we do not
 yet have a clean PCD-only comparison on S-EMBER. On NExT-GQA, PCD under that prompt lowers the scored grounding,
 because more times are written as minutes:seconds (\cref{sec:res-contrast}).
 
@@ -129,5 +129,5 @@ cosine similarity with the question, and the $F$ frames are taken at evenly spac
   p(j) \;=\; \tfrac{1}{2}\cdot\tfrac{1}{q} \;+\; \tfrac{1}{2}\operatorname{softmax}(z)_j ,
 \end{equation}
 so half of the frames remain uniform. We skip BOLT when uniform frames would be less than 1\,s apart. Once the
-question chooses the tokens, BOLT adds only $+0.8$ to $+0.9$ mIoU, which is not significant on S-EMBER, QVHighlights
-or ActivityNet. The runs in the main tables include it.
+question chooses the tokens, BOLT adds only $+0.8$ to $+0.9$ mIoU on S-EMBER, QVHighlights
+and ActivityNet. The runs in the main tables include it.

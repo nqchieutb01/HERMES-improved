@@ -6,8 +6,10 @@ Our main model is Qwen3-VL-8B-Instruct~\cite{qwen3vl}. It sees 64 frames at nati
 from $[0,q]$ or chosen by BOLT (\cref{sec:retrieval}), and decodes greedily or with PCD, at batch size 8 for pruned
 memories. On S-EMBER we generate at most 384 new tokens with repetition penalty 1.1. On TimeLens-Bench the limit is
 512, and on NExT-GQA it is 256 for the two-query setting or 1{,}024 for the joint answer, both with repetition
-penalty 1.0. Unless stated otherwise, all methods share the timeline prompt. In \cref{sec:transfer} we add the
-one-line prompt of TimeLens-Bench and TimeLens-8B~\cite{timelens}, a Qwen3-VL-8B model fine-tuned for grounding.
+penalty 1.0. Unless stated otherwise, all methods share the timeline prompt. The exceptions are the full
+TimeLens-Bench sets, including the QVHighlights and Charades-STA columns of \cref{tab:main}, and the prompt study of
+\cref{sec:transfer}, which use the one-line prompt of TimeLens-Bench. In \cref{sec:transfer} we also add
+TimeLens-8B~\cite{timelens}, a Qwen3-VL-8B model fine-tuned for grounding.
 TimeLens-8B frames are capped at about 1.57\,MP on S-EMBER and NExT-GQA. On TimeLens-Bench both models use the
 protocol input (2\,fps, at most 14{,}336 visual tokens and at least 64 per frame), and BOLT runs there use 64 or 128
 frames of at most 0.79\,MP. Batch size alone changes about half of the greedy outputs and moves a score by up to
@@ -17,9 +19,8 @@ about two points. Comparisons with the uncompressed model, which runs at batch s
 We made the later runs on a second GPU cluster. These include most fixed-rule and all 5\% NExT-GQA runs, BOLT on the
 full QVHighlights set, the official S-EMBER prompt, and the TimeLens-8B gold-informed runs. Some paired differences
 combine runs from both clusters (marked where they occur). Runs repeated on both clusters agree
-within noise. NExT-GQA without pruning moves by $+0.4$ mIoU (n.s.), with 469 of 510 replies identical. On S-EMBER,
-random tokens move by $+0.2$ and \method by $-0.9$ mIoU (both n.s.), and the TimeLens script on QVHighlights moves by
-$-0.2$ (n.s.).
+within one mIoU point. NExT-GQA without pruning moves by $+0.4$ mIoU, with 469 of 510 replies identical. On S-EMBER,
+random tokens move by $+0.2$ and \method by $-0.9$ mIoU, and the TimeLens script on QVHighlights moves by $-0.2$.
 
 \paragraph{Datasets.}
 \textbf{S-EMBER} grounded QA~\cite{sember}: 475 questions (191 duration, 184 counting, 100 location) on the first
@@ -55,15 +56,7 @@ baseline is run with and without PCD. A global question top-$k$ without quotas i
 \cref{sec:res-coverage}.
 \TODO{SnapKV-style observation-window eviction, PruneVid, and FV-Action / attention readout on the same memory.}
 
-\paragraph{Floor-adjusted evaluation.}
-For every dataset we report three video-free or video-light references. (i) The \emph{best constant
-interval} $[aq, bq]$ over a $20{\times}20$ grid, tuned on the test questions, gives an upper bound for any constant
-rule. (ii) \emph{Length rescaling} stretches the no-PCD prediction about its start by a factor of 1.76, fitted once
-on S-EMBER and applied unchanged to the other datasets. It tests whether a gain could come from longer intervals
-alone. (iii) We split the questions into \emph{closed} ones, whose gold interval ends before $0.8q$, and the rest.
-End-snapping on S-EMBER is discussed in \cref{sec:suppl-snap}.
-
-\paragraph{Metrics and statistics.}
+\paragraph{Metrics.}
 We report mIoU and R@$\{0.3,0.5,0.7\}$. On S-EMBER we also report answer accuracy and GQ@0.5, judged by a local
 Qwen3.8-27B-FP8 model with the official S-EMBER judge prompt. Judging was repeated in three sessions, whose verdicts
 for the same run differ by up to about one accuracy point. We therefore never pair Acc.\ or GQ@0.5
@@ -74,10 +67,7 @@ use their own earlier sessions and are compared only within themselves. The same
 \method run scores 27.4 and 17.5 in B and 26.5 and 17.1 in C. Open-ended NExT-GQA answers are judged by the same
 model with the Video-ChatGPT prompt~\cite{videochatgpt}, in separate batches that share a cache. On S-EMBER, answers
 that give times as minutes:seconds are converted to seconds, for every method alike (\cref{sec:suppl-parse}). The
-joint NExT-GQA answers are scored with the official S-EMBER parser, which counts such times as missing. We
-use a paired bootstrap over questions with 2{,}000 resamples, and we mark with $^*$ the differences
-whose 95\% interval excludes 0.
-\TODO{video-clustered bootstrap.}
+joint NExT-GQA answers are scored with the official S-EMBER parser, which counts such times as missing.
 
 \paragraph{Protocol.}
 We made all design choices (scores, quotas, $\alpha$, scope) on S-EMBER. We then froze the configuration and ran

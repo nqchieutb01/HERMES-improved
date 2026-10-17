@@ -4,40 +4,8 @@
 On videos longer than a minute, the model sometimes writes times as minutes:seconds, \eg
 \texttt{Time: [1:45, 2:07]}. The official S-EMBER parser scores such times as missing, so we convert \texttt{h:mm:ss}
 and \texttt{m:ss} to seconds, for every method alike. With the official parser the method rankings do not change. The
-main numbers become 44.6\,/\,50.2 for \method on QVHighlights (\vs 48.8\,/\,54.8) and 33.3\,/\,31.0 on ActivityNet
+timeline-prompt numbers of \method in \cref{tab:ladder} become 44.6\,/\,50.2 on QVHighlights (\vs 48.8\,/\,54.8) and 33.3\,/\,31.0 on ActivityNet
 at 30\% (\vs 34.7\,/\,32.4). \TODO{full table with the official parser.}
-
-\section{S-EMBER closed intervals}
-\label{sec:suppl-closed}
-
-Two thirds of S-EMBER gold intervals end at or close to the question time, so a constant interval ending at $q$ is
-a strong floor on the pooled set. \Cref{tab:closed} therefore restricts the main comparison to the \emph{closed}
-questions, whose gold interval ends before $0.8q$ (33\% of the questions). This shortcut does not exist there, and
-we re-tune the floors on this subset.
-
-\begin{table}[h]
-  \centering
-  \small
-  \setlength{\tabcolsep}{3pt}
-  \caption{\textbf{S-EMBER closed intervals} (10\%, mIoU\,/\,R@0.5; settings as in \cref{tab:main}). Right: paired
-  $\Delta$mIoU of \method ($^*$: 95\% paired bootstrap interval excludes 0).}
-  \label{tab:closed}
-  \begin{adjustbox}{max width=\linewidth}\begin{tabular}{@{}lcc@{}}
-    \toprule
-    Method & mIoU / R@0.5 & \method \vs \\
-    \midrule
-    \floor{Best constant interval}       & \floor{32.1 / 29.9} & \up{$+7.6^*$} \\
-    \floor{Length rescaling of R $+$ C}  & \floor{32.3 / 33.1} & \up{$+7.5^*$} \\
-    \midrule
-    All tokens (no pruning)              & 30.0 / 27.4 & \\
-    Random tokens                        & 28.3 / 27.4 & \\
-    Random $+$ PCD                       & \second{36.8} / \second{38.2} & \\
-    SemVID $+$ PCD                       & 34.3 / 34.4 & \\
-    Coverage only                        & 33.0 / 35.7 & \\
-    \oursrow \textbf{\method} (Coverage $+$ PCD) & \best{39.7} / \best{43.3} & -- \\
-    \bottomrule
-  \end{tabular}\end{adjustbox}
-\end{table}
 
 \section{Checks against published numbers}
 \label{sec:suppl-anchors}
@@ -72,15 +40,6 @@ script on the same queries (\cref{tab:anchors}).
   \end{tabular}\end{adjustbox}
 \end{table}
 
-\section{End-snapping on S-EMBER}
-\label{sec:suppl-snap}
-
-Setting every predicted end to the question time $q$ raises every S-EMBER method to 42--46 mIoU, above the 39.3 of
-\method. This works because 67\% of the gold intervals end within the last fifth of the window. On closed intervals,
-end-snapping hurts every method and brings it down to 22--24 mIoU, while \method keeps 39.7. On QVHighlights it
-lowers \method from 48.8 to 40.5. A natural extension is a decoder that decides whether an interval is still open
-at question time. \TODO{open-interval decoding.}
-
 \section{Reproduction}
 \label{sec:suppl-repro}
 
@@ -96,4 +55,3 @@ run.contrastive\_scope=time \\
 \textrm{(BOLT)} run.retrieval=frames\_cont run.retrieval\_min\_gap=1.0
 \end{tabular}\end{adjustbox}
 \end{center}
-Floors and paired intervals are computed by \texttt{docs/paper/analysis/floors.py}.

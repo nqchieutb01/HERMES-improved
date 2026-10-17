@@ -47,12 +47,11 @@
     \node[font=\sffamily\small\bfseries, anchor=west] at (-3.3, 3.15) {QVHighlights, 500 queries, timeline answers};
     \node[font=\sffamily\scriptsize, anchor=west, text=black!65] at (-3.3, 2.7) {R@0.5 with 10\% of the visual tokens};
     \foreach \lab/\v/\c/\y in {%
-        best constant (no video)/17.6/floorc!55/2.0,
-        random tokens/25.0/black!25/1.25,
-        all tokens (no pruning)/28.6/black!25/0.5,
-        SemVID + PCD/34.8/black!25/-0.25,
-        random + PCD/39.2/black!25/-1.0,
-        \textbf{BOCC (ours)}/54.8/ours/-1.75} {
+        random tokens/25.0/black!25/1.85,
+        all tokens (no pruning)/28.6/black!25/1.0,
+        SemVID + PCD/34.8/black!25/0.15,
+        random + PCD/39.2/black!25/-0.7,
+        \textbf{BOCC (ours)}/54.8/ours/-1.55} {
       \node[anchor=east, font=\sffamily\scriptsize] at (-0.1, \y) {\lab};
       \fill[\c] (0, \y-0.22) rectangle (\v*\sc, \y+0.22);
       \node[anchor=west, font=\sffamily\scriptsize] at (\v*\sc+0.05, \y) {\v};
@@ -71,7 +70,7 @@ back on a video-free prior and answers ``1.2 seconds''; QA-oriented pruning and 
 wrong scene. \method keeps every frame anchored in time and contrasts the answer against the model's no-video
 prediction, and recovers the interval (IoU 0.97). Right: R@0.5 over 500 queries when every method answers with a
 timeline of observations, the format of grounded QA. In this format the prior writes many of the times and \method
-is far above the uncompressed model and the best video-free constant. With a one-line answer the uncompressed model is
+is far above the uncompressed model. With a one-line answer the uncompressed model is
 much stronger, and Coverage alone matches it with a quarter of the tokens (\cref{sec:transfer}).}
 \label{fig:teaser}
 \end{center}

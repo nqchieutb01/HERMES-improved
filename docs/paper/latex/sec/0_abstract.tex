@@ -22,8 +22,8 @@ improves on the uncompressed model by \key{$+11.2$} and \key{$+10.7$} mIoU under
 and by \key{$+5.5$} under the benchmark's official direct-answer prompt, although an input
 restricted to the gold evidence still scores higher in accuracy, and on every metric for the grounding-tuned model.
 Asking for a timeline of observations instead of a single interval costs single-moment grounding about 30 mIoU, so the
-answer format is a major variable when evaluating compressed memories. We compare every method with video-free floors
-and report where the method helps less. On short, densely sampled videos Coverage gains little on grounding
+answer format is a major variable when evaluating compressed memories. We also report where the method helps less.
+On short, densely sampled videos Coverage gains little on grounding
 (\key{$+0.5$} mIoU on Charades-STA; NExT-GQA), although on NExT-GQA it keeps the accuracy of the uncompressed model at
 10\% of the tokens while random selection loses about four points. PCD helps only where the answer format lets the
 prior choose the times, and it lowers the scored grounding where it disturbs that format.

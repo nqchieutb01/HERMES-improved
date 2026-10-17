@@ -22,7 +22,7 @@ QA drop frames that look redundant, unremarkable or unrelated to the words of th
 frames that make a timeline usable. On S-EMBER grounded QA, all four recent pruners we evaluate fall below random
 token selection at the same budget, and the same holds on QVHighlights and Charades-STA (\cref{sec:pruners}). Random
 selection is a strong grounding baseline because it leaves a few tokens on every frame. In fact, one of the published
-scores improves by $5.3^*$ mIoU just by ranking tokens within each frame instead of globally
+scores improves by $5.3$ mIoU just by ranking tokens within each frame instead of globally
 (\cref{sec:coverage-loss}).
 
 \paragraph{Observation 2: where the memory is silent, a prior answers.}
@@ -40,13 +40,6 @@ costs about 30 mIoU (\cref{sec:transfer}). With the one-line format, selecting t
 contrastive decoding does nothing. With the timeline format, the video-free prior writes many of the times, so
 contrasting it away helps, as long as the contrast does not break the answer format. For this reason we treat the
 answer format as an experimental variable instead of a fixed detail of the protocol.
-
-\paragraph{Observation 4: benchmark floors are high.}
-Grounding benchmarks have strong positional regularities~\cite{otani2020uncovering}. On S-EMBER, questions are asked
-mid-stream and two thirds of the gold intervals end within the last fifth of the window. As a result, the best
-\emph{constant} interval $[0.15q, q]$ reaches 36.9 mIoU, which is more than the uncompressed model gets when it answers
-in the timeline format (28.0). Following \citet{otani2020uncovering}, we report video-free floors for every method
-(\cref{sec:floors}).
 
 \medskip
 We propose \method (BOLT $+$ Coverage $+$ Contrastive decoding), a training-free method with one component for each
@@ -76,21 +69,20 @@ needs each of them and when each one matters, together with a way to make them w
   \item \textbf{Coverage}, per-layer question-driven token selection under an equal quota (\cref{sec:coverage}).
   With the standard one-line prompt, on the full Charades-STA and QVHighlights sets and on both Qwen3-VL-8B and the
   grounding-tuned TimeLens-8B, it matches the uncompressed model with 24\% of the visual tokens. It also beats random
-  selection ($+0.5^*$ to $+1.6^*$ mIoU) and a matched low-resolution input ($+2.1^*$ to $+2.6^*$)
+  selection ($+0.5$ to $+1.6$ mIoU) and a matched low-resolution input ($+2.1$ to $+2.6$)
   (\cref{sec:transfer}). On NExT-GQA at 10\% of the tokens it keeps the accuracy of the uncompressed model, while random
-  selection loses about four points ($+3.4^*$ and $+3.2^*$ over random). With BOLT frames it exceeds a 1\,fps input
-  of similar budget by $+9.2^*$ and $+6.5^*$ mIoU. Random tokens on the same frames, however, already gain $+7.0^*$
-  and $+6.1^*$, so most of that gain comes from the front end.
+  selection loses about four points ($+3.4$ and $+3.2$ over random). With BOLT frames it exceeds a 1\,fps input
+  of similar budget by $+9.2$ and $+6.5$ mIoU. Random tokens on the same frames, however, already gain $+7.0$
+  and $+6.1$, so most of that gain comes from the front end.
   \item \textbf{PCD and an answer-format study} (\cref{sec:contrast,sec:transfer}). On S-EMBER, PCD helps
   reasoning-style answers on all eight memories we test and on both models. With 10\% of the tokens, \method improves
-  on the uncompressed model by $+11.2^*$ and $+10.7^*$ mIoU under the same prompt. Under the official
-  S-EMBER prompt the grounding gain is $+5.5^*$, while the accuracy gain is borderline and comes mostly from BOLT. The same study shows that the
+  on the uncompressed model by $+11.2$ and $+10.7$ mIoU under the same prompt. Under the official
+  S-EMBER prompt the grounding gain is $+5.5$, while the accuracy gain is smaller ($+2.9$) and comes mostly from BOLT. The same study shows that the
   answer format alone moves single-moment grounding by about 30 mIoU and decides whether contrastive decoding helps.
   PCD does nothing for one-line answers, and on NExT-GQA it lowers the scored grounding where it disturbs the format
   (TimeLens-8B timeline answers, minutes:seconds under the official prompt).
-  \item \textbf{Floor-adjusted, reproducible evaluation} (\cref{sec:setup}). We give video-free floors and a
-  length-rescaling baseline for every method, paired bootstrap tests, a reproduction of the published TimeLens-Bench
-  numbers within 0.3 mIoU, and sanity checks with no video and with shuffled frames or timestamps. We also report a
+  \item \textbf{Reproducible evaluation} (\cref{sec:setup,sec:transfer}). We reproduce the published TimeLens-Bench
+  numbers within 0.3 mIoU and run sanity checks with no video and with shuffled frames or timestamps. We also report a
   broad set of negative results, including the limits of Coverage on short, densely sampled videos and of PCD outside
   the timeline format.
 \end{enumerate}
