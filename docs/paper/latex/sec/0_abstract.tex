@@ -1,13 +1,9 @@
 \begin{abstract}
-Video LLMs prune visual tokens, and published pruners lose little
-multiple-choice accuracy at 10\% of the tokens. Temporal grounding fares worse. A timestamp survives only if a visual
-token of its frame survives, and QA pruners empty frames and
-fall below random selection. In answers that list observations before the interval, a video-free prior fills the
-gaps. We propose \method, a training-free method that selects frames by the question (BOLT), keeps the most
-question-attended tokens per layer under an equal per-frame quota (Coverage), and contrasts time values with the
-model's no-video prediction (PCD). With a one-line prompt, Coverage at 31\% of the tokens stays within 0.3 mIoU of the
-uncompressed model on Charades-STA and QVHighlights. On reasoning-style grounded QA (S-EMBER) at 10\% of the tokens,
-\method beats the uncompressed model by \key{$+11.2$} and \key{$+10.7$} mIoU (two models) with a timeline prompt, and
-by \key{$+5.5$} with the official prompt. Gains are small on short, densely sampled videos, and PCD helps only where
-the answer format lets the prior choose the times.
+Video LLMs prune most of their visual tokens with little loss in multiple-choice accuracy, but temporal grounding
+suffers. A timestamp survives only with a visual token of its frame, so QA pruners that empty frames fall below random
+selection, and in reasoning-style answers a video-free prior fills the gaps. We propose \method, a training-free method
+that selects frames by the question (BOLT), keeps the most question-attended tokens in every frame (Coverage), and
+contrasts each written time with the model's no-video prediction (PCD). With 31\% of the tokens, Coverage alone matches
+the uncompressed model on QVHighlights and Charades-STA. On grounded QA (S-EMBER) with 10\% of the tokens, \method
+improves mIoU over the uncompressed model by up to \key{$+11.2$}. Gains are small on short videos.
 \end{abstract}
