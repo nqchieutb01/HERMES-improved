@@ -2,79 +2,83 @@
 \label{sec:setup}
 
 \paragraph{Models.}
-Qwen3-VL-8B-Instruct~\cite{qwen3vl}, 64 frames sampled uniformly from $[0,q]$ (or by BOLT, \cref{sec:retrieval}) at native
-resolution, greedy decoding or PCD, batch size 8 for pruned memories. On S-EMBER we generate at most 384 new tokens
-with repetition penalty 1.1; on TimeLens-Bench at most 512, and on
-NExT-GQA at most 256 (two-query) or 1{,}024 (joint answer), both with repetition penalty 1.0. Unless stated
-otherwise all methods share the timeline prompt. In \cref{sec:transfer} we add TimeLens-8B~\cite{timelens}, a
-Qwen3-VL-8B model fine-tuned for grounding, and the one-line prompt of TimeLens-Bench. TimeLens-8B frames are capped
-at about 1.57\,MP on S-EMBER and NExT-GQA; on TimeLens-Bench both models use the protocol input (2\,fps, at most
-14{,}336 visual tokens and at least 64 per frame), and BOLT runs there use 64 or 128 frames of at most 0.79\,MP.
-Batch size changes about half of the greedy outputs and up to about two points of a score; comparisons with the
-uncompressed model, which runs at batch size 1--2, carry this noise.
+Our main model is Qwen3-VL-8B-Instruct~\cite{qwen3vl}. It sees 64 frames at native resolution, sampled uniformly
+from $[0,q]$ or chosen by BOLT (\cref{sec:retrieval}), and decodes greedily or with PCD, at batch size 8 for pruned
+memories. On S-EMBER we generate at most 384 new tokens with repetition penalty 1.1. On TimeLens-Bench the limit is
+512, and on NExT-GQA it is 256 for the two-query setting or 1{,}024 for the joint answer, both with repetition
+penalty 1.0. Unless stated otherwise, all methods share the timeline prompt. In \cref{sec:transfer} we add the
+one-line prompt of TimeLens-Bench and TimeLens-8B~\cite{timelens}, a Qwen3-VL-8B model fine-tuned for grounding.
+TimeLens-8B frames are capped at about 1.57\,MP on S-EMBER and NExT-GQA. On TimeLens-Bench both models use the
+protocol input (2\,fps, at most 14{,}336 visual tokens and at least 64 per frame), and BOLT runs there use 64 or 128
+frames of at most 0.79\,MP. Batch size alone changes about half of the greedy outputs and moves a score by up to
+about two points. Comparisons with the uncompressed model, which runs at batch size 1--2, include this noise.
 
 \paragraph{Two clusters.}
-Later runs (most fixed-rule and all 5\% NExT-GQA runs, BOLT on the full QVHighlights set, the official S-EMBER prompt, and
-the TimeLens-8B gold-informed runs) were made on a second GPU cluster, and some paired differences combine runs from
-the two clusters (marked where they occur). Repeated runs across the clusters agree within noise: NExT-GQA without
-pruning $+0.4$ mIoU (n.s., 469 of 510 replies identical); S-EMBER random tokens $+0.2$ and \method $-0.9$ mIoU (both
-n.s.); the TimeLens script on QVHighlights $-0.2$ (n.s.).
+We made the later runs on a second GPU cluster. These include most fixed-rule and all 5\% NExT-GQA runs, BOLT on the
+full QVHighlights set, the official S-EMBER prompt, and the TimeLens-8B gold-informed runs. Some paired differences
+combine runs from both clusters (marked where they occur). Runs repeated on both clusters agree
+within noise. NExT-GQA without pruning moves by $+0.4$ mIoU (n.s.), with 469 of 510 replies identical. On S-EMBER,
+random tokens move by $+0.2$ and \method by $-0.9$ mIoU (both n.s.), and the TimeLens script on QVHighlights moves by
+$-0.2$ (n.s.).
 
 \paragraph{Datasets.}
 \textbf{S-EMBER} grounded QA~\cite{sember}: 475 questions (191 duration, 184 counting, 100 location) on the first
-300 videos, asked mid-stream; the memory contains only the frames before the question.
-\textbf{QVHighlights}~\cite{qvhighlights} val: 500 queries with a single relevant window (a seed-0 sample of the
-1{,}020 single-window queries), videos of about 150\,s.
-\textbf{ActivityNet Captions}~\cite{activitynet} val\_1: 500 queries, one sentence per video, videos of about
-115\,s. \textbf{Charades-STA}~\cite{charadessta} test: 500 queries, videos of about 30\,s. For the last three, the
-question is \emph{``When does the following happen in the video: \textless query\textgreater?''} and the window is
+300 videos, asked mid-stream, so the memory contains only the frames before the question.
+\textbf{QVHighlights}~\cite{qvhighlights} val: 500 queries with a single relevant window, sampled with seed 0 from
+the 1{,}020 single-window queries, on videos of about 150\,s.
+\textbf{ActivityNet Captions}~\cite{activitynet} val\_1: 500 queries, one sentence per video, on videos of about
+115\,s. \textbf{Charades-STA}~\cite{charadessta} test: 500 queries on videos of about 30\,s. For these three datasets
+the question is \emph{``When does the following happen in the video: \textless query\textgreater?''} and the window is
 the whole video.
 \textbf{TimeLens-Bench}~\cite{timelens}: the re-annotated Charades-STA, QVHighlights and ActivityNet sets, evaluated
-with their one-line prompt (full sets and a 513-query QVHighlights subset). \textbf{NExT-GQA}~\cite{nextgqa} test:
-1{,}005 questions on about 40\,s videos, answer and interval asked in two separate queries (multiple choice or
-open-ended) or, open-ended, in one joint reply. Our QVHighlights and ActivityNet copies are low-resolution re-encodes (153 and about 84 visual
-tokens per frame pair, against 660 on S-EMBER), so we also report budgets in absolute tokens.
+with their one-line prompt on the full sets and on a 513-query QVHighlights subset. \textbf{NExT-GQA}~\cite{nextgqa}
+test: 1{,}005 questions on videos of about 40\,s. The answer and the interval are asked either in two separate
+queries (multiple choice or open-ended) or, for open-ended answers, in one joint reply. Our QVHighlights and
+ActivityNet copies are low-resolution re-encodes with 153 and about 84 visual tokens per frame pair, compared with 660
+on S-EMBER, so we also report budgets in absolute tokens.
 
 \paragraph{Budget.}
-10\% of the visual tokens of the 64-frame memory, timestamps included (S-EMBER: about 2{,}140 tokens;
-QVHighlights: about 520). ActivityNet is reported at 30\% (400--900 tokens), because at 10\% the memory holds only
-120--300 tokens (\cref{sec:budget}). Because timestamps count inside the budget, a KV selector at a nominal
-$\rho$ keeps fewer visual tokens than an input pruner at the same $\rho$ (on NExT-GQA at 10\%, about 3.4\% of the
-visual tokens). A frame's timestamp is kept when the frame keeps a visual token. An earlier version of this rule
-could let timestamps fill the budget of very small memories and leave no visual token; the NExT-GQA 10\% runs use
-the fixed rule (\cref{sec:transfer}), and the other runs use the earlier one, which can matter only where timestamps
-take a large share of the budget (\cref{sec:budget}).
+The default budget is 10\% of the visual tokens of the 64-frame memory, timestamps included (about
+2{,}140 tokens on S-EMBER, about 520 on QVHighlights). We report ActivityNet at 30\% (400--900 tokens), because at
+10\% its memory holds only 120--300 tokens (\cref{sec:budget}). Since timestamps count against the budget, a KV
+selector at a nominal $\rho$ keeps fewer visual tokens than an input pruner at the same $\rho$; on NExT-GQA at 10\%
+it keeps about 3.4\% of the visual tokens. A frame's timestamp is kept when the frame keeps a visual token. An
+earlier version of this rule could let timestamps fill the budget of very small memories and leave no visual token.
+The NExT-GQA 10\% runs use the fixed rule (\cref{sec:transfer}) and the other runs use the earlier one. The
+difference can matter only where timestamps take a large share of the budget (\cref{sec:budget}).
 
 \paragraph{Baselines.}
-All tokens (no pruning); random tokens; FastVID~\cite{fastvid}, VidCom\textsuperscript{2}~\cite{vidcom2},
-FlashVID~\cite{flashvid} (vision-side stages) and SemVID~\cite{semvid}, re-implemented and checked to keep the
-same tokens as the authors' code on test inputs; each with and without PCD.
-A global question top-$k$ without quotas is compared in \cref{sec:res-coverage}.
+We compare against all tokens (no pruning), random tokens, and four QA pruners: FastVID~\cite{fastvid},
+VidCom\textsuperscript{2}~\cite{vidcom2}, FlashVID~\cite{flashvid} (vision-side stages) and SemVID~\cite{semvid}. The
+pruners are re-implemented and checked to keep the same tokens as the authors' code on test inputs. Each
+baseline is run with and without PCD. A global question top-$k$ without quotas is compared in
+\cref{sec:res-coverage}.
 \TODO{SnapKV-style observation-window eviction, PruneVid, and FV-Action / attention readout on the same memory.}
 
 \paragraph{Floor-adjusted evaluation.}
-For every dataset we report three video-free or video-light references. (i) The \emph{best constant interval}
-$[aq, bq]$ over a $20{\times}20$ grid, tuned on the test questions, which upper-bounds any constant rule.
-(ii) \emph{Length rescaling}: the no-PCD prediction stretched about its start by a factor fitted once on
-S-EMBER (1.76) and applied unchanged to the other datasets; it tests whether a gain could come from longer
-intervals alone. (iii) The split into \emph{closed} questions (gold end $<0.8q$) and the rest. End-snapping on
-S-EMBER is discussed in \cref{sec:suppl-snap}.
+For every dataset we report three video-free or video-light references. (i) The \emph{best constant
+interval} $[aq, bq]$ over a $20{\times}20$ grid, tuned on the test questions, gives an upper bound for any constant
+rule. (ii) \emph{Length rescaling} stretches the no-PCD prediction about its start by a factor of 1.76, fitted once
+on S-EMBER and applied unchanged to the other datasets. It tests whether a gain could come from longer intervals
+alone. (iii) We split the questions into \emph{closed} ones, whose gold interval ends before $0.8q$, and the rest.
+End-snapping on S-EMBER is discussed in \cref{sec:suppl-snap}.
 
 \paragraph{Metrics and statistics.}
-mIoU and R@$\{0.3,0.5,0.7\}$; on S-EMBER also answer accuracy and GQ@0.5, judged with the official S-EMBER judge
-prompt by a local Qwen3.8-27B-FP8 model. Judging was repeated in three sessions, whose verdicts for the same run
-differ by up to about one accuracy point; Acc.\ and GQ@0.5 are never paired across sessions, and each table uses one
-session, named in its caption: session A for \cref{tab:qa}, B for \cref{tab:tl8b,tab:oracle}, and C for
-\cref{tab:oracle-tl8b}. The early-phase tables listed in \cref{sec:results} use their own earlier sessions and are
-compared only within themselves. The same Qwen3-VL-8B \method run scores 21.7 accuracy and 13.3 GQ@0.5 in session A and 21.9
-and 13.5 in session B; the TimeLens-8B \method run 27.4 and 17.5 in B and 26.5 and 17.1 in C. Open-ended NExT-GQA
-answers are judged by the same model with the Video-ChatGPT prompt~\cite{videochatgpt}, in separate batches that
-share a cache. On S-EMBER, answers that state times as minutes:seconds are converted to seconds for every method
-alike (\cref{sec:suppl-parse}); the joint NExT-GQA answers are scored with the official S-EMBER parser, which counts
-them as missing. We use a paired bootstrap
-over questions (2{,}000 resamples) and mark with $^*$ differences whose 95\% interval excludes 0.
+We report mIoU and R@$\{0.3,0.5,0.7\}$. On S-EMBER we also report answer accuracy and GQ@0.5, judged by a local
+Qwen3.8-27B-FP8 model with the official S-EMBER judge prompt. Judging was repeated in three sessions, whose verdicts
+for the same run differ by up to about one accuracy point. We therefore never pair Acc.\ or GQ@0.5
+across sessions, and each table uses a single session, named in its caption: session A for \cref{tab:qa}, B for
+\cref{tab:tl8b,tab:oracle}, and C for \cref{tab:oracle-tl8b}. The early-phase tables listed in \cref{sec:results}
+use their own earlier sessions and are compared only within themselves. The same Qwen3-VL-8B
+\method run scores 21.7 accuracy and 13.3 GQ@0.5 in session A and 21.9 and 13.5 in session B. The TimeLens-8B
+\method run scores 27.4 and 17.5 in B and 26.5 and 17.1 in C. Open-ended NExT-GQA answers are judged by the same
+model with the Video-ChatGPT prompt~\cite{videochatgpt}, in separate batches that share a cache. On S-EMBER, answers
+that give times as minutes:seconds are converted to seconds, for every method alike (\cref{sec:suppl-parse}). The
+joint NExT-GQA answers are scored with the official S-EMBER parser, which counts such times as missing. We
+use a paired bootstrap over questions with 2{,}000 resamples, and we mark with $^*$ the differences
+whose 95\% interval excludes 0.
 \TODO{video-clustered bootstrap.}
 
 \paragraph{Protocol.}
-All design choices (scores, quotas, $\alpha$, scope) were made on S-EMBER. The configuration was then frozen
-and run once on QVHighlights, ActivityNet and Charades-STA. \TODO{held-out S-EMBER videos as a test split.}
+We made all design choices (scores, quotas, $\alpha$, scope) on S-EMBER. We then froze the configuration and ran
+it once on QVHighlights, ActivityNet and Charades-STA. \TODO{held-out S-EMBER videos as a test split.}

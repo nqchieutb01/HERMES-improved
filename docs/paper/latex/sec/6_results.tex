@@ -1,22 +1,22 @@
 \section{Results}
 \label{sec:results}
 
-We organise the results by question. \Cref{sec:main} compares \method with all baselines and floors on four datasets with the timeline answer format,
-and \cref{sec:transfer} repeats the key comparisons under the standard one-line prompt, on a grounding-tuned model and
-on NExT-GQA.
-\Cref{sec:pruners} shows how published pruners behave on grounding. \Cref{sec:res-coverage,sec:res-contrast} analyse
-the two components. \Cref{sec:budget,sec:frames} study the budget and how to spend it. \Cref{sec:oracles} compares
-with upper bounds that use the gold interval, \cref{sec:res-retrieval} analyses BOLT,
-\cref{sec:negative} lists what did not work, and \cref{sec:errors} analyses the remaining errors.
+We organise the results by question. \Cref{sec:main} compares \method with all baselines and floors on four datasets,
+using the timeline answer format. \Cref{sec:transfer} then repeats the key comparisons under the standard one-line
+prompt, on a grounding-tuned model and on NExT-GQA.
+\Cref{sec:pruners} looks at how published pruners behave on grounding, and \cref{sec:res-coverage,sec:res-contrast}
+analyse the two components. \Cref{sec:budget,sec:frames} study the budget and how to spend it. The remaining sections
+compare with upper bounds that use the gold interval (\cref{sec:oracles}), analyse BOLT (\cref{sec:res-retrieval}),
+list what did not work (\cref{sec:negative}) and examine the errors that remain (\cref{sec:errors}).
 
 \paragraph{Reading the tables.}
-Numbers are mIoU, or mIoU\,/\,R@0.5 where two are given. $\Delta$ is a paired difference; $^*$ marks differences whose 95\%
-paired bootstrap interval excludes 0. Tables built from the early S-EMBER phases (\cref{tab:pcd8,tab:cf,%
-tab:scope,tab:replay,tab:errors} and \cref{tab:causal}) use an earlier implementation of PCD, the official parser and batch size 1;
-on the S-EMBER rows we checked, the two parsers differ by 0.2--0.7 mIoU, except for the oracle selector with PCD
-(1.5 mIoU, 17 answers in minutes:seconds), and batch size changes no paired result. All other S-EMBER tables use the
-minutes:seconds-aware parser. In every table the best
-value is in \best{bold} and the second best \second{underlined}, per column unless a caption says per row; floors
+Numbers are mIoU, or mIoU\,/\,R@0.5 where two are given. $\Delta$ is a paired difference, and $^*$ marks differences
+whose 95\% paired bootstrap interval excludes 0. Tables built from the early S-EMBER phases (\cref{tab:pcd8,tab:cf,%
+tab:scope,tab:replay,tab:errors} and \cref{tab:causal}) use an earlier implementation of PCD, the official parser and
+batch size 1. On the S-EMBER rows we checked, the two parsers differ by 0.2--0.7 mIoU. The exception is the oracle
+selector with PCD, where they differ by 1.5 mIoU because 17 answers are written in minutes:seconds. Batch size changes
+no paired result. All other S-EMBER tables use the minutes:seconds-aware parser. In every table the best
+value is in \best{bold} and the second best \second{underlined}, per column unless a caption says per row. Floors
 and differences ($\Delta$) are not ranked.
 
 %% ================================================================================================= 6.1 main
@@ -76,22 +76,24 @@ and differences ($\Delta$) are not ranked.
 
 \Cref{tab:main,tab:paired} lead to three conclusions.
 
-\emph{(i) With the timeline prompt, \method nearly doubles the uncompressed model on the least biased benchmark.}
-On QVHighlights, with 10\% of the tokens, \method reaches 54.8 R@0.5 (R@0.7: 30.2) against 28.6 (18.4) for all tokens and 25.0 (16.2) for random
-tokens, and clears every floor by a wide margin ($+22.1$ mIoU over the best constant, $+8.6$ over length rescaling). This comparison holds the prompt fixed; the one-line prompt of TimeLens-Bench gives the
-uncompressed model far higher scores, and there the gain of \method is smaller (\cref{sec:transfer}).
+(i) With the timeline prompt, \method nearly doubles the uncompressed model on the least biased benchmark.
+On QVHighlights with 10\% of the tokens, \method reaches 54.8 R@0.5 (R@0.7: 30.2). All tokens give 28.6 (18.4), and
+random tokens 25.0 (16.2). \method also clears every floor by a wide margin, with $+22.1$ mIoU over the best constant
+and $+8.6$ over length rescaling. This comparison holds the prompt fixed. The one-line prompt of TimeLens-Bench gives
+the uncompressed model far higher scores, and there the gain of \method is smaller (\cref{sec:transfer}).
 
-\emph{(ii) On S-EMBER, the gain is real where the window end is not a shortcut.} \method beats all tokens, random
+(ii) On S-EMBER, the gain holds where the window end is not a shortcut. \method beats all tokens, random
 selection and SemVID under the same decoding. Against the floors its pooled gain is small and not significant,
-because two thirds of S-EMBER intervals end at the question time. On closed intervals, where that shortcut does not
-exist, \method gains $+7.6^*$ mIoU over the best constant and $+7.5^*$ over length rescaling
+because two thirds of S-EMBER intervals end at the question time. Closed intervals do not offer that shortcut, and on
+them \method gains $+7.6^*$ mIoU over the best constant and $+7.5^*$ over length rescaling
 (\cref{tab:closed}).
 
-\emph{(iii) On ActivityNet and Charades-STA, the timeline prompt is the bottleneck.} With this prompt and our
-low-resolution copies, the uncompressed model is far below the constant floor on both (22.9 \vs 37.9 and 16.6 \vs
-29.7); with the one-line prompt of TimeLens-Bench it scores 47.1 and 48.5 mIoU (\cref{sec:transfer}). \method improves on all tokens and on every pruner on
-ActivityNet, but no method reaches the floor, and on Charades-STA Coverage is worse than random selection
-(\cref{sec:frames}). We report these as limits, not successes.
+(iii) On ActivityNet and Charades-STA, the timeline prompt is the bottleneck. With this prompt and our
+low-resolution copies, the uncompressed model falls far below the constant floor on both datasets (22.9 \vs 37.9 and
+16.6 \vs 29.7). With the one-line prompt of TimeLens-Bench, the same model scores 47.1 and 48.5 mIoU
+(\cref{sec:transfer}). On ActivityNet, \method improves on all tokens and on every pruner, yet no method reaches the
+floor. On Charades-STA, Coverage is worse than random selection (\cref{sec:frames}). We count both datasets among the
+limits of the method.
 
 \begin{table}[t]
   \centering
@@ -121,11 +123,11 @@ ActivityNet, but no method reaches the floor, and on Charades-STA Coverage is wo
 \end{table}
 
 \paragraph{Answers.}
-\method also improves the answers (\cref{tab:qa}): accuracy 21.7 \vs 17.3 for random tokens ($+4.4^*$) and 19.8 for
-all tokens, and GQ@0.5 13.3 \vs 7.4 and 8.8 (session A; in session B the same \method run scores 21.9 and 13.5,
-\cref{tab:tl8b,tab:oracle}). Coverage alone gives the best accuracy (22.5); PCD trades about one
-point of accuracy for its grounding gain, and differences below about two points of accuracy are within the decoding
-noise of the judge setup. \TODO{SemVID $+$ PCD in the same judging session.}
+\method also improves the answers (\cref{tab:qa}). Its accuracy is 21.7, against 17.3 for random tokens ($+4.4^*$)
+and 19.8 for all tokens. GQ@0.5 rises to 13.3, from 7.4 and 8.8 respectively. These numbers come from judging
+session A; in session B the same \method run scores 21.9 and 13.5 (\cref{tab:tl8b,tab:oracle}). Coverage alone gives
+the best accuracy (22.5), so PCD trades about one point of accuracy for its grounding gain. Differences below about
+two points of accuracy are within the decoding noise of the judge setup. \TODO{SemVID $+$ PCD in the same judging session.}
 
 \begin{table}[t]
   \centering
@@ -149,8 +151,9 @@ noise of the judge setup. \TODO{SemVID $+$ PCD in the same judging session.}
 
 \paragraph{Question types.}
 \method improves duration and counting questions most (\cref{tab:types}). Location questions (``where did I put
-\dots'') remain essentially unsolved by every method (mIoU $\leq 11$): 62 of the 100 location questions have annotators
-who disagree on the interval (mean pairwise IoU $<0.6$), which caps any method.
+\dots'') remain essentially unsolved, with mIoU $\leq 11$ for every method. Part of the reason is the labels. For 62
+of the 100 location questions, the annotators disagree on the interval (mean pairwise IoU $<0.6$), which caps what
+any method can score.
 
 \input{sec/6b_transfer}
 
@@ -160,13 +163,15 @@ who disagree on the interval (mean pairwise IoU $<0.6$), which caps any method.
 
 \input{fig/pruners}
 
-Every published pruner (\cref{fig:pruners}) falls below random token selection on S-EMBER ($-2.3$ to $-7.6$ mIoU, all significant),
-QVHighlights ($-2.4$ to $-7.7$; SemVID not significant) and Charades-STA ($-2.8$ to $-5.2$, all significant);
-on ActivityNet at 10\% the input-level pruners are above random, which we discuss in \cref{sec:frames}. Random
-selection varies little across seeds ($26.0 \pm 0.6$ mIoU over three seeds on S-EMBER), so the gaps are not noise.
-The ordering follows coverage (\cref{tab:retention}): the methods that empty frames most aggressively lose most, and
-those that spread tokens lose least. Accuracy, in contrast, is barely affected (\cref{tab:qa}): FastVID's accuracy
-is within noise of random selection ($-2.1$, n.s.) while its mIoU is 7.6 lower. A pruner built to keep answers keeps answers, not time.
+Every published pruner (\cref{fig:pruners}) falls below random token selection on three of the four datasets. On
+S-EMBER the losses range from $-2.3$ to $-7.6$ mIoU, all significant. On QVHighlights they range from $-2.4$ to
+$-7.7$, with only SemVID not significant, and on Charades-STA from $-2.8$ to $-5.2$, all significant.
+On ActivityNet at 10\%, the input-level pruners are above random, which we discuss in \cref{sec:frames}. These gaps
+are not seed noise, because random selection varies little across seeds ($26.0 \pm 0.6$ mIoU over three seeds on
+S-EMBER). The ordering follows coverage (\cref{tab:retention}). Methods that empty frames most aggressively lose the
+most, and those that spread tokens lose the least. Accuracy, by contrast, barely moves (\cref{tab:qa}). FastVID's
+accuracy is within noise of random selection ($-2.1$, n.s.), while its mIoU is 7.6 lower. These pruners were designed
+to preserve answers, and they do, but they discard the timing.
 PCD helps every pruner ($+7$ to $+12$ mIoU) but does not close the gap to \method.
 
 %% ================================================================================================= 6.3 coverage
@@ -194,9 +199,9 @@ PCD helps every pruner ($+7$ to $+12$ mIoU) but does not close the gap to \metho
 \end{table}
 
 \paragraph{Contribution.}
-\Cref{tab:ladder} adds the components one at a time. Coverage is the largest gain on the memory side: $+6.1^*$ mIoU
-on S-EMBER and $+6.8^*$ on QVHighlights over random tokens. BOLT adds $+0.8$ to $+0.9$ on top (not significant
-on any dataset); once tokens are chosen by the question, which frames are encoded matters less.
+\Cref{tab:ladder} adds the components one at a time. On the memory side, Coverage gives the largest gain over random
+tokens, $+6.1^*$ mIoU on S-EMBER and $+6.8^*$ on QVHighlights. BOLT adds $+0.8$ to $+0.9$ on top, which is not
+significant on any dataset. Once tokens are chosen by the question, the choice of encoded frames matters less.
 \TODO{Coverage $+$ PCD without BOLT on all datasets.}
 
 \begin{table}[t]
@@ -231,31 +236,32 @@ on any dataset); once tokens are chosen by the question, which frames are encode
 \end{table}
 
 \paragraph{Design choices.}
-\Cref{tab:design} varies one choice at a time. \emph{If there is a quota, an equal one is as good as any}: five
-relevance-weighted variants, from SigLIP similarity, attention mass or both, with floors of 25--50\%, are within
-$\pm 0.5$ mIoU of the equal quota and none is significant (the uniform-frame SigLIP variant was our pre-registered
-primary test). Quotas that follow raw attention mass are pulled by attention sinks and recency bias: a single frame
-received up to 227 of about 2{,}140 kept tokens. \emph{The score should be the actual question}: HERMES's generic
-probe questions give 23.7 even with an equal quota, and 18.3 without. \emph{Deterministic top-$k$ beats sampling}
-from a coverage-floored density (31.7 \vs 30.0). A contrastive token score that subtracts the attention of a generic
-sentence, meant to cancel sinks, does not help.
+\Cref{tab:design} varies one choice at a time. If there is a quota, an equal one works as well as any weighted one.
+We tried five relevance-weighted variants, using SigLIP similarity, attention mass or both, with floors of
+25--50\%. All are within $\pm 0.5$ mIoU of the equal quota and none is significant (the uniform-frame SigLIP variant
+was our pre-registered primary test). Quotas that follow raw attention mass get pulled by attention sinks and recency
+bias, so that a single frame received up to 227 of about 2{,}140 kept tokens. The score itself should come from the
+actual question. HERMES's generic probe questions give 23.7 even with an equal quota, and 18.3 without one. Finally,
+deterministic top-$k$ beats sampling from a coverage-floored density (31.7 \vs 30.0). A contrastive token score
+that subtracts the attention of a generic sentence, meant to cancel sinks, does not help.
 
 \paragraph{Is the quota needed?}
 For the generic HERMES score, the equal quota is worth $+5.3^*$ mIoU, because that score concentrates on the end of
-the window and empties earlier frames (\cref{tab:retention}). For the actual question's attention, it is not needed
-in the two settings we have tested: a global top-$k$ of the same per-layer attention, with no quota, matches the
-equal quota on S-EMBER under the official prompt ($-0.1$ mIoU, interval $[-1.5, +1.3]$, \cref{tab:official}) and on
-QVHighlights with BOLT frames and the one-line prompt ($-0.0$, $[-0.9, +0.7]$, on the 584 queries run so far, where it
-is $+1.8^*$ above random tokens). In these settings the gain of Coverage comes from scoring tokens by the question;
-the equal quota is a guarantee that every anchor survives, which matters for scores that collapse onto a few frames,
-not the source of the gain over random selection. \TODO{global top-$k$ without quota under the timeline prompt on
+the window and empties earlier frames (\cref{tab:retention}). With the actual question's attention, the quota was not
+needed in either of the two settings we tested. There, a global top-$k$ of the same per-layer attention, with no
+quota, matches the equal quota. On S-EMBER under the official prompt the difference is $-0.1$ mIoU (interval
+$[-1.5, +1.3]$, \cref{tab:official}). On QVHighlights with BOLT frames and the one-line prompt it is $-0.0$
+($[-0.9, +0.7]$) on the 584 queries run so far, where the global top-$k$ is $+1.8^*$ above random tokens. In these
+settings, the gain of Coverage over random selection comes from scoring tokens by the question. The equal quota acts
+as a guarantee that every anchor survives, which matters for scores that collapse onto a few frames.
+\TODO{global top-$k$ without quota under the timeline prompt on
 S-EMBER and on the complete QVHighlights set (queued); share of frames left empty by it.}
 
 \paragraph{Per-layer selection.}
 \Cref{tab:shared} compares one token set per layer with a single set shared by all layers. Sharing does not change
-random selection, which rules out per-layer diversity as the reason random selection beats input-level pruners. It
-costs \method $-1.5^*$ mIoU: different layers attend to different tokens, and question-driven selection benefits from
-letting each choose.
+random selection, so per-layer diversity is not why random selection beats input-level pruners. For \method, sharing
+costs $-1.5^*$ mIoU. Different layers attend to different tokens, and question-driven selection benefits from letting
+each layer choose its own.
 
 \begin{table}[t]
   \centering
@@ -305,13 +311,13 @@ letting each choose.
   \end{tabular}\end{adjustbox}
 \end{table*}
 
-\paragraph{In reasoning-style answers, PCD is a plug-in for any memory.}
-\Cref{tab:pcd8} applies PCD to eight memories: three random budgets, the uncompressed model, HERMES and
-stratified pruning, and two HERMES streaming memories. It improves mIoU significantly on all eight ($+4.6$ to $+8.0$)
-and GQ@0.5 on six, roughly halves the early starts everywhere, and its gains are largest where the memory is
-smallest. With 10\% of the tokens and random selection it already beats the uncompressed model (32.6 \vs 28.0).
-PCD also transfers to FastVID ($+7.6^*$ mIoU, leak $38\% \rightarrow 12\%$), the pruner that loses coverage
-most.
+\paragraph{PCD on other memories.}
+With reasoning-style answers, PCD can be added to any memory. \Cref{tab:pcd8} applies it to eight: three random
+budgets, the uncompressed model, HERMES and stratified pruning, and two HERMES streaming memories. PCD improves mIoU
+significantly on all eight ($+4.6$ to $+8.0$) and GQ@0.5 on six. It roughly halves the early starts everywhere, and
+its gains are largest where the memory is smallest. With 10\% of the tokens and random selection, it already beats
+the uncompressed model (32.6 \vs 28.0). PCD also transfers to FastVID, the pruner that loses the most coverage, where
+it adds $+7.6^*$ mIoU and cuts the leak from $38\% \rightarrow 12\%$.
 
 \begin{table}[t]
   \centering
@@ -337,14 +343,14 @@ most.
   \end{tabular}\end{adjustbox}
 \end{table}
 
-\paragraph{The no-video counterfactual is the right one.}
-\Cref{tab:cf} changes only what the memory is contrasted against. The no-video input isolates the prior and removes
-it (early starts $38\% \rightarrow 19\%$). Noised frames, as in VCD, still show part of the video \emph{and} still
-produce the prior, so the two runs disagree mainly about content and little of the prior is removed ($+0.5$ mIoU).
-Permuted timestamps leave the prior in place as well. A one-sided rule that only penalises tokens the video argues
-against is worse than PCD ($-5.6^*$ and $-4.8^*$): without video the model is about 99\% sure of ``0'', so even a
-well-supported ``0'' looks like evidence against. Boosting visual attention during decoding, or stating the bias in
-the instruction, leaves the prior in place.
+\paragraph{Choice of counterfactual.}
+\Cref{tab:cf} changes only what the memory is contrasted against. The no-video input works best because it isolates
+the prior, and contrasting against it removes the prior (early starts $38\% \rightarrow 19\%$). Noised frames, as in
+VCD, still show part of the video \emph{and} still produce the prior. The two runs then disagree mainly about content,
+and little of the prior is removed ($+0.5$ mIoU). Permuted timestamps also leave the prior in place. A one-sided rule
+that only penalises tokens the video argues against is worse than PCD ($-5.6^*$ and $-4.8^*$). Without video the
+model is about 99\% sure of ``0'', so even a well-supported ``0'' looks like evidence against. Boosting visual
+attention during decoding, or stating the bias in the instruction, does not remove the prior either.
 
 \begin{table}[t]
   \centering
@@ -373,14 +379,14 @@ the instruction, leaves the prior in place.
 \end{table}
 
 \paragraph{Time scope and adaptive strength.}
-Contrasting every token also changes words that have nothing to do with time: the answer text changed in 85\% of
-questions, lists of more than eight moments rose from 12 to 56, and over-counting rose from 14\% to 34\% of counting
+Contrasting every token also changes words that have nothing to do with time. The answer text changed in 85\% of
+questions, and lists of more than eight moments rose from 12 to 56. Over-counting rose from 14\% to 34\% of counting
 questions. Restricting PCD to time values keeps the grounding gain and disturbs the text less
 (\cref{tab:scope}, top). PCD also risks hurting questions whose evidence really starts at 0\,s. With a constant
-strength, their accuracy on the uncompressed memory falls from 21.8 to 16.7; with the adaptive strength, which fades
-when the model is confident, it rises to 23.1 (\cref{tab:scope}, bottom; $+6.4^*$ \vs constant). The adaptive rule
-also gives the best \emph{discrimination}, early starts on early-evidence questions minus early starts on the
-others (56.4 \vs 49.6 for greedy, all-tokens memory).
+strength, their accuracy on the uncompressed memory falls from 21.8 to 16.7. The adaptive strength fades when the
+model is confident, and with it accuracy rises to 23.1 instead (\cref{tab:scope}, bottom; $+6.4^*$ \vs constant).
+The adaptive rule also gives the best \emph{discrimination}, defined as early starts on early-evidence questions minus
+early starts on the others. On the all-tokens memory it reaches 56.4, against 49.6 for greedy decoding.
 
 \begin{table}[t]
   \centering
@@ -403,21 +409,21 @@ others (56.4 \vs 49.6 for greedy, all-tokens memory).
   \end{tabular}\end{adjustbox}
 \end{table}
 
-\paragraph{PCD is near the limit of decoding.}
+\paragraph{Other decision rules.}
 We logged both distributions at the first time value of every answer and replayed other decision rules offline
-(\cref{tab:replay}). Even a threshold tuned on the gold labels cannot beat PCD's trade-off between keeping true early
-starts and removing leaked ones. The remaining early-start errors are cases where the memory itself is unsure; they
-need evidence, not a better decoding rule.
+(\cref{tab:replay}). Even a threshold tuned on the gold labels cannot beat PCD's
+trade-off between keeping true early starts and removing leaked ones, so PCD is close to what decoding alone can do.
+In the early-start errors that remain, the memory itself is unsure, and fixing them would take more evidence in the
+memory.
 
 \paragraph{Is PCD more than a longer interval?}
 \label{sec:lengthening}
 PCD lengthens predicted intervals (median predicted/gold length $0.57 \rightarrow 0.67$ on S-EMBER), and longer
 intervals alone raise mIoU on benchmarks with long gold intervals. The length-rescaling floor tests this directly
-(\cref{tab:paired}, last row). On QVHighlights ($+8.6^*$) and on S-EMBER closed intervals ($+7.5^*$,
-\cref{tab:closed}), \method clearly
-beats rescaling: PCD moves the interval toward the evidence, not just outward. On pooled S-EMBER, ActivityNet and
-Charades-STA the two are statistically tied, so on those sets the benefit of PCD cannot be separated from a
-calibrated lengthening. \TODO{start/end error decomposition on closed questions; mismatched-video and shuffled-frame
+(\cref{tab:paired}, last row). \method clearly beats rescaling on QVHighlights ($+8.6^*$) and on S-EMBER closed
+intervals ($+7.5^*$, \cref{tab:closed}). On these sets PCD moves the interval toward the evidence instead of only
+stretching it. On pooled S-EMBER, ActivityNet and Charades-STA the two are statistically tied, so there the benefit
+of PCD cannot be separated from a calibrated lengthening. \TODO{start/end error decomposition on closed questions; mismatched-video and shuffled-frame
 negatives.}
 
 \begin{table}[t]
@@ -442,33 +448,33 @@ negatives.}
 \end{table}
 
 \paragraph{Prompt format.}
-We do not yet have a clean PCD-only comparison on S-EMBER under the official direct-answer prompt: an earlier run
+We do not yet have a clean PCD-only comparison on S-EMBER under the official direct-answer prompt. An earlier run
 that was not matched on the other settings gave $+0.4$ mIoU. Under this prompt (\cref{tab:official}), \method is
-$+4.5^*$ mIoU above Coverage alone and $+6.8^*$ above random tokens, but this combines PCD with BOLT (on the first 116
-questions, BOLT $+$ Coverage without PCD already gains $+5.3^*$ over Coverage), and \method is $4.7^*$ below \method
-with the timeline prompt. Coverage is $+2.2$ (n.s.) above random tokens. PCD also makes the model write more times as
-minutes:seconds: 73 \method answers are unparsable by the official parser, against 13--17 for the greedy rows. On
-NExT-GQA under the same prompt, PCD alone lowers mIoU ($-1.5^*$ and $-2.5^*$) for the same reason
-(\cref{sec:transfer}). Without the uncompressed model under this prompt we cannot yet say whether \method improves on
-it; compared with the uncompressed model \emph{in the timeline format}, \method with the official prompt is $+6.6^*$
-and Coverage $+2.1$ (n.s.). \TODO{uncompressed model under the official prompt (queued); judged answers; PCD with
-and without BOLT under this prompt.} An
-\emph{event} timeline that lists start and end per occurrence (\texttt{Event: 12.0 -- 15.5 seconds}) improves the
-greedy baseline by $+7.4^*$ mIoU by stating extents, and PCD still adds $+2.1$ to $+3.3$ on top
-(35.0 mIoU, 12.6 GQ@0.5 at 768 tokens). The two fixes overlap: the format corrects extents, PCD corrects the
-leak. \method uses the simpler timeline in all main results. \TODO{event timeline with \method.}
+$+4.5^*$ mIoU above Coverage alone and $+6.8^*$ above random tokens. This gain mixes PCD with BOLT, since on the
+first 116 questions BOLT $+$ Coverage without PCD already gains $+5.3^*$ over Coverage. \method is also $4.7^*$ below
+\method with the timeline prompt. Coverage is $+2.2$ (n.s.) above random tokens. PCD makes the model write more times
+as minutes:seconds, and 73 \method answers cannot be parsed by the official parser, against 13--17 for the greedy
+rows. For the same reason, PCD alone lowers mIoU on NExT-GQA under the same prompt ($-1.5^*$ and $-2.5^*$,
+\cref{sec:transfer}). Until the uncompressed model has been run under this prompt, we cannot say whether \method
+improves on it. Compared with the uncompressed model in the timeline format, \method with the official prompt is
+$+6.6^*$ and Coverage $+2.1$ (n.s.). \TODO{uncompressed model under the official prompt (queued); judged answers; PCD with
+and without BOLT under this prompt.}
+We also tried an \emph{event} timeline that lists start and end per occurrence (\texttt{Event: 12.0 -- 15.5 seconds}).
+Because it states extents, it improves the greedy baseline by $+7.4^*$ mIoU. PCD still adds $+2.1$ to $+3.3$ on top,
+reaching 35.0 mIoU and 12.6 GQ@0.5 at 768 tokens. The two fixes overlap. The format corrects extents, and PCD
+corrects the leak. \method uses the simpler timeline in all main results. \TODO{event timeline with \method.}
 
 \paragraph{When does PCD help?}
-The results so far point to one rule: PCD helps in proportion to how much the video-free prior decides the time that is
-written. Its gain is largest where the memory says least (random 5\%: $+8.0^*$ mIoU; uncompressed: $+4.6^*$,
-\cref{tab:pcd8}); the adaptive strength, which fades when the memory makes the model confident, protects true early
-starts that a constant strength removes (\cref{tab:scope}); and with a one-line answer, where the model states a single
-interval instead of listing observations, PCD has no effect (\cref{sec:transfer}; those runs had no answer reserve). The
-rule needs one qualification: PCD can also change the \emph{form} of the answer. On NExT-GQA it lowers TimeLens-8B's
-grounding in the timeline format ($-4.4^*$ mIoU) by producing more replies without a parsable interval, and under the
-official prompt it makes Qwen3-VL-8B write more times as minutes:seconds (\cref{sec:transfer}). PCD helps where the
-prior chooses the times \emph{and} the answer keeps its format. We state this as a hypothesis
-that the per-token log-probabilities we already store can test directly. \TODO{PCD gain against the divergence between
+The results so far suggest a simple rule. PCD helps in proportion to how much the video-free prior decides the time
+that is written. Its gain is largest where the memory says least, $+8.0^*$ mIoU for random 5\% against $+4.6^*$ for
+the uncompressed model (\cref{tab:pcd8}). The adaptive strength fades when the memory makes the model confident, and
+so protects true early starts that a constant strength removes (\cref{tab:scope}). With a one-line answer, where the
+model states a single interval instead of listing observations, PCD has no effect (\cref{sec:transfer}; those runs
+had no answer reserve). One qualification is needed, because PCD can also change the \emph{form} of the answer. On
+NExT-GQA it lowers TimeLens-8B's grounding in the timeline format ($-4.4^*$ mIoU) by producing more replies without a
+parsable interval. Under the official prompt it makes Qwen3-VL-8B write more times as minutes:seconds
+(\cref{sec:transfer}). In short, PCD helps when the prior chooses the times and the answer keeps its format. We state
+this as a hypothesis, which the per-token log-probabilities we already store can test directly. \TODO{PCD gain against the divergence between
 $p_\Mem$ and $p_\varnothing$ at each written time value, across all conditions; one prediction stated before the run.}
 
 %% ================================================================================================= 6.5 budget
@@ -500,17 +506,19 @@ $p_\Mem$ and $p_\varnothing$ at each written time value, across all conditions; 
 
 \input{fig/budget}
 
-\Cref{tab:budget,fig:budget} vary the budget at 64 frames and show two regimes. Above roughly 500 kept tokens, question-driven
-selection is flat or even improves as the budget \emph{shrinks}: on S-EMBER, BOLT $+$ Coverage rises from 31.0
-(20\%) to 34.6 (5\%) and \method from 36.8 to 39.3, while random selection and SemVID degrade. Pruning by the question
-removes distractors as well as cost: at 5\% \method leads SemVID $+$ PCD by $+7.4^*$ mIoU, at 20\% by $+1.5$
-(n.s.). Below roughly 300 kept tokens (QVHighlights 5\%, ActivityNet 10\%), the equal quota leaves only 2--4 tokens
-per frame pair, the top-attended tokens carry little content, and \method collapses (9.7 and 11.6), below random
-selection and below SemVID, whose cross-frame merging degrades more gracefully. The threshold is absolute, not
-relative: it depends on the number of tokens per frame, which is low in our re-encoded QVHighlights and ActivityNet
-copies. One caveat applies: these runs count the kept timestamps inside the budget under the earlier timestamp rule,
-which on NExT-GQA left some low-budget questions (about 280 tokens) with no visual tokens (\cref{sec:transfer}). Part
-of the collapse below about 300 tokens may therefore come from this accounting rather than from the equal quota.
+\Cref{tab:budget,fig:budget} vary the budget at 64 frames and show two regimes. Above roughly 500 kept tokens,
+question-driven selection stays flat or even improves as the budget \emph{shrinks}. On S-EMBER, BOLT $+$ Coverage
+rises from 31.0 at 20\% to 34.6 at 5\%, and \method from 36.8 to 39.3. Random selection and SemVID degrade over the
+same range. Pruning by the question thus removes distractors as well as cost. At 5\%, \method leads SemVID $+$ PCD
+by $+7.4^*$ mIoU, and at 20\% by $+1.5$ (n.s.).
+
+Below roughly 300 kept tokens (QVHighlights 5\%, ActivityNet 10\%), the equal quota leaves only 2--4 tokens per frame
+pair. The top-attended tokens then carry little content, and \method collapses to 9.7 and 11.6. This is below random
+selection and below SemVID, whose cross-frame merging degrades more gracefully. What matters is the absolute number
+of tokens per frame, which is low in our re-encoded QVHighlights and ActivityNet copies. One caveat applies. These runs
+count the kept timestamps inside the budget under the earlier timestamp rule, which on NExT-GQA left some low-budget
+questions (about 280 tokens) with no visual tokens (\cref{sec:transfer}). Part of the collapse below about 300 tokens
+may therefore come from this accounting rather than from the equal quota.
 \TODO{QVHighlights 5\% and 10\% at 64 frames with the fixed timestamp rule (queued).}
 
 %% ================================================================================================= 6.6 frames vs tokens
@@ -543,17 +551,18 @@ of the collapse below about 300 tokens may therefore come from this accounting r
   \end{tabular}\end{adjustbox}
 \end{table*}
 
-The collapse at small budgets is not a limit of the equal quota itself but of how the budget is spent (with the
-timestamp-accounting caveat of \cref{sec:budget}: fewer frames also means fewer timestamps inside the budget). In
-\cref{tab:frames} every row of a block keeps the same number of tokens and only the split between frames and tokens
-per frame changes. With 32 frames instead of 64, each frame pair keeps twice as many tokens, and \method recovers from
-9.7 to 43.1 mIoU on QVHighlights and from 11.6 to 33.9 on ActivityNet, where it now beats SemVID $+$ PCD
-($+5.5$) and nearly matches its own 64-frame result at three times the budget (34.7). Halving again to 16 frames
-loses a little: past a point, temporal coverage becomes the bottleneck. The baselines gain from fewer frames too,
-but less. On Charades-STA (30\,s videos) fewer frames do not help any method. We therefore recommend the rule of
-\cref{sec:coverage}: keep at least about eight tokens per frame pair and reduce $F$ when the budget does not allow it.
-At equal tokens, more frames with fewer tokens each does not help either: 128 frames at 5\% on S-EMBER give
-$+1.2$ mIoU (n.s.) without PCD and $-3.6^*$ with it, with 74--78 unparseable answers.
+The collapse at small budgets comes from how the budget is spent, and the equal quota is not at fault in itself. The
+timestamp-accounting caveat of \cref{sec:budget} still applies here, since fewer frames also means fewer timestamps
+inside the budget. In \cref{tab:frames}, every row of a block keeps the same number of tokens, and only the split
+between frames and tokens per frame changes. With 32 frames instead of 64, each frame pair keeps twice as many tokens,
+and \method recovers. On QVHighlights it goes from 9.7 to 43.1 mIoU. On ActivityNet it goes from 11.6 to 33.9, which
+beats SemVID $+$ PCD by $+5.5$ and nearly matches its own 64-frame result at three times the budget (34.7). Halving
+again to 16 frames loses a little, because past a point temporal coverage becomes the bottleneck. The baselines also
+gain from fewer frames, but less. On Charades-STA, whose videos last 30\,s, fewer frames do not help any method. We
+therefore recommend the rule of \cref{sec:coverage}. Keep at least about eight tokens per frame pair, and reduce $F$
+when the budget does not allow it. At equal tokens, more frames with fewer tokens each do not help
+either. With 128 frames at 5\% on
+S-EMBER, the change is $+1.2$ mIoU (n.s.) without PCD and $-3.6^*$ with it, with 74--78 unparseable answers.
 
 %% ================================================================================================= 6.7 oracles
 \subsection{Comparison with gold-informed upper bounds}
@@ -609,36 +618,37 @@ $+1.2$ mIoU (n.s.) without PCD and $-3.6^*$ with it, with 74--78 unparseable ans
   \end{tabular}\end{adjustbox}
 \end{table}
 
-\Cref{tab:oracle} gives the memory information it should not have. At the same budget, \method without any gold
-information beats perfect token selection on Qwen3-VL-8B: over the oracle selector with PCD it gains $+4.4^*$ mIoU
-and $+4.0^*$ GQ@0.5. Knowing which tokens to keep does not stop the prior, and keeping only the gold frames' tokens
-starves the rest of the timeline. Against the strongest oracle, which sees only the evidence and also uses PCD,
-\method is level on grounding ($-2.2$ mIoU, $-1.5$ GQ@0.5, both n.s.) but answers worse ($-5.3^*$ accuracy). Even
-the gold window leaks 45\%: with every frame inside the evidence, the model still often starts near 0\,s. PCD lowers
-this to 35\% and adds $+5.5^*$ mIoU on the gold window, but does not change its answers ($-2.3$, n.s.): for
-Qwen3-VL-8B, more evidence raises accuracy, while PCD fixes the time values.
+\Cref{tab:oracle} gives the memory information it should not have. On Qwen3-VL-8B, \method beats perfect token
+selection at the same budget without using any gold information. Over the oracle selector with PCD, it gains
+$+4.4^*$ mIoU and $+4.0^*$ GQ@0.5. Knowing which tokens to keep does not stop the prior, and keeping only the gold
+frames' tokens starves the rest of the timeline. The strongest oracle sees only the evidence and also uses PCD.
+Against it, \method is level on grounding ($-2.2$ mIoU and $-1.5$ GQ@0.5, both n.s.) but answers worse ($-5.3^*$
+accuracy). Even the gold window leaks 45\%, so with every frame inside the evidence the model still often starts near
+0\,s. On the gold window, PCD lowers the leak to 35\% and adds $+5.5^*$ mIoU, but it does not change the answers
+($-2.3$, n.s.). For Qwen3-VL-8B, then, more evidence raises accuracy, while PCD fixes the time values.
 
-For TimeLens-8B (\cref{tab:oracle-tl8b}) the bounds are much higher, and \method is further from them. Over the
-oracle selector with PCD, \method is level on grounding ($+0.5$ mIoU, $+2.7$ GQ@0.5, n.s.; accuracy $+4.8$, interval
-lower bound 0.0). The gold window alone is $+13.2^*$ mIoU above all tokens (both at batch size 1), and PCD on the
-gold window raises not only mIoU ($+8.3^*$) but also accuracy ($+8.0^*$) and GQ@0.5 ($+6.7^*$); \method stays
-$11.0^*$ mIoU, $9.7^*$ accuracy and $8.8^*$ GQ@0.5 below it. For the grounding-tuned model, PCD and evidence are
-therefore not separate levers: with the right frames, contrasting the time values also improves the answers. The gap
-to the gold window shows how much a better choice of frames could still add for this model.
+For TimeLens-8B (\cref{tab:oracle-tl8b}), the bounds are much higher and \method is further from them. Over the
+oracle selector with PCD, \method is level on grounding, with $+0.5$ mIoU and $+2.7$ GQ@0.5 (n.s.). The accuracy
+difference is $+4.8$, but its interval reaches down to 0.0. The gold window alone is $+13.2^*$ mIoU above all tokens (both at
+batch size 1). Adding PCD on the gold window raises mIoU by $+8.3^*$, and it also raises accuracy ($+8.0^*$) and
+GQ@0.5 ($+6.7^*$). \method stays below this bound by $11.0^*$ mIoU, $9.7^*$ accuracy and $8.8^*$ GQ@0.5. So for the
+grounding-tuned model, PCD and evidence work together. With the right frames, contrasting the time values also
+improves the answers. The gap to the gold window shows how much a better choice of frames could still add for this
+model.
 
 %% ================================================================================================= 6.8 retrieval
 \subsection{Analysis of BOLT}
 \label{sec:res-retrieval}
 
-The SigLIP~2 index does find the evidence: over the seconds before each question, the AUROC of evidence seconds
-against the rest is 0.663, and the top-ranked second lies in the gold interval for 63\% of questions (chance 36\%) and
-41\% of location questions (chance 13.5\%). BOLT frames put 40\% of the memory inside the evidence, against
-36\% for uniform frames. This helps random tokens ($+3.8^*$ mIoU) but adds only $+0.8$ to $+0.9$ (n.s.) once tokens are
-chosen by the question, because both stages focus the memory on the question. Subtracting a question-free prior from
-SigLIP's score does not help (AUROC 0.635--0.666), as expected for a retriever trained with a contrastive loss, whose
-score already estimates pointwise mutual information~\cite{siglip2}. Re-weighting the token budget of uniform frames
-by the same relevance adds $+1.3$ (n.s.): which frames are encoded matters more than how the budget is split among
-fixed frames.
+The SigLIP~2 index does find the evidence. Over the seconds before each question, the AUROC of evidence seconds
+against the rest is 0.663. The top-ranked second lies in the gold interval for 63\% of questions (chance 36\%), and
+for 41\% of location questions (chance 13.5\%). BOLT frames put 40\% of the memory inside the evidence,
+against 36\% for uniform frames. This helps random tokens ($+3.8^*$ mIoU). Once tokens are chosen by the question,
+however, BOLT adds only $+0.8$ to $+0.9$ (n.s.), because both stages focus the memory on the question. Subtracting a
+question-free prior from SigLIP's score does not help (AUROC 0.635--0.666). This is expected for a retriever trained
+with a contrastive loss, whose score already estimates pointwise mutual information~\cite{siglip2}. Re-weighting the
+token budget of uniform frames by the same relevance adds $+1.3$ (n.s.). The choice of encoded frames matters more
+than how the budget is split among fixed frames.
 
 %% ================================================================================================= 6.9 negative
 \subsection{What did not work}
@@ -669,10 +679,10 @@ fixed frames.
   \end{tabular}\end{adjustbox}
 \end{table}
 
-\Cref{tab:negative} collects the ideas that gave little or nothing. They share a lesson: at a fixed budget,
-redistributing evidence (zooming, re-weighting frames, unequal quotas) is close to its ceiling, and only removing the
-prior where it acts (PCD) or selecting tokens by the actual question in every layer (with or without the equal
-quota, \cref{sec:res-coverage}) gives large gains.
+\Cref{tab:negative} collects the ideas that gave little or nothing. Taken together, they suggest that at a fixed
+budget, redistributing evidence by zooming, re-weighting frames or unequal quotas is close to its ceiling. Large gains
+came only from removing the prior where it acts (PCD), or from selecting tokens by the actual question in every
+layer, with or without the equal quota (\cref{sec:res-coverage}).
 
 %% ================================================================================================= 6.10 errors
 \subsection{Where answers still fail}
@@ -701,13 +711,15 @@ quota, \cref{sec:res-coverage}) gives large gains.
   \end{tabular}\end{adjustbox}
 \end{table}
 
-\Cref{tab:errors} shows that PCD works where it was aimed: intervals entirely before the gold one, the signature
-of the prior, fall from the largest error type to less than a fifth of answers. The remaining failures point to
-four limits. (i) \emph{Answers, not intervals}: twice as many answers are well grounded but wrong as grounded and
-right; counting answers do not use the events the model itself listed, and an IoU of 0.5 still allows a two-fold
-duration error. (ii) \emph{Recent events}: 81\% of the intervals that still end before the gold one have evidence in
-the second half of the window, where an earlier similar event is picked; GQ@0.5 is 4.4 when the evidence lies in the
-last third of the window. (iii) \emph{Sparse evidence}: with fewer than 4 of the 64 frames inside the evidence, GQ@0.5
-is 1--2\% for any method, against 15\% with 16 or more; no decoding rule recovers evidence that is not in the input.
-(iv) \emph{Label ambiguity}: on the 98 questions whose annotators disagree (mean pairwise IoU $<0.6$), every method
+\Cref{tab:errors} shows that PCD works where it was aimed. Intervals entirely before the gold one are the signature
+of the prior. Under greedy decoding they are the largest error type, and with PCD they fall to less than a fifth of
+answers. The remaining failures point to four limits.
+(i) Wrong answers on good intervals. Twice as many answers are well grounded but wrong as are grounded and right. Counting answers do not use
+the events the model itself listed, and an IoU of 0.5 still allows a two-fold duration error.
+(ii) Recent events. Of the intervals that still end before the gold one, 81\% have evidence in the second half of the
+window, and the model picks an earlier similar event instead. When the evidence lies in the last third of the window,
+GQ@0.5 is 4.4.
+(iii) Sparse evidence. With fewer than 4 of the 64 frames inside the evidence, GQ@0.5 is 1--2\% for any method,
+against 15\% with 16 or more. No decoding rule can recover evidence that is not in the input.
+(iv) Label ambiguity. On the 98 questions whose annotators disagree (mean pairwise IoU $<0.6$), every method
 scores near zero.

@@ -2,68 +2,68 @@
 \label{sec:related}
 
 \paragraph{Frame selection.}
-BOLT~\cite{bolt} scores frames against the query with a contrastive image--text model and selects them by inverse
-transform sampling; AKS~\cite{aks}, MDP3~\cite{mdp3}, FOCUS~\cite{focus} and Q-Frame~\cite{qframe} optimise
-relevance together with coverage or diversity. All are evaluated on multiple-choice QA. Our frame
-selection front end (\cref{sec:retrieval}) adapts BOLT to grounding, and we find that it contributes little once tokens
-are chosen by the question.
+BOLT~\cite{bolt} scores frames against the query with a contrastive image--text model and then picks them by inverse
+transform sampling. AKS~\cite{aks}, MDP3~\cite{mdp3}, FOCUS~\cite{focus} and Q-Frame~\cite{qframe} optimise
+relevance jointly with coverage or diversity. All of them are evaluated on multiple-choice QA. Our frame selection
+front end (\cref{sec:retrieval}) adapts BOLT to grounding, and we find that it adds little once the tokens are chosen
+by the question.
 
 \paragraph{Visual token pruning for video LLMs.}
-Query-agnostic methods compress by redundancy or saliency: FastVID~\cite{fastvid} segments the video and keeps
-density peaks, VidCom\textsuperscript{2}~\cite{vidcom2} gives each frame a budget by its uniqueness,
-FlashVID~\cite{flashvid} selects by [CLS] attention and merges tokens across frames with trees, and
-DyCoke~\cite{dycoke} and FrameFusion~\cite{framefusion} merge similar tokens. Query-aware methods use the text:
-SemVID~\cite{semvid} scores tokens by word-embedding relevance with MMR diversity, AdaTP~\cite{adatp} boosts
-segments similar to the text, LGTTP~\cite{lgttp} reads temporal words in the question to reallocate tokens, and
-PruneVid~\cite{prunevid} keeps the top 40\% of tokens by question attention at one LLM layer. KTV~\cite{ktv} is
-closest in structure (keyframes, then tokens with a relevance-weighted per-frame budget), and LGTTP is the only
-method we know that evaluates grounding, at a milder budget and offline. \method differs in three ways: the
-per-frame quota is equal by design, the score is the actual question's attention propagated exactly through all
-layers, and the quota exists to keep every timestamp. We show that emptying frames hurts grounding, and that with
-the actual question's attention the quota is a safeguard rather than the source of the gain
-(\cref{sec:res-coverage}).
+Query-agnostic methods compress the video by redundancy or saliency. FastVID~\cite{fastvid} segments the video and
+keeps density peaks, VidCom\textsuperscript{2}~\cite{vidcom2} sets each frame's budget by how unique the frame is,
+and FlashVID~\cite{flashvid} selects tokens by [CLS] attention and merges them across frames with trees.
+DyCoke~\cite{dycoke} and FrameFusion~\cite{framefusion} merge similar tokens. Query-aware methods also use the text.
+SemVID~\cite{semvid} scores tokens by their word-embedding relevance with MMR diversity, AdaTP~\cite{adatp} boosts
+segments that resemble the text, LGTTP~\cite{lgttp} reallocates tokens according to temporal words in the question,
+and PruneVid~\cite{prunevid} keeps the top 40\% of tokens by question attention at a single LLM layer.
+KTV~\cite{ktv} is the closest in structure, since it selects keyframes first and then tokens under a
+relevance-weighted per-frame budget. LGTTP is the only method we know of that evaluates grounding, and it does so at a
+milder budget and offline. \method differs from these methods in three ways. Its per-frame quota is equal by design,
+its score is the attention of the actual question propagated exactly through all layers, and the quota is there to
+keep every timestamp. We show that emptying frames hurts grounding. We also show that once the actual question's
+attention is used, the quota acts as a safeguard and is not where the gain comes from (\cref{sec:res-coverage}).
 
 \paragraph{KV-cache compression and video memory.}
-SnapKV~\cite{snapkv}, H\textsubscript{2}O~\cite{h2o}, PyramidKV~\cite{pyramidkv} and Ada-KV~\cite{adakv} evict
-KV entries by attention in long-context LLMs; our token stage is SnapKV-style eviction applied to video with a
-per-frame constraint. For streaming video, HERMES~\cite{hermes} compresses the cache with generic pseudo-queries,
-ReKV~\cite{rekv} retrieves KV blocks at question time, and StreamMem~\cite{streammem} and
-InfiniPot-V~\cite{infinipotv} maintain bounded memories. These works report QA only. Our memory is built per
-question from the frames up to the question time: it is causal, but it is not a persistent streaming memory, and
-we make no claim about the cost of building it (\cref{sec:limitations}).
+In long-context LLMs, SnapKV~\cite{snapkv}, H\textsubscript{2}O~\cite{h2o}, PyramidKV~\cite{pyramidkv} and
+Ada-KV~\cite{adakv} evict KV entries by attention. Our token stage is SnapKV-style eviction applied to video, with a
+per-frame constraint added. For streaming video, HERMES~\cite{hermes} compresses the cache with generic
+pseudo-queries, ReKV~\cite{rekv} retrieves KV blocks when the question arrives, and StreamMem~\cite{streammem} and
+InfiniPot-V~\cite{infinipotv} maintain bounded memories. These works report QA only. We build our memory for each
+question from the frames seen up to the question time. It is therefore causal, but it is not a persistent streaming
+memory, and we make no claim about the cost of building it (\cref{sec:limitations}).
 
 \paragraph{Contrastive decoding and prior correction.}
-Contrasting a model's prediction with a weaker or less informed one is an established decoding tool. Contrastive
-Decoding~\cite{contrastivedecoding} subtracts a small ``amateur'' model and introduced the plausibility constraint we
-use; classifier-free guidance for language models~\cite{cfglm} and context-aware decoding~\cite{cad} amplify the
-difference between the predictions with and without the conditioning context, which is the form of our
-\cref{eq:pcd}. The idea of measuring the prior with a content-free input and correcting for it is older still:
-contextual calibration~\cite{calibratebeforeuse} rescales label probabilities by the model's answer to ``N/A'',
-and domain-conditional PMI~\cite{dcpmi} reweighs answers by their task-conditioned prior. For vision-language
-models, VCD~\cite{vcd} contrasts against a noised image, ICD~\cite{icd} against a disturbed instruction,
-M3ID~\cite{m3id} against the absence of the image, and PAI~\cite{pai} amplifies image attention while subtracting
-text-only logits; SEASON~\cite{season} extends the idea to video with temporally corrupted negatives. These methods
-target hallucination, faithfulness or classification. PCD uses the same contrast for a different purpose: it is
-applied only to \emph{time values}, with a confidence-adaptive strength, and we study when it helps and when it does
-not (\cref{sec:res-contrast,sec:transfer}), including whether its benefit is more than a uniform lengthening of the
-interval (\cref{sec:lengthening}).
+Contrasting a model's prediction with that of a weaker or less informed model is an established decoding tool.
+Contrastive Decoding~\cite{contrastivedecoding} subtracts a small ``amateur'' model and introduced the plausibility
+constraint that we use. Classifier-free guidance for language models~\cite{cfglm} and context-aware
+decoding~\cite{cad} amplify the difference between the predictions made with and without the conditioning context,
+which is the form of our \cref{eq:pcd}. The idea of measuring the prior with a content-free input and correcting for
+it is older still. Contextual calibration~\cite{calibratebeforeuse} rescales label probabilities using the model's
+answer to ``N/A'', and domain-conditional PMI~\cite{dcpmi} reweighs answers by their task-conditioned prior. For
+vision-language models, VCD~\cite{vcd} contrasts against a noised image, ICD~\cite{icd} against a disturbed
+instruction and M3ID~\cite{m3id} against the absence of the image, while PAI~\cite{pai} amplifies image attention and
+subtracts text-only logits. SEASON~\cite{season} carries the idea over to video with temporally corrupted negatives.
+These methods target hallucination, faithfulness or classification. PCD uses the same contrast for another purpose.
+We apply it only to \emph{time values}, with a strength that adapts to the model's confidence, and we study when it
+helps and when it does not (\cref{sec:res-contrast,sec:transfer}). This includes checking whether its benefit goes
+beyond a uniform lengthening of the interval (\cref{sec:lengthening}).
 
 \paragraph{Grounding-tuned video LLMs.}
-TimeChat~\cite{timechat}, VTimeLLM~\cite{vtimellm} and LITA~\cite{lita} train video LLMs to localise moments, with
-timestamp-aware encoders, boundary-aware training stages or dedicated time tokens; TimeLens~\cite{timelens}
-re-annotates the standard grounding benchmarks and fine-tunes Qwen-VL models with reinforcement learning. These works
-improve grounding with full visual memories. We use TimeLens-8B as a grounding-tuned model and TimeLens-Bench as the
-standard protocol, and ask what happens to such a model when its memory is pruned.
+TimeChat~\cite{timechat}, VTimeLLM~\cite{vtimellm} and LITA~\cite{lita} train video LLMs to localise moments using
+timestamp-aware encoders, boundary-aware training stages or dedicated time tokens. TimeLens~\cite{timelens}
+re-annotates the standard grounding benchmarks and fine-tunes Qwen-VL models with reinforcement learning. All of these
+works improve grounding with a full visual memory. We use TimeLens-8B as our grounding-tuned model and TimeLens-Bench
+as the standard protocol, and we ask what happens to such a model when its memory is pruned.
 
 \paragraph{Training-free temporal grounding.}
-NumPro~\cite{numpro} draws frame numbers on the frames, FV-Action~\cite{fvaction} scans the video with yes/no
-questions, REZE~\cite{reze} recasts grounding as recognition, and \citet{knowwhen} read intervals from calibrated
-attention heads, debiased against a blank-video run. All assume the full set of video tokens. \method addresses the
-complementary problem of grounding from a \emph{compressed} memory; these readouts could run on top of it
-\TODO{run FV-Action and the attention readout on the same 10\% memory}.
+NumPro~\cite{numpro} draws frame numbers onto the frames, FV-Action~\cite{fvaction} scans the video with yes/no
+questions, and REZE~\cite{reze} recasts grounding as recognition. \citet{knowwhen} read intervals from calibrated
+attention heads and debias them against a run on a blank video. All of these methods assume the full set of video
+tokens. \method addresses the complementary problem of grounding from a \emph{compressed} memory, and these readouts
+could run on top of it \TODO{run FV-Action and the attention readout on the same 10\% memory}.
 
 \paragraph{Benchmark biases.}
 \citet{otani2020uncovering} showed that blind baselines are competitive on Charades-STA and ActivityNet Captions
-because of positional priors in the annotations. We find the same on the datasets we use, adopt their blind
-baselines as video-free floors in every comparison, and add a length-rescaling floor for methods that lengthen
-intervals.
+because the annotations carry positional priors. We find the same on the datasets we use. We therefore adopt their
+blind baselines as video-free floors in every comparison, and we add a length-rescaling floor for methods that
+lengthen intervals.
