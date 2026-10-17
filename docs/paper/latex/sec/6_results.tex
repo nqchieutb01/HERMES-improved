@@ -39,14 +39,14 @@ unless a caption says per row. $\Delta$ columns are not ranked.
     Method & timeline, 10\% & one-line, 31\% & one-line, 31\% \\
     \midrule
     All tokens (no pruning)          & 28.0 / 26.7 & \second{59.6} / \best{64.5} & \second{48.5} / \best{54.0} \\
-    Random tokens                    & 25.6 / 24.6 & 58.1 / 62.6 & 48.2 / 52.3 \\
+    % Random tokens                    & 25.6 / 24.6 & 58.1 / 62.6 & 48.2 / 52.3 \\
     FastVID~\cite{fastvid}           & 17.9 / 15.8 & \TODO{} & \TODO{} \\
     VidCom\textsuperscript{2}~\cite{vidcom2} & 20.4 / 18.7 & \TODO{} & \TODO{} \\
     FlashVID~\cite{flashvid}         & 22.7 / 21.5 & \TODO{} & \TODO{} \\
     SemVID~\cite{semvid}             & 23.3 / 20.6 & \TODO{} & \TODO{} \\
     \midrule
     Coverage (uniform frames)        & 31.7 / 32.4 & \best{59.7} / \best{64.5} & \best{48.6} / \best{54.0} \\
-    BOLT + Coverage                  & \second{32.5} / \second{34.1} & \TODO{} & -- \\
+    BOLT + Coverage                  & \second{32.5} / \second{34.1} & 57.2 / 62.9 & -- \\
     \oursrow BOLT + Coverage + PCD (\method) & \best{39.3} / \best{40.8} & \TODO{} & \TODO{} \\
     \midrule
     BOLT 64 frames + random tokens   & -- & 55.0 / 59.8 & -- \\
