@@ -29,7 +29,9 @@ unless a caption says per row. $\Delta$ columns are not ranked.
   input, with 31\% of all tokens including timestamps (about 24\% of the visual tokens); in these two columns, all
   tokens is the TimeLens evaluation script. BOLT is skipped on Charades-STA, where uniform frames are already dense (--). The bottom block
   uses BOLT frames on the full QVHighlights set at other budgets and is not ranked: 64 or 128 frames, keeping
-  1{,}192 or 4{,}455 tokens per query including timestamps. \TODO{} cells are not yet run.}
+  1{,}192 or 4{,}455 tokens per query including timestamps. At 64 frames, random tokens and Coverage keep about 970
+  visual tokens; FastVID and SemVID, which keep every timestamp, were set to the same visual budget and kept 803 and
+  915 on average. \TODO{} cells are not yet run.}
   \label{tab:main}
   \begin{adjustbox}{max width=\linewidth}\begin{tabular}{@{}lccc@{}}
     \toprule
@@ -48,6 +50,8 @@ unless a caption says per row. $\Delta$ columns are not ranked.
     \oursrow BOLT + Coverage + PCD (\method) & \best{39.3} / \best{40.8} & \TODO{} & \TODO{} \\
     \midrule
     BOLT 64 frames + random tokens   & -- & 55.0 / 59.8 & -- \\
+    BOLT 64 frames + FastVID         & -- & 36.1 / 34.2 & -- \\
+    BOLT 64 frames + SemVID          & -- & 53.1 / 57.4 & -- \\
     BOLT 64 frames + Coverage        & -- & 57.2 / 62.9 & -- \\
     BOLT 128 frames + random tokens  & -- & 59.9 / 65.3 & -- \\
     BOLT 128 frames + Coverage       & -- & 60.5 / 66.1 & -- \\
@@ -60,7 +64,9 @@ unless a caption says per row. $\Delta$ columns are not ranked.
 (i) QA pruners lose to random selection, and Coverage does not. On S-EMBER all four published pruners score below
 random tokens (\cref{sec:pruners}), while Coverage on uniform frames scores 31.7 mIoU against 25.6 for random tokens
 and 28.0 for all tokens. On QVHighlights and Charades-STA the pruners fall below random selection under the timeline
-prompt (\cref{fig:pruners}) and are not yet run with the one-line prompt.
+prompt (\cref{fig:pruners}). With the one-line prompt on the full QVHighlights set and BOLT frames at about the same
+visual budget (bottom block), FastVID and SemVID score 36.1 and 53.1 mIoU, against 55.0 for random tokens and 57.2 for
+Coverage.
 
 (ii) With the one-line prompt and about 24\% of the visual tokens, Coverage keeps the grounding of the uncompressed
 model on both full sets. It leads random selection by a small margin ($+1.6$ and $+0.5$ mIoU), largest on
