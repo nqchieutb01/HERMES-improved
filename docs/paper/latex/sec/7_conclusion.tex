@@ -8,11 +8,10 @@ best constant interval on ActivityNet Captions and Charades-STA. Our gains over 
 QVHighlights, ActivityNet and Charades-STA (\cref{tab:main}) therefore hold relative to this format. The comparison
 under the one-line prompt is in \cref{tab:standard}, and for the full Charades-STA and QVHighlights sets in
 \cref{tab:fullsweep}. We have not yet run the full ActivityNet set. On S-EMBER, \method beats the uncompressed model
-when both answer in the timeline format. Under the official direct-answer prompt, \method reaches 34.6 mIoU
-(grounding only, not yet judged). That is $4.7^*$ below \method with the timeline prompt and $+4.5^*$ above Coverage
-alone (\cref{tab:official}). We have not yet reported the uncompressed model under this prompt, so we cannot say
-whether \method improves on it. \TODO{S-EMBER without pruning under the
-direct-answer and one-line prompts; judged answers under the direct-answer prompt.}
+when both answer in the timeline format. Under the official direct-answer prompt it still grounds better ($+5.5^*$
+mIoU with our parser, $+2.1$ n.s. with the official one, which cannot read 73 of its answers), but its accuracy gain is
+borderline ($+2.9$) and comes mostly from BOLT; the uncompressed model there ran at batch size 4 and the pruned rows at
+8 (\cref{tab:official}). \TODO{S-EMBER without pruning under the one-line prompt; batch-matched comparison.}
 
 \paragraph{Where the prior is measured.}
 All our measurements of the video-free prior (\cref{sec:prior}) use the timeline format. With a one-line answer,

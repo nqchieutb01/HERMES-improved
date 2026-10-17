@@ -83,7 +83,8 @@ needs each of them and when each one matters, together with a way to make them w
   and $+6.1^*$, so most of that gain comes from the front end.
   \item \textbf{PCD and an answer-format study} (\cref{sec:contrast,sec:transfer}). On S-EMBER, PCD helps
   reasoning-style answers on all eight memories we test and on both models. With 10\% of the tokens, \method improves
-  on the uncompressed model by $+11.2^*$ and $+10.7^*$ mIoU under the same prompt. The same study shows that the
+  on the uncompressed model by $+11.2^*$ and $+10.7^*$ mIoU under the same prompt. Under the official
+  S-EMBER prompt the grounding gain is $+5.5^*$, while the accuracy gain is borderline and comes mostly from BOLT. The same study shows that the
   answer format alone moves single-moment grounding by about 30 mIoU and decides whether contrastive decoding helps.
   PCD does nothing for one-line answers, and on NExT-GQA it lowers the scored grounding where it disturbs the format
   (TimeLens-8B timeline answers, minutes:seconds under the official prompt).

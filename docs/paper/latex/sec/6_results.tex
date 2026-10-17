@@ -431,34 +431,43 @@ negatives.}
   \small
   \setlength{\tabcolsep}{3pt}
   \caption{\textbf{Official S-EMBER prompt} (direct answer with \texttt{Answer:} and \texttt{Time:} lines; Qwen3-VL-8B,
-  64 frames, 10\%, second cluster; grounding only, answers not yet judged). mIoU\,/\,R@0.5 with the
-  minutes:seconds-aware parser; mIoU with the official parser and the number of answers it cannot parse.}
+  64 frames, 10\%, second cluster; judge session C). mIoU\,/\,R@0.5 with the minutes:seconds-aware parser; mIoU with
+  the official parser and the number of answers it cannot parse. The uncompressed model ran at batch size 4 (8 ran out
+  of memory), the pruned rows at 8.}
   \label{tab:official}
-  \begin{adjustbox}{max width=\linewidth}\begin{tabular}{@{}lccc@{}}
+  \begin{adjustbox}{max width=\linewidth}\begin{tabular}{@{}lcccc@{}}
     \toprule
-    Method & mIoU / R@0.5 & Official mIoU & Unparsed \\
+    Method & mIoU / R@0.5 & Acc. / GQ@0.5 & Official mIoU & Unparsed \\
     \midrule
-    All tokens                          & \TODO{queued} & & \\
-    Random tokens                       & 27.9 / 26.1 & 26.4 & \second{17} \\
-    Coverage, uniform frames            & \second{30.1} / \second{29.3} & \second{28.8} & \best{13} \\
-    Global question top-$k$, no quota   & 30.0 / \second{29.3} & 28.5 & \second{17} \\
-    \oursrow \method                    & \best{34.6} / \best{34.3} & \best{29.5} & 73 \\
+    All tokens                          & 29.1 / 28.4 & 13.7 / 4.8 & 27.4 & 20 \\
+    Random tokens                       & 27.9 / 26.1 & 11.2 / 3.6 & 26.4 & 17 \\
+    Coverage, uniform frames            & 30.1 / 29.3 & 13.7 / 5.5 & 28.8 & \best{13} \\
+    Global question top-$k$, no quota   & 30.0 / 29.3 & 13.9 / 5.1 & 28.5 & 17 \\
+    SnapKV-style eviction               & 30.9 / 29.5 & 13.1 / 5.1 & \second{29.6} & \second{16} \\
+    BOLT $+$ Coverage                   & \second{31.9} / \second{32.2} & \best{17.1} / \second{5.9} & \best{30.2} & 23 \\
+    \oursrow \method                    & \best{34.6} / \best{34.3} & \second{16.6} / \best{6.3} & 29.5 & 73 \\
     \bottomrule
   \end{tabular}\end{adjustbox}
 \end{table}
 
 \paragraph{Prompt format.}
-We do not yet have a clean PCD-only comparison on S-EMBER under the official direct-answer prompt. An earlier run
-that was not matched on the other settings gave $+0.4$ mIoU. Under this prompt (\cref{tab:official}), \method is
-$+4.5^*$ mIoU above Coverage alone and $+6.8^*$ above random tokens. This gain mixes PCD with BOLT, since on the
-first 116 questions BOLT $+$ Coverage without PCD already gains $+5.3^*$ over Coverage. \method is also $4.7^*$ below
-\method with the timeline prompt. Coverage is $+2.2$ (n.s.) above random tokens. PCD makes the model write more times
-as minutes:seconds, and 73 \method answers cannot be parsed by the official parser, against 13--17 for the greedy
-rows. For the same reason, PCD alone lowers mIoU on NExT-GQA under the same prompt ($-1.5^*$ and $-2.5^*$,
-\cref{sec:transfer}). Until the uncompressed model has been run under this prompt, we cannot say whether \method
-improves on it. Compared with the uncompressed model in the timeline format, \method with the official prompt is
-$+6.6^*$ and Coverage $+2.1$ (n.s.). \TODO{uncompressed model under the official prompt (queued); judged answers; PCD with
-and without BOLT under this prompt.}
+With the official direct-answer prompt of S-EMBER (\cref{tab:official}), \method still grounds better than the
+uncompressed model: $+5.5^*$ mIoU and $+5.9^*$ R@0.5 with the minutes:seconds-aware parser. Its accuracy gain is
+smaller and less certain. It is $+2.9$, significant when we resample questions but not when we resample whole videos.
+Most of the answer gain comes from BOLT. BOLT $+$ Coverage is $+3.4^*$ above the uncompressed model in accuracy, and
+adding PCD to it changes accuracy by $-0.4$ (n.s.) while it raises mIoU by $+2.8^*$. So under this prompt PCD still
+moves the interval toward the evidence, but it no longer changes the answers. The official parser hides part of the
+interval gain. PCD makes the model write more times as minutes:seconds, and 73 \method answers cannot be read by the
+official parser, against 13--23 for the greedy rows. With that parser, \method is $+2.1$ (n.s.) above the uncompressed
+model and PCD changes mIoU by $-0.8$ (n.s.). The same format effect lowers the scored grounding of PCD on NExT-GQA under
+this prompt ($-1.5^*$ and $-2.5^*$, \cref{sec:transfer}). Among the selectors, Coverage is level with global question
+top-$k$ without a quota ($+0.1$ mIoU, $-0.2$ accuracy) and with SnapKV-style eviction ($-0.8$, $+0.6$), and it beats
+random tokens in accuracy ($+2.5^*$) and GQ@0.5 ($+1.9^*$). Random selection is the only pruned memory that answers
+worse than the uncompressed model ($-2.5^*$ accuracy). These comparisons with the uncompressed model also carry the
+batch-size difference noted in the caption. Across prompts, \method with the official prompt is $4.7^*$ mIoU below
+\method with the timeline prompt. \TODO{PCD with and without BOLT under this prompt; the batch-matched timeline-prompt
+checks and the held-out split (queued).}
+
 We also tried an \emph{event} timeline that lists start and end per occurrence (\texttt{Event: 12.0 -- 15.5 seconds}).
 Because it states extents, it improves the greedy baseline by $+7.4^*$ mIoU. PCD still adds $+2.1$ to $+3.3$ on top,
 reaching 35.0 mIoU and 12.6 GQ@0.5 at 768 tokens. The two fixes overlap. The format corrects extents, and PCD

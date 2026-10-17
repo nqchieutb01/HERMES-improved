@@ -36,7 +36,7 @@ SPECS = {
     "nextgqa-open": ("colblock", [2, 3, 4, 5], set(), None),
     "nextgqa-debug": ("colblock", [1, 2, 3, 4], set(), lambda r: "30\\%" not in r and "24.9" not in r),
     "oracle-tl8b": ("col", [2, 3, 4, 5], set(), None),
-    "official": ("col", [1, 2, 3], {3}, None),
+    "official": ("col", [1, 2, 3, 4], {4}, None),
     "fullsweep": ("col", [1, 2, 3, 4], set(), None),
 }
 
